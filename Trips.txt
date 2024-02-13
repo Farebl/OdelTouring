@@ -1,0 +1,43 @@
+
+Object 1:
+Ukraine Tour 2
+Ukraine
+Odesa
+03/02/2024
+10/03/2024
+23000
+1026397
+Using
+02/02/2024
+Tkach Oleg Bicktorovych
+Pavlenko Ivan Savlovych
+----------------------------------------------
+Object 2:
+Ukraine Tour 3
+Ukraine
+Mykolaiv
+01/03/2024
+08/03/2024
+10000
+1010645
+Unbought
+----------------------------------------------
+Object 3:
+Ukraine Tour 4
+Ukraine
+Ternopil
+01/05/2024
+08/05/2024
+20000
+1010645
+Unbought
+----------------------------------------------
+Object 4:
+Ukraine Tour 5
+Ukraine
+Vladyvostok
+15/08/2024
+22/08/2024
+10000
+1010645
+Unbought

@@ -1,0 +1,30 @@
+
+Object 1:
+Mazko Petro Valentynovych
++380986542534
+Arnautska 66
+Odel Touring
+1
+122
+Doesn`t have a trip
+----------------------------------------------
+Object 2:
+Barvinok Alexei Abramovych
++380987453625
+Arnautska 66
+Odel Touring
+1
+122
+Doesn`t have a trip
+----------------------------------------------
+Object 3:
+Tkach Oleg Bicktorovych
++380984235644
+Bocharova 23a
+Odel Touring
+1
+189
+During a trip:
+Ukraine Tour 2
+1026397
+Pavlenko Ivan Savlovych

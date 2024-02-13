@@ -1,0 +1,18 @@
+2024-2-2 16:46:44	—	Manager by name "Pavlenko Ivan Savlovych" was added. His/Her id: 863
+
+2024-2-2 16:49:30	—	Trip by name "Ukraine tour 1" was added. It id: 1022370
+
+2024-2-2 16:49:34	—	Customer by name "Mazko Petro Valentynovych" was added. His/Her id: 122
+
+2024-2-2 16:49:34	—	Manager Pavlenko Ivan Savlovych sold to client Mazko Petro Valentynovych, tour Ukraine tour 1
+
+2024-2-2 17:9:37	—	Trip by name "Ukraine Tour 2" was added. It id: 1026397
+
+2024-2-2 17:9:40	—	Customer by name "Tkach Oleg Bicktorovych" was added. His/Her id: 189
+
+2024-2-2 17:9:40	—	Manager Pavlenko Ivan Savlovych sold to client Tkach Oleg Bicktorovych, tour Ukraine Tour 2
+
+2024-2-2 17:12:53	—	Changing information about customer by id: 122
+
+2024-2-8 16:45:59	—	Trip by name "Ukraine Tour 3" was added. It id: 1010645
+
