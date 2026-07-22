@@ -24,7 +24,7 @@ public:
 
 	// конструктор з параметрами
 	Customer(const std::string name = "-", const std::string phone_number = "-", const std::string address = "-", int count_of_bought_trips = 0, const int personal_id = 0,  const std::shared_ptr<Trip>& trip = nullptr);
-	Customer(const Customer& сustomer); // Констуктор копіювання
+	Customer(const Customer& customer); // Констуктор копіювання
 	~Customer() override; // деструктор
 
 	void ShowInfo() override; // метод для виводу повної інформації про об'єкт.

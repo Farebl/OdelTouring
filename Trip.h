@@ -1,7 +1,7 @@
 #pragma once
 #include "Person.h" // <iostream> + <string> + <vector> 
 #include <list>
-
+#include <memory>
 
 // перелік статусів путівки
 enum class TripStatus {

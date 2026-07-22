@@ -3,22 +3,23 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <climits>
 
 
 class Person {
 protected:
-	std::string first_name, second_name, patronymic_name; // ім'я призвищеб по-батькові
-	std::string phone_number; // номер телефону
-	static std::string name_of_company; // назва компанії
-	int personal_id; // персональний індентифікатор
+	std::string first_name, second_name, patronymic_name; 
+	std::string phone_number; 
+	static std::string name_of_company;
+	int personal_id; 
 
-	static std::vector<int> Identifiers; // коллекція персональних індентифікаторів
-	static std::vector<std::string> PhoneNumbers;// коллекція номерів телефонів
+	static std::vector<int> Identifiers; 
+    static std::vector<std::string> PhoneNumbers;
 
 	Person(const std::string type, const std::string name, const std::string phone_number, const int personal_id = 0);
 	virtual~Person();
 
-	// метод для коректного вводу знаення до типу даних. 
+	 
 	template<typename T>
 	void ValidatedInput(T& val) {
 		while (true) {

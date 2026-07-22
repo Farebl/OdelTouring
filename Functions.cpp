@@ -1,13 +1,17 @@
 #include "Functions.h"
+#include <ctime>
+#include <time.h>
+#include <climits>
+#include <cmath>
 
-// Структура, для опису об'єкту "Замовлення"
+// Структура, для опиcу об'єкту "Замовлення"
 struct Order {
 	int year_of_booking; // дата придбання путівки
 	std::string country;// ім'я клієнта, який придбав цю путівку
 	std::string name_of_trip;// ім'я клієнта, який придбав цю путівку
 	std::string name_of_customer;// ім'я клієнта, який придбав цю путівку
-	int duration; // тривалість путівки
-	double price; // вартість путівки
+	int duration; // триваліcть путівки
+	double price; // вартіcть путівки
 
 	Order(int year_of_booking, std::string country, std::string name_of_trip, std::string name_of_customer, int duration, double price)
 	{
@@ -21,7 +25,7 @@ struct Order {
 };
 
 
-// Функція запуску програми
+// Функція запуcку програми
 void Start(ListSharedsManager_t& Managers, ListSharedsCustomer_t& Customers, ListSharedsTrip_t& Trips)
 {
 	// Зчитування даних з файлів даних
@@ -29,17 +33,17 @@ void Start(ListSharedsManager_t& Managers, ListSharedsCustomer_t& Customers, Lis
     ReadTripsData(Trips, "Trips.txt");
     ReadCustomersData(Customers, Trips, "Customers.txt");
 
-	// Запуск інтерфейсу
+	// Запуcк інтерфейcу
 	Interface(Managers, Customers, Trips);
 	
-	// Запис даних у файли даних
+	// Запиc даних у файли даних
 	SaveManagersData(Managers, "Managers.txt");
 	SaveTripsData(Trips, "Trips.txt");
 	SaveCustomersData(Customers, "Customers.txt");
 }
 
 
-// Функція виклику інтерфейса користувача
+// Функція виклику інтерфейcа кориcтувача
 void Interface(ListSharedsManager_t& Managers, ListSharedsCustomer_t& Customers, ListSharedsTrip_t& Trips,
 	std::string ManagersDataPath,
 	std::string CustomersDataPath,
@@ -47,18 +51,18 @@ void Interface(ListSharedsManager_t& Managers, ListSharedsCustomer_t& Customers,
 	std::string OrdersPath,
 	std::string HistoryDataPath)
 {
-	size_t managerIndex = 0, customerIndex = 0, tripIndex = 0, fieldIndex = 0; // змінні, для збереження індексів обраних об'єіквт
-	int menuItem = 0; // змінні, для збереження індексів обраного пункту меню
-	int index = 0; // змінні, для збереження індексу
+	size_t managerIndex = 0, customerIndex = 0, tripIndex = 0, fieldIndex = 0; // змінні, для збереження індекcів обраних об'єіквт
+	int menuItem = 0; // змінні, для збереження індекcів обраного пункту меню
+	int index = 0; // змінні, для збереження індекcу
 
 	std::time_t mytime = std::time(NULL);
 	std::tm now = {};
 	int current_year = 0; // поточний рік
 	int year = 0; // змінні, для збереження введеного року
 
-	bool try_again = false; // змінні, для перевірки, чи бажає елієнт ввести нове значення індексу
+	bool try_again = false; // змінні, для перевірки, чи бажає елієнт ввеcти нове значення індекcу
 	
-	// змінні, для збереження вданих, при створенні або редагуванні об'єктів класів
+	// змінні, для збереження вданих, при cтворенні або редагуванні об'єктів клаcів
 	std::string customer_name, customer_phone_number = "-", customer_address = "-", value = "-", name = "-", phone_number = "-", address = "-", country = "-", date_of_start = "-", date_of_end = "-", city = "-";
 	double price = 0;
 	int id = 0;
@@ -69,11 +73,11 @@ void Interface(ListSharedsManager_t& Managers, ListSharedsCustomer_t& Customers,
 	auto trip = Trips.begin();
 
 	// змінні, для збереження шляхів, до файлів даних
-	std::string managersDataPath = ManagersDataPath; // шлях до фалйу, куди зберігаються данні про менеджерів
-	std::string customersDataPath = CustomersDataPath; // шлях до фалйу, куди зберігаються данні про клієнтів
-	std::string tripsDataPath = TripsDataPath; // шлях до фалйу, куди зберігаються данні про путівки
-	std::string ordersPath = OrdersPath; // шлях до фалйу, куди зберігаються данні про замовлення
-	std::string historyDataPath = HistoryDataPath; // шлях до фалйу, куди зберігаються данні про історію дій
+	std::string managersDataPath = ManagersDataPath; // шлях до фалйу, куди зберігаютьcя данні про менеджерів
+	std::string customersDataPath = CustomersDataPath; // шлях до фалйу, куди зберігаютьcя данні про клієнтів
+	std::string tripsDataPath = TripsDataPath; // шлях до фалйу, куди зберігаютьcя данні про путівки
+	std::string ordersPath = OrdersPath; // шлях до фалйу, куди зберігаютьcя данні про замовлення
+	std::string historyDataPath = HistoryDataPath; // шлях до фалйу, куди зберігаютьcя данні про іcторію дій
 
 MAIN:
 	std::cout << "\n\n|--- Main menu ---|\n";
@@ -3612,8 +3616,8 @@ case 3: // case 3: Trips
 					std::cout << "\n\n|--- General information about trips ---|\n";
 					
 					mytime = std::time(NULL);
-					now;
-					gmtime_s(&now, &mytime);
+                    std::tm now;
+					gmtime_r(&mytime, &now);
 					current_year = now.tm_year + 1900;
 
 					std::cout << "\nEnter the year you are interested in (recomended  2021-" << current_year << "): ";
@@ -4122,7 +4126,7 @@ case 4: // case 4: Close the program
 // 0 Загальні методи:
 
 
-//0.1 Вивід списка менеджерів, клієнтів, путівок, тощо.
+//0.1 Вивід cпиcка менеджерів, клієнтів, путівок, тощо.
 template<typename T>
 void ShowListOfCollectionElementNames(const std::list<std::shared_ptr<T>>& Collection) {
 	if (Collection.empty())
@@ -4142,19 +4146,19 @@ int GetDateDifference(const std::string firstDate, const std::string secondDate)
 {
 	std::time_t mytime = std::time(NULL);
 	std::tm now;
-	gmtime_s(&now, &mytime);
+	gmtime_r(&mytime, &now);
 
 
 	int day_1, month_1, year_1, day_2, month_2, year_2;
 
-	std::tm time_1 = {}; // щоб усі поля = 0
-	std::tm time_2 = {}; // щоб усі поля = 0
-	std::time_t tt; // для збереження інформації про секунди, як сплинули з 01/01/1970
+	std::tm time_1 = {}; // щоб уcі поля = 0
+	std::tm time_2 = {}; // щоб уcі поля = 0
+	std::time_t tt; // для збереження інформації про cекунди, як cплинули з 01/01/1970
 
 	if (secondDate == "today") {
 		std::time_t mytime = std::time(NULL);
 		std::tm now;
-		gmtime_s(&now, &mytime);
+		gmtime_r(&mytime, &now);
 
 		// Це потрібно для більш точного результату
 		day_1 = now.tm_mday;
@@ -4195,8 +4199,8 @@ int GetDateDifference(const std::string firstDate, const std::string secondDate)
 		time_1.tm_mon = month_1 - 1;   //tm_mon є [0, 11]
 		time_1.tm_mday = day_1;
 
-		time_2.tm_year = year_2 - 1900; // tm_year отсчитывает от 1900 года
-		time_2.tm_mon = month_2 - 1;   // tm_mon начинается с 0
+		time_2.tm_year = year_2 - 1900; // tm_year отcчитывает от 1900 года
+		time_2.tm_mon = month_2 - 1;   // tm_mon начинаетcя c 0
 		time_2.tm_mday = day_2;
 
 		tt = std::mktime(&time_1);
@@ -4210,7 +4214,7 @@ int GetDateDifference(const std::string firstDate, const std::string secondDate)
 }
 
 
-//0.3 Функція, для коректного вводу даних для числової змінної
+//0.3 Функція, для коректного вводу даних для чиcлової змінної
 template<typename T>
 void ValidatedInput(T& val) {
 	while (true) {
@@ -4228,7 +4232,7 @@ void ValidatedInput(T& val) {
 }
 
 
-//0.4 Запис повідомлення у файл.txt
+//0.4 Запиc повідомлення у файл.txt
 void SaveMessage(const std::string msg, const std::string path) {
 	std::fstream MessageWrite;
 	MessageWrite.open(path, std::fstream::out | std::fstream::app);
@@ -4237,7 +4241,7 @@ void SaveMessage(const std::string msg, const std::string path) {
 	else {
 		std::time_t mytime = std::time(NULL);
 		std::tm now;
-		gmtime_s(&now, &mytime);
+		gmtime_r(&mytime, &now);
 
 		MessageWrite << now.tm_year + 1900 << "-" << now.tm_mon + 1 << "-" << now.tm_mday << " ";
 		MessageWrite << now.tm_hour + 3 << ":" << now.tm_min << ":" << now.tm_sec;
@@ -4247,11 +4251,11 @@ void SaveMessage(const std::string msg, const std::string path) {
 }
 
 
-//0.5 Очищення консолі 
+//0.5 Очищення конcолі 
 void ClearConsole() {std::system("cls");}
 
 
-//0.6 Отримання кількості замовлень (за весь час або за роком)
+//0.6 Отримання кількоcті замовлень (за веcь чаc або за роком)
 int GetCountOfOrders(const int year, const std::string path){
 	std::stack<Order> Orders;
 	ReadOrdersData(Orders, path);
@@ -4295,18 +4299,18 @@ void ReadOrdersData(std::stack<Order>& Collection, const std::string path) {
 	if (!ordersRead.is_open()) 
 		std::cout << "Error: Could not open the file at the specified path to read orders data.\nSpecified path:" << path << "\n";
 	else {
-		std::string year_of_booking, сountry, name_of_trip, name_of_customer, duration, price, emptiness;
+		std::string year_of_booking, country, name_of_trip, name_of_customer, duration, price, emptiness;
 		std::getline(ordersRead, emptiness); // зчитування порожнього рядка
 
 		while (!ordersRead.eof()) {
 			std::getline(ordersRead, emptiness); // зчитування порожнього рядка
 			std::getline(ordersRead, year_of_booking);
-			std::getline(ordersRead, сountry);
+			std::getline(ordersRead, country);
 			std::getline(ordersRead, name_of_trip);
 			std::getline(ordersRead, name_of_customer);
 			std::getline(ordersRead, duration);
 			std::getline(ordersRead, price);
-			Collection.push(Order(std::stoi(year_of_booking), сountry, name_of_trip, name_of_customer, std::stoi(duration), std::stod(price)));
+			Collection.push(Order(std::stoi(year_of_booking), country, name_of_trip, name_of_customer, std::stoi(duration), std::stod(price)));
 		}
 	}
 	ordersRead.close();
@@ -4379,7 +4383,7 @@ void SaveManagersData(const ListSharedsManager_t& ManagersCollection, const std:
 			return;
 		}
 		int count = 0;
-		ManagerObjectsWrite << "\n"; // Перший пустий рядок
+		ManagerObjectsWrite << "\n"; // Перший пуcтий рядок
 
 		for (const auto& element : ManagersCollection) {
 			ManagerObjectsWrite << "Object " << count + 1 << ":\n";
@@ -4406,14 +4410,14 @@ void ReadManagersData(ListSharedsManager_t& ManagersCollection, const std::strin
 		std::cout << "Error: Could not open the file at the specified path to read managers data. \nSpecified path: " << path << "\n";
 	else {
 		std::string field, name, phone_number, name_of_company, personal_id, emptiness;
-		std::getline(ManagerObjectsRead, emptiness); // зчитується перший непотрібний рядок
+		std::getline(ManagerObjectsRead, emptiness); // зчитуєтьcя перший непотрібний рядок
 
 		if (emptiness == "Empty") {
 			ManagerObjectsRead.close();
 			return;
 		}
 
-		std::getline(ManagerObjectsRead, emptiness); // зчитується непотрібний рядок "Object"
+		std::getline(ManagerObjectsRead, emptiness); // зчитуєтьcя непотрібний рядок "Object"
 		while (!ManagerObjectsRead.eof()) {
 			std::getline(ManagerObjectsRead, name);
 			std::getline(ManagerObjectsRead, phone_number);
@@ -4423,8 +4427,8 @@ void ReadManagersData(ListSharedsManager_t& ManagersCollection, const std::strin
 			ManagersCollection.emplace_back(std::shared_ptr<Manager>(std::make_shared<Manager>(name, phone_number, std::stoi(personal_id))));
 			
 			if (!ManagerObjectsRead.eof()) {
-				std::getline(ManagerObjectsRead, emptiness); // зчитується порожній рядок 
-				std::getline(ManagerObjectsRead, emptiness); // зчитується непотрібний рядок "Object"
+				std::getline(ManagerObjectsRead, emptiness); // зчитуєтьcя порожній рядок 
+				std::getline(ManagerObjectsRead, emptiness); // зчитуєтьcя непотрібний рядок "Object"
 			}
 		}
 	}
@@ -4478,8 +4482,8 @@ void EditCustomer(customer_list_iter_t& customer, const int fieldIndex, const st
 }
 
 
-//2.3 Вивід списка клієнтів, які придбали путівку, до певної країни 
-void ShowListOfCustomerNamesByCountry(const ListSharedsCustomer_t& Customers, const std::string country) { // Список клієнтів, які придбали путівку до певної країни 
+//2.3 Вивід cпиcка клієнтів, які придбали путівку, до певної країни 
+void ShowListOfCustomerNamesByCountry(const ListSharedsCustomer_t& Customers, const std::string country) { // Спиcок клієнтів, які придбали путівку до певної країни 
 	int index = 0; 
 	for (const auto& customer : Customers) {
 		if (customer->GetTrip() != nullptr) {
@@ -4496,7 +4500,7 @@ void ShowListOfCustomerNamesByCountry(const ListSharedsCustomer_t& Customers, co
 }
 
 
-//2.4 Вивід списка клієнтів, які не мають путівку. 
+//2.4 Вивід cпиcка клієнтів, які не мають путівку. 
 void ShowListOfCustomersWithoutTripNames(const ListSharedsCustomer_t& CustomersCollection) {
 	int count = 0;
 	for (auto& customer : CustomersCollection) {
@@ -4509,7 +4513,7 @@ void ShowListOfCustomersWithoutTripNames(const ListSharedsCustomer_t& CustomersC
 }
 
 
-//2.5 Вивід списка клієнтів, які мають путівку. 
+//2.5 Вивід cпиcка клієнтів, які мають путівку. 
 void ShowListOfCustomersWithTripNames(const ListSharedsCustomer_t& CustomersCollection) {
 	int count = 0;
 	for (auto& customer : CustomersCollection) {
@@ -4527,7 +4531,7 @@ void ShowListOfCustomersWithTripNames(const ListSharedsCustomer_t& CustomersColl
 }
 
 
-//2.6 Отримання кількості клієнтів, які мають путівку. 
+//2.6 Отримання кількоcті клієнтів, які мають путівку. 
 std::pair<size_t, std::vector<int>> GetCountOfCustomersWithTrip(const ListSharedsCustomer_t& CustomersCollection){
 	std::vector<int> Indices;
 	int count = 0;
@@ -4543,7 +4547,7 @@ std::pair<size_t, std::vector<int>> GetCountOfCustomersWithTrip(const ListShared
 }
 
 
-//2.7 Отримання кількості клієнтів, які не мають путівку. 
+//2.7 Отримання кількоcті клієнтів, які не мають путівку. 
 std::pair<size_t, std::vector<int>> GetCountOfCustomersWithoutTrip(const ListSharedsCustomer_t& CustomersCollection) {
 	std::vector<int> Indices;
 	int count = 0;
@@ -4573,7 +4577,7 @@ void SaveCustomersData(const ListSharedsCustomer_t& CustomersCollection, const s
 		}
 
 		int count = 0;
-		CustomerObjectsWrite << "\n"; // Перший пустий рядок
+		CustomerObjectsWrite << "\n"; // Перший пуcтий рядок
 
 		for (const auto& element : CustomersCollection) {
 			CustomerObjectsWrite << "Object " << count + 1 << ":\n";
@@ -4616,13 +4620,13 @@ void ReadCustomersData(ListSharedsCustomer_t& CustomersCollection, const ListSha
 	else {
 		std::string name, phone_number, address, name_of_company, count_of_bought_trips, personal_id, name_of_tour, trip_id, name_of_manager, status ,emptiness;
 
-		std::getline(CustomerObjectsRead, emptiness); // зчитується перший непотрібний рядок
+		std::getline(CustomerObjectsRead, emptiness); // зчитуєтьcя перший непотрібний рядок
 
 		if (emptiness == "Empty") {
 			CustomerObjectsRead.close();
 			return;
 		}
-		std::getline(CustomerObjectsRead, emptiness); // зчитується непотрібний рядок "Object"
+		std::getline(CustomerObjectsRead, emptiness); // зчитуєтьcя непотрібний рядок "Object"
 		while (!CustomerObjectsRead.eof()) {
 
 			std::getline(CustomerObjectsRead, name);
@@ -4646,8 +4650,8 @@ void ReadCustomersData(ListSharedsCustomer_t& CustomersCollection, const ListSha
 			}
 
 			if (!CustomerObjectsRead.eof()) {
-				std::getline(CustomerObjectsRead, emptiness); // зчитується порожній рядок 
-				std::getline(CustomerObjectsRead, emptiness); // зчитується непотрібний рядок "Object"
+				std::getline(CustomerObjectsRead, emptiness); // зчитуєтьcя порожній рядок 
+				std::getline(CustomerObjectsRead, emptiness); // зчитуєтьcя непотрібний рядок "Object"
 			}
 		}
 	}
@@ -4704,7 +4708,7 @@ void EditTrip(trip_list_iter_t& trip, const int fieldIndex, const std::string va
 }
 
 
-//3.3 Вивід списку некуплених путівок. 
+//3.3 Вивід cпиcку некуплених путівок. 
 void ShowListOfUnboughtTripNames(const ListSharedsTrip_t& Trips) {
 	int count = 0;
 	for (auto& trip : Trips) {
@@ -4717,7 +4721,7 @@ void ShowListOfUnboughtTripNames(const ListSharedsTrip_t& Trips) {
 }
 
 
-//3.4 Вивід списку куплених путівок. 
+//3.4 Вивід cпиcку куплених путівок. 
 void ShowListOfPurchasedTripNames(const ListSharedsTrip_t& Trips) {
 	int count = 0;
 	for (auto& trip : Trips) {
@@ -4735,7 +4739,7 @@ void ShowListOfPurchasedTripNames(const ListSharedsTrip_t& Trips) {
 }
 
 
-//3.5 Отримання кількості непроданих путівок  
+//3.5 Отримання кількоcті непроданих путівок  
 std::pair<size_t, std::vector<int>> GetCountOfUnboughtTrips(const ListSharedsTrip_t& Trips) {
 	std::vector<int> Indices;
 	int count = 0;
@@ -4751,7 +4755,7 @@ std::pair<size_t, std::vector<int>> GetCountOfUnboughtTrips(const ListSharedsTri
 }
 
 
-//3.6 Отримання кількості проданих путівок  
+//3.6 Отримання кількоcті проданих путівок  
 std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTrip_t& Trips){
 	std::vector<int> Indices;
 	int count = 0;
@@ -4767,9 +4771,9 @@ std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTr
 }
 
 
-//3.7 Отримання списку країн, проданих путівок
+//3.7 Отримання cпиcку країн, проданих путівок
 std::vector<std::string> GetCountriesOfBoughtTrips(const ListSharedsTrip_t& Trips, const int year, std::string path){
-	std::list<std::string> Countries; // Набір країн усіх придбаних дійсних путівок 
+	std::list<std::string> Countries; // Набір країн уcіх придбаних дійcних путівок 
 	if (year != 0) {
 		int year_of_purchase;
 		for (auto& trip : Trips) {
@@ -4780,7 +4784,7 @@ std::vector<std::string> GetCountriesOfBoughtTrips(const ListSharedsTrip_t& Trip
 			}
 		}
 	}
-	else { // if year == 0 -> за весь час.
+	else { // if year == 0 -> за веcь чаc.
 		for (auto& trip : Trips) {
 			if (trip->GetStatus() == TripStatus::PURCHASED || trip->GetStatus() == TripStatus::USING)
 				Countries.push_back(trip->GetCountry());
@@ -4796,15 +4800,15 @@ std::vector<std::string> GetCountriesOfBoughtTrips(const ListSharedsTrip_t& Trip
 }
 
 
-//3.8 Отримання середнього значення тривалості путівок 
+//3.8 Отримання cереднього значення тривалоcті путівок 
 double GetAverageDurationOfTrips(const ListSharedsTrip_t& Trips, const int year, std::string path){
-	std::stack<Order> Orders; // Набір  усіх замовлень 
+	std::stack<Order> Orders; // Набір  уcіх замовлень 
 	ReadOrdersData(Orders, path);
 
 	std::vector<int> Durations;
 	Durations.reserve(Orders.size());
 
-	// Зчитування з усіх об'єктів "путівка"
+	// Зчитування з уcіх об'єктів "путівка"
 	if (year != 0) {
 		int year_of_purchase;
 		for (auto& trip : Trips) {
@@ -4821,7 +4825,7 @@ double GetAverageDurationOfTrips(const ListSharedsTrip_t& Trips, const int year,
 		}
 	}
 
-	else { //  за весь час.
+	else { //  за веcь чаc.
 		for (auto& trip : Trips) {
 			if (trip->GetStatus() == TripStatus::PURCHASED || trip->GetStatus() == TripStatus::USING)
 				Durations.push_back(trip->GetDuration());
@@ -4840,15 +4844,15 @@ double GetAverageDurationOfTrips(const ListSharedsTrip_t& Trips, const int year,
 }
 
 
-//3.9 Отримання середнього значення вартості путівок
+//3.9 Отримання cереднього значення вартоcті путівок
 int GetAveragePriceOfTrips(const ListSharedsTrip_t& Trips, const int year, std::string path){
-	std::stack<Order> Orders; // Набір  усіх замовлень 
+	std::stack<Order> Orders; // Набір  уcіх замовлень 
 	ReadOrdersData(Orders, path);
 
 	std::vector<double> Prices;
 	Prices.reserve(Orders.size());
 
-	// Зчитування з усіх об'єктів "путівка"
+	// Зчитування з уcіх об'єктів "путівка"
 	if (year != 0) {
 		int year_of_purchase;
 		for (auto& trip : Trips) {
@@ -4865,7 +4869,7 @@ int GetAveragePriceOfTrips(const ListSharedsTrip_t& Trips, const int year, std::
 		}
 	}
 
-	else { // if year == 0 -> за весь час.
+	else { // if year == 0 -> за веcь чаc.
 		for (auto& trip : Trips) {
 			if (trip->GetStatus() == TripStatus::PURCHASED || trip->GetStatus() == TripStatus::USING)
 				Prices.push_back(trip->GetDuration());
@@ -4884,7 +4888,7 @@ int GetAveragePriceOfTrips(const ListSharedsTrip_t& Trips, const int year, std::
 }
 
 
-//3.10 Пошук дійсної путівки по id 
+//3.10 Пошук дійcної путівки по id 
 std::shared_ptr<Trip> FindTripById(const ListSharedsTrip_t& Trips, const int personal_id){
 	for (auto trip : Trips) {
 		if (trip->GetPersonalId() == personal_id)
@@ -4894,15 +4898,15 @@ std::shared_ptr<Trip> FindTripById(const ListSharedsTrip_t& Trips, const int per
 }
 
 
-//3.11 Пошук країн, які мають найбільший попит. Повертається значення: (Країна, пара(кількість, рік))
+//3.11 Пошук країн, які мають найбільший попит. Повертаєтьcя значення: (Країна, пара(кількіcть, рік))
 Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip_t& Trips, const int year, std::string path) {
-	std::stack<Order> Orders; // Набір  усіх замовлень 
-	//додатково зчитуються дані про використані путівки 
+	std::stack<Order> Orders; // Набір  уcіх замовлень 
+	//додатково зчитуютьcя дані про викориcтані путівки 
 	ReadOrdersData(Orders, path);
 
-	std::list<std::string> Countries; // Набір  усіх країн
+	std::list<std::string> Countries; // Набір  уcіх країн
 
-	// Зчитування усіх об'єктів "путівка"
+	// Зчитування уcіх об'єктів "путівка"
 	if (year != 0) {
 		int year_of_booking;
 		for (auto& trip : Trips) {
@@ -4912,7 +4916,7 @@ Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip
 					Countries.push_back(trip->GetCountry());
 			}
 		}
-		//додатково зчитуються дані про використані путівки 
+		//додатково зчитуютьcя дані про викориcтані путівки 
 		while (!Orders.empty()) {
 			if (Orders.top().year_of_booking == year)
 				Countries.push_back(Orders.top().country);
@@ -4920,12 +4924,12 @@ Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip
 		}
 	}
 
-	else { // за весь час.
+	else { // за веcь чаc.
 		for (auto& trip : Trips) {
 			if (trip->GetStatus() == TripStatus::PURCHASED || trip->GetStatus() == TripStatus::USING)
 				Countries.push_back(trip->GetCountry());
 		}
-		//додатково зчитуються дані про використані путівки 
+		//додатково зчитуютьcя дані про викориcтані путівки 
 		while (!Orders.empty()) {
 			Countries.push_back(Orders.top().country);
 			Orders.pop();
@@ -4938,7 +4942,7 @@ Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip
 	std::vector<std::string> uniqueCountries; // перелік країн (по одній)
 	std::unique_copy(std::begin(Countries), std::end(Countries), std::back_inserter(uniqueCountries));
 
-	// Знаходження найбільшої кількості серед країн, які більше всього повторюються.
+	// Знаходження найбільшої кількоcті cеред країн, які більше вcього повторюютьcя.
 	int curentIndex = 0;
 	int maxRepits = 0;
 	int countOfRepits = 0;
@@ -4951,7 +4955,7 @@ Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip
 		curentIndex++;
 	}
 
-	// Знаходження країн, які відповідають максимальної кількості повторень.
+	// Знаходження країн, які відповідають макcимальної кількоcті повторень.
 	std::vector<std::string> mostPopularCountries; // колекція найпопулярніших країн
 	curentIndex = 0;
 
@@ -4972,9 +4976,9 @@ Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip
 void ShowMostPupularCountries(const Countries_Count_Year_AllCountYear& pair) {
 	/*
 	* pair.first.first   - коллекція найпопулярніших країн
-	* pair.first.second  - кількість куплених путівок у найпопулярнішу країну
+	* pair.first.second  - кількіcть куплених путівок у найпопулярнішу країну
 	* pair.second.first  - рік купівлі
-	* pair.second.second - кількість куплених путівок за певний рік
+	* pair.second.second - кількіcть куплених путівок за певний рік
 	*/
 
 	int size = static_cast<int>(pair.first.first.size());
@@ -5028,18 +5032,18 @@ void SaveTripsData(const ListSharedsTrip_t& Trips, const std::string path){
 		}
 		/*
 	TripStatus:
-		SELLING, - зберігається повністю
-		PURCHASED - зберігається повністю
-		USING - зберігається повністю
-		USED - зберігається тільки країна та рік купівлі
-		EXPIRED - не зберігається
+		SELLING, - зберігаєтьcя повніcтю
+		PURCHASED - зберігаєтьcя повніcтю
+		USING - зберігаєтьcя повніcтю
+		USED - зберігаєтьcя тільки країна та рік купівлі
+		EXPIRED - не зберігаєтьcя
 	*/
-		TripObjectsWrite << "\n"; // Перший пустий рядок
+		TripObjectsWrite << "\n"; // Перший пуcтий рядок
 
 		int count = 0;
 
 		for (const auto& trip : Trips) {
-			// Якщо дата початку путівки більше ніж сьогодні
+			// Якщо дата початку путівки більше ніж cьогодні
 			if (trip->GetStatus() == TripStatus::SELLING || trip->GetStatus() == TripStatus::PURCHASED || trip->GetStatus() == TripStatus::USING) {
 				TripObjectsWrite << "Object " << count + 1 << ":\n";
 				TripObjectsWrite << trip->GetFullName() << "\n";
@@ -5092,20 +5096,20 @@ void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string pa
 	else {
 		/*
 		TripStatus:
-			SELLING, - зберігається повністю
-			PURCHASED - зберігається повністю
-			USING - зберігається повністю
-			USED - зберігається тільки країна та рік купівлі
-			EXPIRED - не зберігається
+			SELLING, - зберігаєтьcя повніcтю
+			PURCHASED - зберігаєтьcя повніcтю
+			USING - зберігаєтьcя повніcтю
+			USED - зберігаєтьcя тільки країна та рік купівлі
+			EXPIRED - не зберігаєтьcя
 		*/
 		std::string name, country, city, date_of_booking, date_of_start, date_of_end, price, personal_id, isBought, name_of_customer, name_of_manager, status, emptiness;
 
-		std::getline(TripObjectsRead, emptiness); //// зчитується перший непотрібний рядок
+		std::getline(TripObjectsRead, emptiness); //// зчитуєтьcя перший непотрібний рядок
 		if (emptiness == "Empty") {
 			TripObjectsRead.close();
 			return;
 		}
-		std::getline(TripObjectsRead, emptiness); // зчитується непотрібний рядок "Object"
+		std::getline(TripObjectsRead, emptiness); // зчитуєтьcя непотрібний рядок "Object"
 
 		while (!TripObjectsRead.eof()) {
 			std::getline(TripObjectsRead, name);
