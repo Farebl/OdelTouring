@@ -67,6 +67,8 @@ void SaveOrderData(const int year_of_booking, const std::string country, const s
 //0.8 Зчитування даних про замовлення з файл.txt
 void ReadOrdersData(std::stack<Order>& Collection, const std::string path = "Orders.txt");
 
+template<typename T>
+void ValidatedInput(T& val);
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------

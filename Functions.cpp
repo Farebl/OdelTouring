@@ -25,6 +25,53 @@ struct Order {
 };
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+template<typename T>
+void ValidatedInput(T& val) {
+    while (true) {
+        std::cin >> val;
+        if (std::cin.fail())
+        {
+            std::cout << "\n\nYou may have entered wrong value. Try again.\n";
+            std::cin.clear(); // 
+            std::cin.ignore(LLONG_MAX, '\n');
+        }
+        else
+            break;
+    }
+    std::cin.ignore(INT_MAX, '\n');
+}
+
+
+template void ValidatedInput<bool>(bool& val); 
+template void ValidatedInput<char>(char& val); 
+template void ValidatedInput<int>(int& val); 
+template void ValidatedInput<float>(float& val); 
+template void ValidatedInput<double>(double& val); 
+
+
+
+
+
+
+
+
+
+
+
+
 // Функція запуcку програми
 void Start(ListSharedsManager_t& Managers, ListSharedsCustomer_t& Customers, ListSharedsTrip_t& Trips)
 {
@@ -4213,23 +4260,6 @@ int GetDateDifference(const std::string firstDate, const std::string secondDate)
 	}
 }
 
-
-//0.3 Функція, для коректного вводу даних для чиcлової змінної
-template<typename T>
-void ValidatedInput(T& val) {
-	while (true) {
-		std::cin >> val;
-		if (std::cin.fail()) {
-			std::cout << "\n\nYou may have entered a letter or symbol instead of a number";
-			std::cout << "\nTry again;\n";
-			std::cin.clear(); // 
-			std::cin.ignore(INT_MAX, '\n');
-		}
-		else
-			break;
-	}
-	std::cin.ignore(INT_MAX, '\n');
-}
 
 
 //0.4 Запиc повідомлення у файл.txt
