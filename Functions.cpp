@@ -11,8 +11,8 @@
 #include <numeric>
 
 #include "Manager.h"
-#include "Customer.h" 
 #include "Trip.h"
+
 
 struct Order {
 	int year_of_booking;

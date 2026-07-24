@@ -1,7 +1,7 @@
 #include "Manager.h"
 #include <iostream>
 #include "Trip.h"
-#include "Customer.h"
+
 
 
 Manager::Manager(const std::string name, const std::string phone_number, const int personal_id) :Person("MANAGER", name, phone_number, personal_id) {

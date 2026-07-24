@@ -9,7 +9,7 @@ module;
 
 export module Person;
 
-std::optional<const char*> phomeNumberIsWrong(const std::string& phone_number);
+export std::optional<const char*> phomeNumberIsWrong(const std::string& phone_number);
 
 export class Person {
     friend std::optional<const char*> phomeNumberIsWrong(const std::string& phone_number);
@@ -27,6 +27,21 @@ protected:
 
 public:
 	virtual void ShowInfo() = 0;
+
+	std::string GetFullName() const;
+	void SetFullName(std::string name); 
+	
+	std::string GetFirstName() const; 
+	void SetFirstName(std::string first_name); 
+
+	std::string GetSecondName() const; 
+	void SetSecondName(std::string second_name); 
+	
+	std::string GetPatronymicName() const;
+	void SetPatronymicName(std::string patronymic_name); 
+
+	std::string GetPhoneNumber() const;
+	void SetPhoneNumber(std::string phone_number);
 
 };
 
@@ -56,27 +71,8 @@ Person::Person(const std::string type, const std::string name, std::string phone
 
 	bool is_symbol, equal;
 
+    SetPhoneNumber(phone_number);
 
-	if (phone_number == "-") {
-		this->phone_number = phone_number;
-		PhoneNumbers.emplace_back(this->phone_number);
-	}
-	else {
-        auto error = phomeNumberIsWrong(phone_number);
-		while(error){		    	
-            std::cout << "\nPlease enter a new phone number (format: +380 XXXXXXXXX) ";
-
-            std::cout << "\nNew phone number: ";
-            std::cin >> phone_number;
-            std::cin.ignore(LLONG_MAX, '\n');
-            error = phomeNumberIsWrong(phone_number);
-		}
-		this->phone_number = phone_number;
-		PhoneNumbers.emplace_back(this->phone_number);
-	}
-
-	
-	
 	
 	if (personal_id != 0) {
 		this->personal_id = personal_id;
@@ -128,6 +124,109 @@ Person::~Person() {
 		}
 	}
 }
+
+
+std::string Person::GetFullName() const
+{
+	return (second_name + ' ' + first_name + ' ' + patronymic_name);
+}
+
+void Person::SetFullName(std::string name)
+{
+	while (true) {
+		if (name == "-") {
+			std::cout << "\n\nThe name "-" is not valid. \nEnter a new name: ";
+			std::cin>>name;
+			continue;
+		}
+		else {
+
+			second_name.clear();
+
+			for (char i : name) {
+				if (i == ' ')
+					break;
+				second_name.push_back(i);
+			}
+
+			for (size_t i = second_name.length() + 1; i < name.length(); i++) {
+				if (name[i] == ' ')
+					break;
+				first_name.push_back(name[i]);
+			}
+
+			for (size_t i = first_name.length() + second_name.length() + 2; i < name.length(); i++)
+				patronymic_name.push_back(name[i]);
+
+			break;
+		}	
+	}
+}
+
+
+std::string Person::GetFirstName() const
+{
+	return first_name;
+}
+
+void Person::SetFirstName(std::string first_name)
+{
+	this->first_name = first_name;
+}
+
+
+std::string Person::GetSecondName() const
+
+{
+	return second_name;
+}
+
+void Person::SetSecondName(std::string second_name)
+{
+	this->second_name = second_name;
+}
+
+
+std::string Person::GetPatronymicName() const
+
+{
+	return patronymic_name;
+}
+
+void Person::SetPatronymicName(std::string patronymic_name)
+{
+	this->patronymic_name = patronymic_name;
+}
+
+
+
+std::string Person::GetPhoneNumber() const
+{
+	return this->phone_number;
+}
+
+void Person::SetPhoneNumber(std::string phone_number)
+{	
+	if (phone_number == "-") {
+		this->phone_number = phone_number;
+		PhoneNumbers.emplace_back(this->phone_number);
+	}
+	else {
+        auto error = phomeNumberIsWrong(phone_number);
+		while(error){		    	
+            std::cout << "\nPlease enter a new phone number (format: +380 XXXXXXXXX) ";
+
+            std::cout << "\nNew phone number: ";
+            std::cin >> phone_number;
+            std::cin.ignore(LLONG_MAX, '\n');
+            error = phomeNumberIsWrong(phone_number);
+		}
+		this->phone_number = phone_number;
+		PhoneNumbers.emplace_back(this->phone_number);
+	}
+}
+
+
 
 
 

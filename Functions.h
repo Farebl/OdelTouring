@@ -6,10 +6,10 @@
 #include <stack>
 #include <vector>
 
+import Customer;
 
 class Manager;
 class Trip;
-class Customer;
 
 struct Order;
 

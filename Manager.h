@@ -4,7 +4,8 @@
 import Person;
 #include <memory>
 
-class Customer;
+import Customer;
+
 class Trip;
 
 class Manager : public Person {

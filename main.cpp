@@ -1,8 +1,8 @@
-#include "Functions.h" // <stack> + <algorithm> + <numeric> + <fstream> + Manager.h + Customer.h + Trip.h + Person.h +  <iostream> + <string> + <vector> + <list>
+#include "Functions.h"
 
-ListSharedsManager_t Managers; // Коллекція менеджерів
-ListSharedsCustomer_t Customers;// Коллекція клієнтів
-ListSharedsTrip_t Trips;// Коллекція путівок
+ListSharedsManager_t Managers;
+ListSharedsCustomer_t Customers;
+ListSharedsTrip_t Trips;
 
 int main() {
 
