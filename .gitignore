@@ -1,3 +1,4 @@
+.clangd
 *.txt
 !CMakeLists.txt
 
