@@ -4,10 +4,16 @@ module;
 #include <vector>
 #include <iostream> 
 #include <climits> 
+#include <algorithm>
+#include <optional>
 
 export module Person;
 
+std::optional<const char*> phomeNumberIsWrong(const std::string& phone_number);
+
 export class Person {
+    friend std::optional<const char*> phomeNumberIsWrong(const std::string& phone_number);
+
 protected:
 	std::string first_name, second_name, patronymic_name; 
 	std::string phone_number; 
@@ -56,83 +62,14 @@ Person::Person(const std::string type, const std::string name, std::string phone
 		PhoneNumbers.emplace_back(this->phone_number);
 	}
 	else {
-		while (true) {
-			
-			if (phone_number.length() < 13) {
-				std::cout << "\n\nYour number is shorter than required. Try again";
-				std::cout << "\nPlease enter a new phone number (format: +380XXXXXXXXX) ";
+        auto error = phomeNumberIsWrong(phone_number);
+		while(error){		    	
+            std::cout << "\nPlease enter a new phone number (format: +380 XXXXXXXXX) ";
 
-				std::cout << "\nNew phone number: ";
-				std::cin >> phone_number;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			if (phone_number.length() > 13) {
-				std::cout << "\n\nYour number is longer than required. Try again";
-				std::cout << "\nPlease enter a new phone number (format: +380XXXXXXXXX) ";
-
-				std::cout << "\nNew phone number: ";
-				std::cin >> phone_number;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-			
-			if (phone_number.substr(0, 4) != "+380") {
-				std::cout << "\n\nYour number is in the wrong format. Try again";
-				std::cout << "\nPlease enter a new phone number (format: +380XXXXXXXXX) ";
-				
-				std::cout << "\nNew phone number: ";
-				std::cin >> phone_number;
-				std::cin.ignore(LLONG_MAX, '\n');
-			}
-
-			
-			is_symbol = false;
-			for (size_t i = 1; i < phone_number.length(); i++) {
-				if (static_cast<int>(phone_number[i]) < 48 || static_cast<int>(phone_number[i]) > 57) {
-					std::cout << "\n\nThe entered number contains a symbol. Try again";
-					std::cout << "\nPlease enter a new phone number (format: +380 XXXXXXXXX) ";
-					std::cout << "\nNew phone number: ";
-					std::cin >> phone_number;
-					std::cin.ignore(LLONG_MAX, '\n');
-					is_symbol = true;
-					break;
-				}
-			}
-			if (is_symbol)
-				continue; 
-			
-			
-			
-
-			equal = false;
-
-			for (size_t i = 0; i < PhoneNumbers.size(); i++) {
-
-				if (phone_number == PhoneNumbers[i]) {
-					
-					if (type == "MANAGER") 
-						std::cout << "\n\nThey are trying to assign someone else's number to a manager named " << name;
-					else
-						std::cout << "\n\nThey are trying to assign someone else's number to a customer named " << name;
-
-					equal = true;
-
-					std::cout << "\nPlease enter a new phone number (format: +380 XXXXXXXXX) ";
-
-					std::cout << "\nNew phone number: ";
-					std::cin >> phone_number;
-					std::cin.ignore(LLONG_MAX, '\n');
-					break;
-					
-				}
-			}
-
-			if (equal)
-				continue;
-			else
-				break;
+            std::cout << "\nNew phone number: ";
+            std::cin >> phone_number;
+            std::cin.ignore(LLONG_MAX, '\n');
+            error = phomeNumberIsWrong(phone_number);
 		}
 		this->phone_number = phone_number;
 		PhoneNumbers.emplace_back(this->phone_number);
@@ -194,4 +131,27 @@ Person::~Person() {
 
 
 
+std::optional<const char*> phomeNumberIsWrong(const std::string& phone_number){     
+    if (phone_number.length() < 13) {
+        return "This number is shorter than required";
+    }
 
+    if (phone_number.length() > 13) {
+        return "This number is longer than required";
+    }
+    
+    if (phone_number.substr(0, 4) != "+380") {
+        return "This number has wrong code";
+    }
+
+    auto res_it = std::find_if(phone_number.begin()+3, phone_number.end(), [](char c){return (c < 48 || c > 57);});
+    if (res_it != phone_number.end()){
+        return "The entered number contains a symbol";
+    }
+    auto res_it2 = std::find(Person::PhoneNumbers.begin(), Person::PhoneNumbers.end(), phone_number);
+    if (res_it2 != Person::PhoneNumbers.end()){
+        return "This phone number is already registered";
+    }
+
+    return std::nullopt;
+}

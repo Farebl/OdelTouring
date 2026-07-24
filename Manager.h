@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Person.h"
+//#include "Person.h"
+import Person;
 #include <memory>
 
 class Customer;

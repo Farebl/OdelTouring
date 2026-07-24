@@ -1,7 +1,8 @@
 #pragma once
 #include <memory>
 
-#include "Person.h"
+//#include "Person.h"
+import Person;
 class Trip;
 
 // Status of the customer
