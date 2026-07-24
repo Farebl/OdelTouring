@@ -1,6 +1,8 @@
 #include "Person.h"
 
-std::string Person::name_of_company = "Odel Touring";
+#include <iostream> 
+#include <climits> 
+
 std::vector<int> Person::Identifiers;
 std::vector<std::string> Person::PhoneNumbers;
 
@@ -169,18 +171,3 @@ Person::~Person() {
 }
 
 
-//template<typename T>
-//void Person::ValidatedInput(T& val) {
-//	while (true) {
-//		std::cin >> val;
-//		if (std::cin.fail())
-//		{
-//			std::cout << "\n\nYou may have entered wrong value. Try again.\n";
-//			std::cin.clear(); // 
-//			std::cin.ignore(LLONG_MAX, '\n');
-//		}
-//		else
-//			break;
-//	}
-//	std::cin.ignore(INT_MAX, '\n');
-//}

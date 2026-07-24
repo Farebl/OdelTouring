@@ -1,6 +1,9 @@
 
+#include <iostream>
+
 #include "Customer.h"
-        
+#include "Trip.h"
+
 Customer::Customer(std::string name, std::string phone_number, std::string address, int count_of_bought_trips, int personal_id, const std::shared_ptr<Trip>& trip) :Person("CUSTOMER", name, phone_number, personal_id)
 {
 	this->address = address;
@@ -29,22 +32,21 @@ void Customer::ShowInfo()
 	std::cout << "\n\n" << "1) Name: " << (second_name + ' ' + first_name + ' ' + patronymic_name);
 	std::cout << "\n" << "2) Phone number: " << phone_number;
 	std::cout << "\n" << "3) Address: " << address;
-	std::cout << "\n" << "4) Name of company: " << name_of_company;
-	std::cout << "\n" << "5) Id of customer: " << personal_id;
-	std::cout << "\n" << "6) Count of purchased trips: " << count_of_bought_trips;
+	std::cout << "\n" << "4) Id of customer: " << personal_id;
+	std::cout << "\n" << "5) Count of purchased trips: " << count_of_bought_trips;
 	if (GetStatus() == CustomerStatus::WITHOUT_TRIP) {
-		std::cout << "\n" << "7) Doesn`t have a trip\n";
+		std::cout << "\n" << "6) Doesn`t have a trip\n";
 		
 	}
 	else {
-		std::cout << "\n" << "7) Have a trip: " << this->trip->GetFullName();
-		std::cout << "\n" << "8) Was served by manager: " << name_of_manager;
+		std::cout << "\n" << "6) Have a trip: " << this->trip->GetFullName();
+		std::cout << "\n" << "7) Was served by manager: " << name_of_manager;
 		
 		if (GetStatus() == CustomerStatus::WITH_TRIP)
-			std::cout << "\n" << "9) Status: Have a trip\n";
+			std::cout << "\n" << "8) Status: Have a trip\n";
 
 		if (GetStatus() == CustomerStatus::DURING_A_TRIP)
-			std::cout << "\n" << "9) Status: during a trip\n";
+			std::cout << "\n" << "8) Status: during a trip\n";
 	}
 }
 
@@ -246,11 +248,6 @@ void Customer::SetPhoneNumber(std::string phone_number)
 }
 
 
-std::string  Customer::GetNameOfCompany()
-{
-	return name_of_company;
-}
-
 
 int Customer::GetPersonalId()
 {
@@ -269,10 +266,10 @@ CustomerStatus Customer::GetStatus()
 	if (this->trip == nullptr)
 		return CustomerStatus::WITHOUT_TRIP;
 	else
-		if (this->trip->GetStatus() == TripStatus::PURCHASED)
+		if (this->trip->GetStatus() == TripStatus::SOLD)
 			return CustomerStatus::WITH_TRIP;
-		else if (this->trip->GetStatus() == TripStatus::USING)
+		else if (this->trip->GetStatus() == TripStatus::IN_PROGRESS)
 			return CustomerStatus::DURING_A_TRIP;
-		else if (this->trip->GetStatus() == TripStatus::USED)
+		else if (this->trip->GetStatus() == TripStatus::FINISHED)
 			return CustomerStatus::WITHOUT_TRIP;
 }

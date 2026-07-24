@@ -1,6 +1,8 @@
-#include "Trip.h"
+#include <iostream>
 #include <ctime>
 #include <time.h>
+
+#include "Trip.h"
 
 std::vector<int> Trip::Identifiers;
 double Trip::total_price = 0;
@@ -131,7 +133,7 @@ void Trip::ShowInfo()
 	std::cout << "\n6) Duration: " << GetDateDifference(this->date_of_start, this->date_of_end) << " days ";
 	std::cout << "\n7) Price: " << price << " grn.";
 	std::cout << "\n8) Id: " << personal_id;
-	if (GetStatus() == TripStatus::PURCHASED) {
+	if (GetStatus() == TripStatus::SOLD) {
 		std::cout << "\n9) Customer who bought this tour: " << name_of_customer;
 		std::cout << "\n10) Manager who sold this tour: " << name_of_manager << "\n";
 	}
@@ -715,7 +717,7 @@ TripStatus Trip::GetStatus()
 	if (this->date_of_booking == "-") {
 
 		if (GetDateDifference(this->date_of_start) > 0)
-			return TripStatus::SELLING;
+			return TripStatus::ON_SALE;
 
 		else if (GetDateDifference(this->date_of_start) <= 0)
 			return TripStatus::EXPIRED;
@@ -723,13 +725,13 @@ TripStatus Trip::GetStatus()
 	else
 	{
 		if (GetDateDifference(this->date_of_start) > 0)
-			return TripStatus::PURCHASED;
+			return TripStatus::SOLD;
 		
 		else if ((GetDateDifference(this->date_of_start) <= 0) && (GetDateDifference(this->date_of_end) >=0 ))
-			return TripStatus::USING;
+			return TripStatus::IN_PROGRESS;
 		
 		else if (GetDateDifference(this->date_of_end) < 0)
-			return TripStatus::USED;
+			return TripStatus::FINISHED;
 	}
 }
 

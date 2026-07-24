@@ -1,61 +1,61 @@
 #pragma once
-#include "Trip.h" // Person.h +  <iostream> + <string> + <vector> + <list> 
+#include <memory>
 
-// перелік статусів клієнта 
+#include "Person.h"
+class Trip;
+
+// Status of the customer
 enum class CustomerStatus {
-	WITHOUT_TRIP, // клієнт без путівки
-	WITH_TRIP, // клієнт має путівку
-	DURING_A_TRIP // клієнт поїхав у подорож
+	WITHOUT_TRIP, 
+	WITH_TRIP, // customer have a trip, wich hasn`t started yet
+	DURING_A_TRIP // customer in the trip now
 };
 
 class Customer : public Person {
 	friend class Manager;
 
 private:
-	std::string address; // адреса проживання
-	int count_of_bought_trips; // кількісь куплених путівок за весь час
-	std::shared_ptr<Trip> trip; // придбана путівка
-	std::string name_of_manager; // Їм'я менеджера, яким клієнт був обслуговуваний
+	std::string address; // where customer lives
+	int count_of_bought_trips; 
+	std::shared_ptr<Trip> trip; 
+    std::string name_of_manager; // manager who serviced currrent trip
 
 	void BuyTrip(std::shared_ptr<Trip>& trip); // метод фіксації купівлі путівки
 	void ReturnTrip(); // метод фіксації поверненя путівки
 
 public:
 
-	// конструктор з параметрами
 	Customer(const std::string name = "-", const std::string phone_number = "-", const std::string address = "-", int count_of_bought_trips = 0, const int personal_id = 0,  const std::shared_ptr<Trip>& trip = nullptr);
-	Customer(const Customer& customer); // Констуктор копіювання
-	~Customer() override; // деструктор
+	Customer(const Customer& customer); 
+    ~Customer() override; 
 
-	void ShowInfo() override; // метод для виводу повної інформації про об'єкт.
+	void ShowInfo() override; 
 
-	std::string GetFullName() const; // метод для отримання повного імені (ПІБ).
-	void SetFullName(std::string name); // метод для встановлення повного імені (ПІБ).
+	std::string GetFullName() const;
+	void SetFullName(std::string name); 
 	
-	std::string GetFirstName(); // метод для отримання ім'я.
-	void SetFirstName(std::string first_name); // метод для встановлення ім'я.
+	std::string GetFirstName(); 
+	void SetFirstName(std::string first_name); 
+
+	std::string GetSecondName(); 
+	void SetSecondName(std::string second_name); 
 	
-	std::string GetSecondName(); // метод для отримання призвища.
-	void SetSecondName(std::string second_name); // метод для встановлення призвища.
-	
-	std::string GetPatronymicName(); // метод для отримання по-батькові.
-	void SetPatronymicName(std::string patronymic_name); // метод для встановлення по-батькові.
+	std::string GetPatronymicName();
+	void SetPatronymicName(std::string patronymic_name); 
 
-	std::string GetPhoneNumber(); // метод для отримання номера телефона.
-	void SetPhoneNumber(std::string phone_number); // метод для встановлення номера телефона.
+	std::string GetPhoneNumber();
+	void SetPhoneNumber(std::string phone_number);
 
-	std::string GetAddress(); // метод для отримання адреса проживання.
-	void SetAddress(std::string address); // метод для встановлення адреса проживання.
+	std::string GetAddress(); 
+	void SetAddress(std::string address); 
 
-	static std::string GetNameOfCompany(); // метод для отримання назви компанії.
-	
-	int GetCountOfBoughtTrips(); // метод для отримання кількості придбаних путівок за весь час.
+	int GetCountOfBoughtTrips(); 
 
-	int GetPersonalId(); // метод для отримання персонального ідентифікатора.
+	int GetPersonalId();  
 
-	std::shared_ptr<Trip>& GetTrip(); // метод для отримання придбаної путівки.
+	std::shared_ptr<Trip>& GetTrip(); // returns current trip
 
-	std::string GetNameOfManager(); // метод для отримання імені менеджера, яким клієнт був обслуговуваний.
+	std::string GetNameOfManager(); //return the name of the manager who serviced currrent trip
 
-	CustomerStatus GetStatus(); // метод для отримання поточного статусу клієнта.
+	CustomerStatus GetStatus(); // return the current status of the customer
 };

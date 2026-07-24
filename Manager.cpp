@@ -1,4 +1,7 @@
 #include "Manager.h"
+#include <iostream>
+#include "Trip.h"
+#include "Customer.h"
 
 
 Manager::Manager(const std::string name, const std::string phone_number, const int personal_id) :Person("MANAGER", name, phone_number, personal_id) {
@@ -14,15 +17,14 @@ void Manager::ShowInfo()
 {
 	std::cout << "\n\n" << "1) Name: " << (second_name + ' ' + first_name + ' ' + patronymic_name);
 	std::cout << "\n" << "2) Phone number: " << phone_number;
-	std::cout << "\n" << "3) Name of the company: " << name_of_company;
-	std::cout << "\n" << "4) Id of manager: " << personal_id << "\n";
+	std::cout << "\n" << "3) Id of manager: " << personal_id << "\n";
 }
 
 
 
 void Manager::SaleTheTrip(std::shared_ptr<Customer>& customer, std::shared_ptr<Trip>& trip) {
 
-	if (trip->GetStatus() == TripStatus::PURCHASED || trip->GetStatus() == TripStatus::USING) {
+	if (trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS) {
 		std::cout << "The trip \"" << trip->GetFullName() << "\" is already bought by" << trip->GetNameOfCustomer()<< "\n";
 		return;
 	}
@@ -31,7 +33,7 @@ void Manager::SaleTheTrip(std::shared_ptr<Customer>& customer, std::shared_ptr<T
 		return;
 	}
 
-	trip->SetDataOfPurchase(this->second_name + ' ' + this->first_name + ' ' + this->patronymic_name, customer->GetFullName());
+	trip->SetDataOfPurchase(GetFullName(), customer->GetFullName());
 
 	customer->BuyTrip(trip);
 }
@@ -214,16 +216,6 @@ void Manager::SetPhoneNumber(std::string phone_number)
 		this->phone_number = phone_number;
 		PhoneNumbers.emplace_back(this->phone_number);
 	}
-}
-
-std::string Manager::GetNameOfCompany()
-{
-	return name_of_company;
-}
-
-void Manager::SetNameOfCompany(std::string name)
-{
-	name_of_company = name;
 }
 
 int Manager::GetPersonalId()

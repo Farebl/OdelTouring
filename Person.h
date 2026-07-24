@@ -1,10 +1,7 @@
 #pragma once
 
-#include <iostream>
 #include <string>
 #include <vector>
-#include <climits>
-
 
 class Person {
 protected:
@@ -12,8 +9,6 @@ protected:
 	std::string phone_number; 
 	int personal_id; 
 	
-    static std::string name_of_company;
-
 	static std::vector<int> Identifiers; 
     static std::vector<std::string> PhoneNumbers;
 

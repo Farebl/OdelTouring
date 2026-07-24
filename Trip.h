@@ -1,83 +1,82 @@
 #pragma once
-#include "Person.h" // <iostream> + <string> + <vector> 
 #include <list>
 #include <memory>
+#include <vector> 
 
-// перелік статусів путівки
 enum class TripStatus {
-	SELLING, // путівка у продажі
-	PURCHASED, // путівка продана
-	USING, // путівка використовується (подорож почалася)
-	USED, // путівка використана (подорож закінчилася)
-	EXPIRED // путівка прострочена (подорож почалася, проте путівка не придбана)
+    ON_SALE,
+	SOLD, 
+    IN_PROGRESS, 
+	FINISHED, 
+	EXPIRED 
 };
 
 class Trip
 {
 	friend class Manager;
-	friend void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string path); // метод для зчитування даних про путівки з файлу
+	friend void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string path); // read all trips from storage
 
 private:
-	std::string name; // назва путівки
-	std::string country; // країна путівки
-	std::string city; // місто путівки
-	std::string date_of_start; // дата початку путівки
-	std::string date_of_end; // дата завершення путівки
+	std::string name; 
+	std::string country; 
+	std::string city; 
+	std::string date_of_start; 
+	std::string date_of_end; 
 	
-	double price; //ціна путівки
-	int personal_id; // персональний індентифікатор
+	double price; 
+	int personal_id; 
 
-	std::string name_of_customer;// ім'я клієнта, який придбав цю путівку
-	std::string name_of_manager; // ім'я менеджера, який продав цю путівку
-	std::string date_of_booking; // дата придбання путівки
+	std::string name_of_customer;
+	std::string name_of_manager; 
+	std::string date_of_booking; 
 
-	static int total_duration; // загальна тривалість подорожей
-	static double total_price; // загальна вартість подорожей
-	static std::vector<int> Identifiers; // коллекція персональних індентифікаторів
+	static int total_duration; 
+	static double total_price; 
+	static std::vector<int> Identifiers; 
 
-	void SetDataOfPurchase(std::string name_of_manager, std::string name_of_customer); // метод фіксації купівлі путівки
+	void SetDataOfPurchase(std::string name_of_manager, std::string name_of_customer);
 
-	void Return(); // метод фіксації повернення путівки
+	void Return(); 
 
-	int GetDateDifference(const std::string firstDate, const std::string secondDate = "today"); // метод для отримання різниці між двома датами
+	int GetDateDifference(const std::string firstDate, const std::string secondDate = "today");
 
 public:
 	Trip(std::string name = "-", std::string country = "-", std::string city = "-", std::string date_of_start = "-", std::string date_of_end = "-", double price = 0, int personal_id = 0, std::string name_of_customer = "-", std::string name_of_manager = "-", std::string date_of_booking = "-");
 
-	Trip(const Trip& trip); // Констуктор копіювання
+	Trip(const Trip& trip); 
 
-	~Trip(); // деструктор
+	~Trip(); 
 
-	void ShowInfo(); // метод для виводу повної інформації про об'єкт.
+	void ShowInfo(); 
 
-	std::string GetFullName(); // метод для отримання повної назви.
-	void SetFullName(std::string name); // метод для встановлення повної назви.
+	std::string GetFullName(); 
+	void SetFullName(std::string name); 
 
-	std::string GetCountry(); // метод для отримання назви країни.
-	void SetCountry(std::string country); // метод для встановлення назви країни.
+	std::string GetCountry(); 
+	void SetCountry(std::string country); 
 	 
-	std::string GetCity(); // метод для отримання назви міста.
-	void SetCity(std::string city); // метод для встановлення назви міста.
+	std::string GetCity(); 
+    void SetCity(std::string city); 
 
-	std::string GetDateOfStart(); // метод для отримання дати початку.
-	void SetDateOfStart(std::string date_of_start); // метод для встановлення дати початку.
+	std::string GetDateOfStart(); 
+	void SetDateOfStart(std::string date_of_start); 
 
-	std::string GetDateOfEnd(); // метод для отримання дати закінчення.
-	void SetDateOfEnd(std::string date_of_end);  // метод для встановлення дати закінчення.
+	std::string GetDateOfEnd(); 
+	void SetDateOfEnd(std::string date_of_end); 
 
-	int GetDuration(); // метод для отримання тривалості (в днях).
+	int GetDuration(); 
 
-	double GetPrice(); // метод для отримання вартості (в UAH).
-	void SetPrice(double price); // метод для встановлення вартості (в UAH).
+	double GetPrice(); 
+    void SetPrice(double price); 
 
-	int GetPersonalId(); // метод для отримання персонального ідентифікатора.
+	int GetPersonalId(); 
 
-	TripStatus GetStatus(); // метод для отримання поточного статусу путівки.
+	TripStatus GetStatus();
 
-	std::string GetDateOfBooking(); // метод для отримання дати придбання путівки.
-	std::string GetNameOfCustomer(); // метод для отримання ім'я клієнта, який придбав цю путівку.
-	std::string GetNameOfManager(); // метод для отримання ім'я менеджера, який продав цю путівку.
+	std::string GetDateOfBooking(); // date when this trip was bought
+	std::string GetNameOfCustomer(); // customer, who bought this trip
+	std::string GetNameOfManager(); // manager who sold this trip
 	
-	static double GetAveragePrice();  // метод для отримання середньої вартості (в UAH).
-	static double GetAverageDuration(); // метод для отримання середньої тривалост (в днях).
+	static double GetAveragePrice(); 
+	static double GetAverageDuration();
 };

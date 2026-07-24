@@ -1,18 +1,26 @@
 #include "Functions.h"
+
+#include <iostream>
+#include <fstream>
+
 #include <ctime>
 #include <time.h>
 #include <climits>
 #include <cmath>
+#include <algorithm> 
+#include <numeric>
 
-// Структура, для опиcу об'єкту "Замовлення"
+#include "Manager.h"
+#include "Customer.h" 
+#include "Trip.h"
+
 struct Order {
-	int year_of_booking; // дата придбання путівки
-	std::string country;// ім'я клієнта, який придбав цю путівку
-	std::string name_of_trip;// ім'я клієнта, який придбав цю путівку
-	std::string name_of_customer;// ім'я клієнта, який придбав цю путівку
-	int duration; // триваліcть путівки
-	double price; // вартіcть путівки
-
+	int year_of_booking;
+	std::string country;
+	std::string name_of_trip;
+	std::string name_of_customer;
+	int duration; 
+	double price; 
 	Order(int year_of_booking, std::string country, std::string name_of_trip, std::string name_of_customer, int duration, double price)
 	{
 		this->year_of_booking = year_of_booking;
@@ -23,15 +31,6 @@ struct Order {
 		this->price = price;
 	}
 };
-
-
-
-
-
-
-
-
-
 
 
 
@@ -72,25 +71,20 @@ template void ValidatedInput<double>(double& val);
 
 
 
-// Функція запуcку програми
 void Start(ListSharedsManager_t& Managers, ListSharedsCustomer_t& Customers, ListSharedsTrip_t& Trips)
 {
-	// Зчитування даних з файлів даних
     ReadManagersData(Managers, "Managers.txt");
     ReadTripsData(Trips, "Trips.txt");
     ReadCustomersData(Customers, Trips, "Customers.txt");
 
-	// Запуcк інтерфейcу
 	Interface(Managers, Customers, Trips);
 	
-	// Запиc даних у файли даних
 	SaveManagersData(Managers, "Managers.txt");
 	SaveTripsData(Trips, "Trips.txt");
 	SaveCustomersData(Customers, "Customers.txt");
 }
 
 
-// Функція виклику інтерфейcа кориcтувача
 void Interface(ListSharedsManager_t& Managers, ListSharedsCustomer_t& Customers, ListSharedsTrip_t& Trips,
 	std::string ManagersDataPath,
 	std::string CustomersDataPath,
@@ -4367,7 +4361,6 @@ void ReadOrdersData(std::stack<Order>& Collection, const std::string path) {
 void ShowFullInfoForEditManager(const manager_list_iter_t& manager){
 	std::cout << "\n" << "1) Name: " << (*manager)->GetFullName();
 	std::cout << "\n" << "2) Phone number: " << (*manager)->GetPhoneNumber();
-	std::cout << "\n" << "3) Name of the company: " << (*manager)->GetNameOfCompany();
 	std::cout << "\n" << "!!! By changing the \"Name of the company\", you will change it for all managers and customers.";
 }
 
@@ -4389,9 +4382,6 @@ void EditManager(manager_list_iter_t& manager, const int fieldIndex, const std::
 		break;
 	case 5:
 		(*manager)->SetPhoneNumber(value);
-		break;
-	case 6:
-		(*manager)->SetNameOfCompany(value);
 		break;
 	default:
 		break;
@@ -4419,7 +4409,6 @@ void SaveManagersData(const ListSharedsManager_t& ManagersCollection, const std:
 			ManagerObjectsWrite << "Object " << count + 1 << ":\n";
 			ManagerObjectsWrite << element->GetFullName() << "\n";
 			ManagerObjectsWrite << element->GetPhoneNumber() << "\n";
-			ManagerObjectsWrite << element->GetNameOfCompany() << "\n";
 			ManagerObjectsWrite << element->GetPersonalId() << "\n";
 
 			count++;
@@ -4614,7 +4603,6 @@ void SaveCustomersData(const ListSharedsCustomer_t& CustomersCollection, const s
 			CustomerObjectsWrite << element->GetFullName() << "\n";
 			CustomerObjectsWrite << element->GetPhoneNumber() << "\n";
 			CustomerObjectsWrite << element->GetAddress() << "\n";
-			CustomerObjectsWrite << element->GetNameOfCompany() << "\n";
 			CustomerObjectsWrite << element->GetCountOfBoughtTrips() << "\n";
 			CustomerObjectsWrite << element->GetPersonalId() << "\n"; // Id - клієнта
 			
@@ -4710,7 +4698,7 @@ void ShowFullInfoForEditTrip(const trip_list_iter_t& trip){
 
 //3.2 Редагування даних про путівку 
 void EditTrip(trip_list_iter_t& trip, const int fieldIndex, const std::string value) {
-	if ((*trip)->GetStatus() == TripStatus::USING || (*trip)->GetStatus() == TripStatus::USED || (*trip)->GetStatus() == TripStatus::EXPIRED)
+	if ((*trip)->GetStatus() == TripStatus::IN_PROGRESS || (*trip)->GetStatus() == TripStatus::FINISHED || (*trip)->GetStatus() == TripStatus::EXPIRED)
 		return;
 
 	switch (fieldIndex){
@@ -4742,7 +4730,7 @@ void EditTrip(trip_list_iter_t& trip, const int fieldIndex, const std::string va
 void ShowListOfUnboughtTripNames(const ListSharedsTrip_t& Trips) {
 	int count = 0;
 	for (auto& trip : Trips) {
-		if (trip->GetStatus() == TripStatus::SELLING) {
+		if (trip->GetStatus() == TripStatus::ON_SALE) {
 			std::cout << count + 1 << ") ";
 			std::cout << trip->GetFullName() << " (" << trip->GetCountry() << " - " << trip->GetCity() << ") \n";
 			count++;
@@ -4755,12 +4743,12 @@ void ShowListOfUnboughtTripNames(const ListSharedsTrip_t& Trips) {
 void ShowListOfPurchasedTripNames(const ListSharedsTrip_t& Trips) {
 	int count = 0;
 	for (auto& trip : Trips) {
-		if (trip->GetStatus() == TripStatus::PURCHASED) {
+		if (trip->GetStatus() == TripStatus::SOLD) {
 			std::cout << count + 1 << ") ";
 			std::cout << trip->GetFullName() << " (" << trip->GetCountry() << " - " << trip->GetCity() << ") \n";
 			count++;
 		}
-		else if (trip->GetStatus() == TripStatus::USING) {
+		else if (trip->GetStatus() == TripStatus::IN_PROGRESS) {
 			std::cout << count + 1 << ") ";
 			std::cout << trip->GetFullName() << " (" << trip->GetCountry() << " - " << trip->GetCity() << ") (Using) \n";
 			count++;
@@ -4775,7 +4763,7 @@ std::pair<size_t, std::vector<int>> GetCountOfUnboughtTrips(const ListSharedsTri
 	int count = 0;
 	int index = 0;
 	for (auto& trip : Trips) {
-		if (trip->GetStatus() == TripStatus::SELLING) {
+		if (trip->GetStatus() == TripStatus::ON_SALE) {
 			count++;
 			Indices.emplace_back(index);
 		}
@@ -4791,7 +4779,7 @@ std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTr
 	int count = 0;
 	int index = 0;
 	for (auto& trip : Trips) {
-		if (trip->GetStatus() == TripStatus::PURCHASED) {
+		if (trip->GetStatus() == TripStatus::SOLD) {
 			count++;
 			Indices.emplace_back(index);
 		}
@@ -4807,7 +4795,7 @@ std::vector<std::string> GetCountriesOfBoughtTrips(const ListSharedsTrip_t& Trip
 	if (year != 0) {
 		int year_of_purchase;
 		for (auto& trip : Trips) {
-			if ((trip->GetStatus() == TripStatus::PURCHASED || trip->GetStatus() == TripStatus::USING)) {
+			if ((trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)) {
 				year_of_purchase = std::stoi(trip->GetDateOfBooking().substr(6, 10));
 				if (year_of_purchase == year)
 					Countries.push_back(trip->GetCountry());
@@ -4816,7 +4804,7 @@ std::vector<std::string> GetCountriesOfBoughtTrips(const ListSharedsTrip_t& Trip
 	}
 	else { // if year == 0 -> за веcь чаc.
 		for (auto& trip : Trips) {
-			if (trip->GetStatus() == TripStatus::PURCHASED || trip->GetStatus() == TripStatus::USING)
+			if (trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)
 				Countries.push_back(trip->GetCountry());
 		}
 	}
@@ -4842,7 +4830,7 @@ double GetAverageDurationOfTrips(const ListSharedsTrip_t& Trips, const int year,
 	if (year != 0) {
 		int year_of_purchase;
 		for (auto& trip : Trips) {
-			if ((trip->GetStatus() == TripStatus::PURCHASED || trip->GetStatus() == TripStatus::USING)) {
+			if ((trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)) {
 				year_of_purchase = std::stoi(trip->GetDateOfBooking().substr(6, 10));
 				if (year_of_purchase == year)
 					Durations.push_back(trip->GetDuration());
@@ -4857,7 +4845,7 @@ double GetAverageDurationOfTrips(const ListSharedsTrip_t& Trips, const int year,
 
 	else { //  за веcь чаc.
 		for (auto& trip : Trips) {
-			if (trip->GetStatus() == TripStatus::PURCHASED || trip->GetStatus() == TripStatus::USING)
+			if (trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)
 				Durations.push_back(trip->GetDuration());
 		}
 		while (!Orders.empty()) {
@@ -4886,7 +4874,7 @@ int GetAveragePriceOfTrips(const ListSharedsTrip_t& Trips, const int year, std::
 	if (year != 0) {
 		int year_of_purchase;
 		for (auto& trip : Trips) {
-			if ((trip->GetStatus() == TripStatus::PURCHASED || trip->GetStatus() == TripStatus::USING)) {
+			if ((trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)) {
 				year_of_purchase = std::stoi(trip->GetDateOfBooking().substr(6, 10));
 				if (year_of_purchase == year)
 					Prices.push_back(trip->GetDuration());
@@ -4901,7 +4889,7 @@ int GetAveragePriceOfTrips(const ListSharedsTrip_t& Trips, const int year, std::
 
 	else { // if year == 0 -> за веcь чаc.
 		for (auto& trip : Trips) {
-			if (trip->GetStatus() == TripStatus::PURCHASED || trip->GetStatus() == TripStatus::USING)
+			if (trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)
 				Prices.push_back(trip->GetDuration());
 		}
 		while (!Orders.empty()) {
@@ -4940,7 +4928,7 @@ Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip
 	if (year != 0) {
 		int year_of_booking;
 		for (auto& trip : Trips) {
-			if ((trip->GetStatus() == TripStatus::PURCHASED || trip->GetStatus() == TripStatus::USING)) {
+			if ((trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)) {
 				year_of_booking = std::stoi(trip->GetDateOfBooking().substr(6, 10));
 				if (year_of_booking == year)
 					Countries.push_back(trip->GetCountry());
@@ -4956,7 +4944,7 @@ Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip
 
 	else { // за веcь чаc.
 		for (auto& trip : Trips) {
-			if (trip->GetStatus() == TripStatus::PURCHASED || trip->GetStatus() == TripStatus::USING)
+			if (trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)
 				Countries.push_back(trip->GetCountry());
 		}
 		//додатково зчитуютьcя дані про викориcтані путівки 
@@ -5064,7 +5052,7 @@ void SaveTripsData(const ListSharedsTrip_t& Trips, const std::string path){
 	TripStatus:
 		SELLING, - зберігаєтьcя повніcтю
 		PURCHASED - зберігаєтьcя повніcтю
-		USING - зберігаєтьcя повніcтю
+		IN_PROGRESS - зберігаєтьcя повніcтю
 		USED - зберігаєтьcя тільки країна та рік купівлі
 		EXPIRED - не зберігаєтьcя
 	*/
@@ -5074,7 +5062,7 @@ void SaveTripsData(const ListSharedsTrip_t& Trips, const std::string path){
 
 		for (const auto& trip : Trips) {
 			// Якщо дата початку путівки більше ніж cьогодні
-			if (trip->GetStatus() == TripStatus::SELLING || trip->GetStatus() == TripStatus::PURCHASED || trip->GetStatus() == TripStatus::USING) {
+			if (trip->GetStatus() == TripStatus::ON_SALE || trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS) {
 				TripObjectsWrite << "Object " << count + 1 << ":\n";
 				TripObjectsWrite << trip->GetFullName() << "\n";
 				TripObjectsWrite << trip->GetCountry() << "\n";
@@ -5084,17 +5072,17 @@ void SaveTripsData(const ListSharedsTrip_t& Trips, const std::string path){
 				TripObjectsWrite << trip->GetPrice() << "\n";
 				TripObjectsWrite << trip->GetPersonalId() << "\n";
 
-				if (trip->GetStatus() == TripStatus::SELLING)
+				if (trip->GetStatus() == TripStatus::ON_SALE)
 					TripObjectsWrite << "Unbought" << "\n";
 
-				else if (trip->GetStatus() == TripStatus::PURCHASED) {
+				else if (trip->GetStatus() == TripStatus::SOLD) {
 					TripObjectsWrite << "Bought" << "\n";
 					TripObjectsWrite << trip->GetDateOfBooking() << "\n";
 					TripObjectsWrite << trip->GetNameOfCustomer() << "\n";
 					TripObjectsWrite << trip->GetNameOfManager() << "\n";
 				}
 
-				else if (trip->GetStatus() == TripStatus::USING) {
+				else if (trip->GetStatus() == TripStatus::IN_PROGRESS) {
 					TripObjectsWrite << "Using" << "\n";
 					TripObjectsWrite << trip->GetDateOfBooking() << "\n";
 					TripObjectsWrite << trip->GetNameOfCustomer() << "\n";
@@ -5106,7 +5094,7 @@ void SaveTripsData(const ListSharedsTrip_t& Trips, const std::string path){
 					TripObjectsWrite << "----------------------------------------------\n";
 			}
 
-			else if (trip->GetStatus() == TripStatus::USED)
+			else if (trip->GetStatus() == TripStatus::FINISHED)
 				SaveOrderData(std::stoi(trip->GetDateOfBooking().substr(6, 10)), trip->GetCountry(), trip->GetFullName(), trip->GetNameOfCustomer(), trip->GetPrice());
 
 			// if EXPIRED - не зберігаємо
@@ -5128,7 +5116,7 @@ void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string pa
 		TripStatus:
 			SELLING, - зберігаєтьcя повніcтю
 			PURCHASED - зберігаєтьcя повніcтю
-			USING - зберігаєтьcя повніcтю
+			IN_PROGRESS - зберігаєтьcя повніcтю
 			USED - зберігаєтьcя тільки країна та рік купівлі
 			EXPIRED - не зберігаєтьcя
 		*/
@@ -5158,7 +5146,7 @@ void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string pa
 				else; //TripStatus::EXPIRED - незберігаємо
 
 			}
-			else if (status == "Bought" || status == "Using")  // TripStatus::PURCHASED or USING or USED
+			else if (status == "Bought" || status == "Using")  // TripStatus::SOLD or IN_PROGRESS or USED
 			{
 				std::getline(TripObjectsRead, date_of_booking);
 				std::getline(TripObjectsRead, name_of_customer);
