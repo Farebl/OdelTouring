@@ -1,5 +1,6 @@
 .clangd
 *.txt
+*.sh
 !CMakeLists.txt
 
 build/

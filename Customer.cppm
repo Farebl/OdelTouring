@@ -1,12 +1,12 @@
-
 module;
 
 #include <iostream>
 #include <memory>
-#include "Trip.h"
 
-export module Customer;
-export import Person;
+export module CustomerManagerTrip:Customer;
+
+import Person;
+export import :Trip;
 
 
 // Status of the customer

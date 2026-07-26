@@ -1,17 +1,50 @@
-#include "Manager.h"
-#include <iostream>
-#include "Trip.h"
+module;
+
+#include <iostream> 
+#include <memory>
+
+export module CustomerManagerTrip:Manager;
+import Person;
+import :Customer;
+
+
+export class Manager : public Person {
+public:
+	Manager(const std::string name = "-", const std::string phone_number = "-", const int personal_id = 0);
+	Manager(const Manager& manager); 
+	~Manager() override; 
+
+	void ShowInfo() override; 
+
+	void SaleTheTrip(std::shared_ptr<Customer>& customer, std::shared_ptr<Trip>& trip);
+	void ReturnTheTrip(std::shared_ptr<Customer>& customer); 
+	
+    std::string GetFullName() const; 
+	void SetFullName(std::string name); 
+
+	std::string GetFirstName();
+	void SetFirstName(std::string first_name);
+
+	std::string GetSecondName(); 
+    void SetSecondName(std::string second_name);
+
+	std::string GetPatronymicName(); 
+	void SetPatronymicName(std::string patronymic_name); 
+
+	std::string GetPhoneNumber(); 
+    void SetPhoneNumber(std::string phone_number); 
+
+	int GetPersonalId(); 
+};
 
 
 
-Manager::Manager(const std::string name, const std::string phone_number, const int personal_id) :Person("MANAGER", name, phone_number, personal_id) {
-}
+Manager::Manager(const std::string name, const std::string phone_number, const int personal_id) :Person("MANAGER", name, phone_number, personal_id) {}
 
-Manager::Manager(const Manager& manager) : Person("MANAGER", manager.GetFullName(), manager.phone_number) {
-}
+Manager::Manager(const Manager& manager) : Person("MANAGER", manager.GetFullName(), manager.phone_number) {}
 
-Manager::~Manager() {
-}
+Manager::~Manager() {}
+
 
 void Manager::ShowInfo()
 {

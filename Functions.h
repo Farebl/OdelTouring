@@ -1,15 +1,13 @@
 #pragma once
 
+
 #include <memory>
 
 #include <list>
 #include <stack>
 #include <vector>
 
-import Customer;
-
-class Manager;
-class Trip;
+import CustomerManagerTrip;
 
 struct Order;
 
@@ -23,9 +21,6 @@ using trip_list_iter_t = std::list<std::shared_ptr<Trip>>::iterator;
 
 using Countries_Count_Year_AllCountYear = std::pair <std::pair<std::vector<std::string>, int>, std::pair<int, int>>;
 
-
-// Функція запуску програми
-void Start(ListSharedsManager_t& Managers, ListSharedsCustomer_t& Customers, ListSharedsTrip_t& Trips);
 
 // Функція виклику інтерфейса користувача
 void Interface(ListSharedsManager_t& Managers, ListSharedsCustomer_t& Customers, ListSharedsTrip_t& Trips, 
