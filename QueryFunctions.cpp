@@ -1,4 +1,6 @@
-#include "Functions.h"
+module;
+
+
 
 #include <iostream>
 #include <fstream>
@@ -7,57 +9,19 @@
 #include <time.h>
 #include <climits>
 #include <cmath>
-#include <algorithm> 
+
+#include <memory>
 #include <numeric>
+#include <algorithm>
+
+#include <stack>
+#include <vector>
+#include <list>
+
+module Functions; // Р’РєР°Р·СѓС”РјРѕ Р“РћР›РћР’РќРР™ РјРѕРґСѓР»СЊ
+import :QueryFunctions; // Р†РјРїРѕСЂС‚СѓС”РјРѕ СЃРІРѕСЋ Р¶ РїР°СЂС‚РёС†С–СЋ, С‰РѕР± Р±Р°С‡РёС‚Рё С—С— РѕРіРѕР»РѕС€РµРЅРЅСЏ
 
 
-struct Order {
-	int year_of_booking;
-	std::string country;
-	std::string name_of_trip;
-	std::string name_of_customer;
-	int duration; 
-	double price; 
-	Order(int year_of_booking, std::string country, std::string name_of_trip, std::string name_of_customer, int duration, double price)
-	{
-		this->year_of_booking = year_of_booking;
-		this->country = country;
-		this->name_of_trip = name_of_trip;
-		this->name_of_customer = name_of_customer;
-		this->duration = duration;
-		this->price = price;
-	}
-};
-
-
-
-
-
-
-template<typename T>
-void ValidatedInput(T& val) {
-    while (true) {
-        std::cin >> val;
-        if (std::cin.fail())
-        {
-            std::cout << "\n\nYou may have entered wrong value. Try again.\n";
-            std::cin.clear(); // 
-            std::cin.ignore(LLONG_MAX, '\n');
-        }
-        else
-            break;
-    }
-    std::cin.ignore(INT_MAX, '\n');
-}
-
-
-template void ValidatedInput<bool>(bool& val); 
-template void ValidatedInput<char>(char& val); 
-template void ValidatedInput<int>(int& val); 
-template void ValidatedInput<unsigned long>(unsigned long& val); 
-template void ValidatedInput<float>(float& val); 
-template void ValidatedInput<double>(double& val); 
-template void ValidatedInput<std::string>(std::string& val); 
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -67,26 +31,10 @@ template void ValidatedInput<std::string>(std::string& val);
 // 0 General Fucntions:
 
 
-//0.1 Вивід cпиcка менеджерів, клієнтів, путівок, тощо.
-template<typename T>
-void ShowListOfCollectionElementNames(const std::list<std::shared_ptr<T>>& Collection) {
-	if (Collection.empty())
-		return;
-
-	int index = 1;
-	for ( auto& element:Collection) {
-		std::cout << index << ") ";
-		std::cout << element->GetFullName() << " \n";
-		index++;
-	}
-}
-template void ShowListOfCollectionElementNames<Manager>(const std::list<std::shared_ptr<Manager>>& Collection);
-template void ShowListOfCollectionElementNames<Customer>(const std::list<std::shared_ptr<Customer>>& Collection);
-template void ShowListOfCollectionElementNames<Trip>(const std::list<std::shared_ptr<Trip>>& Collection);
- 
+//0.1 Г‚ГЁГўВіГ¤ cГЇГЁcГЄГ  Г¬ГҐГ­ГҐГ¤Г¦ГҐГ°ВіГў, ГЄГ«ВіВєГ­ГІВіГў, ГЇГіГІВіГўГ®ГЄ, ГІГ®Г№Г®.
 
 
-//0.2 Отримання різниці між двома датами формату "dd/mm/yyyy"
+//0.2 ГЋГІГ°ГЁГ¬Г Г­Г­Гї Г°ВіГ§Г­ГЁГ¶Ві Г¬ВіГ¦ Г¤ГўГ®Г¬Г  Г¤Г ГІГ Г¬ГЁ ГґГ®Г°Г¬Г ГІГі "dd/mm/yyyy"
 int GetDateDifference(const std::string firstDate, const std::string secondDate)
 {
 	std::time_t mytime = std::time(NULL);
@@ -96,30 +44,30 @@ int GetDateDifference(const std::string firstDate, const std::string secondDate)
 
 	int day_1, month_1, year_1, day_2, month_2, year_2;
 
-	std::tm time_1 = {}; // щоб уcі поля = 0
-	std::tm time_2 = {}; // щоб уcі поля = 0
-	std::time_t tt; // для збереження інформації про cекунди, як cплинули з 01/01/1970
+	std::tm time_1 = {}; // Г№Г®ГЎ ГіcВі ГЇГ®Г«Гї = 0
+	std::tm time_2 = {}; // Г№Г®ГЎ ГіcВі ГЇГ®Г«Гї = 0
+	std::time_t tt; // Г¤Г«Гї Г§ГЎГҐГ°ГҐГ¦ГҐГ­Г­Гї ВіГ­ГґГ®Г°Г¬Г Г¶ВіВї ГЇГ°Г® cГҐГЄГіГ­Г¤ГЁ, ГїГЄ cГЇГ«ГЁГ­ГіГ«ГЁ Г§ 01/01/1970
 
 	if (secondDate == "today") {
 		std::time_t mytime = std::time(NULL);
 		std::tm now;
 		gmtime_r(&mytime, &now);
 
-		// Це потрібно для більш точного результату
+		// Г–ГҐ ГЇГ®ГІГ°ВіГЎГ­Г® Г¤Г«Гї ГЎВіГ«ГјГё ГІГ®Г·Г­Г®ГЈГ® Г°ГҐГ§ГіГ«ГјГІГ ГІГі
 		day_1 = now.tm_mday;
 		month_1 = now.tm_mon + 1;
 		year_1 = now.tm_year + 1900;
 
-		time_1.tm_year = year_1 - 1900; //tm_year є [1900, наш рік]
-		time_1.tm_mon = month_1 - 1;   //tm_mon є [0, 11]
+		time_1.tm_year = year_1 - 1900; //tm_year Вє [1900, Г­Г Гё Г°ВіГЄ]
+		time_1.tm_mon = month_1 - 1;   //tm_mon Вє [0, 11]
 		time_1.tm_mday = day_1;
 
 		day_2 = std::stoi(firstDate.substr(0, 2));
 		month_2 = std::stoi(firstDate.substr(3, 2));
 		year_2 = std::stoi(firstDate.substr(6, 4));
 
-		time_2.tm_year = year_2 - 1900; //tm_year є [1900, наш рік]
-		time_2.tm_mon = month_2 - 1;   //tm_mon є [0, 11]
+		time_2.tm_year = year_2 - 1900; //tm_year Вє [1900, Г­Г Гё Г°ВіГЄ]
+		time_2.tm_mon = month_2 - 1;   //tm_mon Вє [0, 11]
 		time_2.tm_mday = day_2;
 
 		tt = std::mktime(&time_1);
@@ -140,12 +88,12 @@ int GetDateDifference(const std::string firstDate, const std::string secondDate)
 		month_2 = std::stoi(secondDate.substr(3, 2));
 		year_2 = std::stoi(secondDate.substr(6, 4));
 
-		time_1.tm_year = year_1 - 1900; //tm_year є [1900, наш рік]
-		time_1.tm_mon = month_1 - 1;   //tm_mon є [0, 11]
+		time_1.tm_year = year_1 - 1900; //tm_year Вє [1900, Г­Г Гё Г°ВіГЄ]
+		time_1.tm_mon = month_1 - 1;   //tm_mon Вє [0, 11]
 		time_1.tm_mday = day_1;
 
-		time_2.tm_year = year_2 - 1900; // tm_year отcчитывает от 1900 года
-		time_2.tm_mon = month_2 - 1;   // tm_mon начинаетcя c 0
+		time_2.tm_year = year_2 - 1900; // tm_year Г®ГІcГ·ГЁГІГ»ГўГ ГҐГІ Г®ГІ 1900 ГЈГ®Г¤Г 
+		time_2.tm_mon = month_2 - 1;   // tm_mon Г­Г Г·ГЁГ­Г ГҐГІcГї c 0
 		time_2.tm_mday = day_2;
 
 		tt = std::mktime(&time_1);
@@ -160,7 +108,7 @@ int GetDateDifference(const std::string firstDate, const std::string secondDate)
 
 
 
-//0.4 Запиc повідомлення у файл.txt
+//0.4 Г‡Г ГЇГЁc ГЇГ®ГўВіГ¤Г®Г¬Г«ГҐГ­Г­Гї Гі ГґГ Г©Г«.txt
 void SaveMessage(const std::string msg, const std::string path) {
 	std::fstream MessageWrite;
 	MessageWrite.open(path, std::fstream::out | std::fstream::app);
@@ -173,17 +121,17 @@ void SaveMessage(const std::string msg, const std::string path) {
 
 		MessageWrite << now.tm_year + 1900 << "-" << now.tm_mon + 1 << "-" << now.tm_mday << " ";
 		MessageWrite << now.tm_hour + 3 << ":" << now.tm_min << ":" << now.tm_sec;
-		MessageWrite << "\t—\t" << msg << "\n\n";
+		MessageWrite << "\tВ—\t" << msg << "\n\n";
 	}
 	MessageWrite.close();
 }
 
 
-//0.5 Очищення конcолі 
+//0.5 ГЋГ·ГЁГ№ГҐГ­Г­Гї ГЄГ®Г­cГ®Г«Ві 
 void ClearConsole() {std::system("cls");}
 
 
-//0.6 Отримання кількоcті замовлень (за веcь чаc або за роком)
+//0.6 ГЋГІГ°ГЁГ¬Г Г­Г­Гї ГЄВіГ«ГјГЄГ®cГІВі Г§Г Г¬Г®ГўГ«ГҐГ­Гј (Г§Г  ГўГҐcГј Г·Г c Г ГЎГ® Г§Г  Г°Г®ГЄГ®Г¬)
 int GetCountOfOrders(const int year, const std::string path){
 	std::stack<Order> Orders;
 	ReadOrdersData(Orders, path);
@@ -202,7 +150,7 @@ int GetCountOfOrders(const int year, const std::string path){
 }
 
 
-//0.7 Збереження даних про замовлення у файл.txt
+//0.7 Г‡ГЎГҐГ°ГҐГ¦ГҐГ­Г­Гї Г¤Г Г­ГЁГµ ГЇГ°Г® Г§Г Г¬Г®ГўГ«ГҐГ­Г­Гї Гі ГґГ Г©Г«.txt
 void SaveOrderData(const int year_of_booking, const std::string country, const std::string name_of_trip, const std::string name_of_customer, const double price, const std::string path){
 	std::fstream orderWrite;
 	orderWrite.open(path, std::fstream::app);
@@ -219,7 +167,7 @@ void SaveOrderData(const int year_of_booking, const std::string country, const s
 }
 
 
-//0.8 Зчитування даних про замовлення з файл.txt
+//0.8 Г‡Г·ГЁГІГіГўГ Г­Г­Гї Г¤Г Г­ГЁГµ ГЇГ°Г® Г§Г Г¬Г®ГўГ«ГҐГ­Г­Гї Г§ ГґГ Г©Г«.txt
 void ReadOrdersData(std::stack<Order>& Collection, const std::string path) {
 	std::ifstream ordersRead;
 	ordersRead.open(path, std::ios::in);
@@ -228,10 +176,10 @@ void ReadOrdersData(std::stack<Order>& Collection, const std::string path) {
 		std::cout << "Error: Could not open the file at the specified path to read orders data.\nSpecified path:" << path << "\n";
 	else {
 		std::string year_of_booking, country, name_of_trip, name_of_customer, duration, price, emptiness;
-		std::getline(ordersRead, emptiness); // зчитування порожнього рядка
+		std::getline(ordersRead, emptiness); // Г§Г·ГЁГІГіГўГ Г­Г­Гї ГЇГ®Г°Г®Г¦Г­ГјГ®ГЈГ® Г°ГїГ¤ГЄГ 
 
 		while (!ordersRead.eof()) {
-			std::getline(ordersRead, emptiness); // зчитування порожнього рядка
+			std::getline(ordersRead, emptiness); // Г§Г·ГЁГІГіГўГ Г­Г­Гї ГЇГ®Г°Г®Г¦Г­ГјГ®ГЈГ® Г°ГїГ¤ГЄГ 
 			std::getline(ordersRead, year_of_booking);
 			std::getline(ordersRead, country);
 			std::getline(ordersRead, name_of_trip);
@@ -250,18 +198,18 @@ void ReadOrdersData(std::stack<Order>& Collection, const std::string path) {
 
 
 
-// 1 Функції менеджера:
+// 1 Г”ГіГ­ГЄГ¶ВіВї Г¬ГҐГ­ГҐГ¤Г¦ГҐГ°Г :
 
 
-//1.1 Оформлення продажу
+//1.1 ГЋГґГ®Г°Г¬Г«ГҐГ­Г­Гї ГЇГ°Г®Г¤Г Г¦Гі
 // (*manager)->PlaceOrder(*customer, *trip);
 
 
-//1.2 Оформлення поверення товару
+//1.2 ГЋГґГ®Г°Г¬Г«ГҐГ­Г­Гї ГЇГ®ГўГҐГ°ГҐГ­Г­Гї ГІГ®ГўГ Г°Гі
 // (*manager)->ReturnTrip(*customer);
 
 
-//1.1 Вивід повної інформації про менеджера, для редагування даних про менеджера
+//1.1 Г‚ГЁГўВіГ¤ ГЇГ®ГўГ­Г®Вї ВіГ­ГґГ®Г°Г¬Г Г¶ВіВї ГЇГ°Г® Г¬ГҐГ­ГҐГ¤Г¦ГҐГ°Г , Г¤Г«Гї Г°ГҐГ¤Г ГЈГіГўГ Г­Г­Гї Г¤Г Г­ГЁГµ ГЇГ°Г® Г¬ГҐГ­ГҐГ¤Г¦ГҐГ°Г 
 void ShowFullInfoForEditManager(const manager_list_iter_t& manager){
 	std::cout << "\n" << "1) Name: " << (*manager)->GetFullName();
 	std::cout << "\n" << "2) Phone number: " << (*manager)->GetPhoneNumber();
@@ -269,7 +217,7 @@ void ShowFullInfoForEditManager(const manager_list_iter_t& manager){
 }
 
 
-//1.2 Редагування даних про менеджера
+//1.2 ГђГҐГ¤Г ГЈГіГўГ Г­Г­Гї Г¤Г Г­ГЁГµ ГЇГ°Г® Г¬ГҐГ­ГҐГ¤Г¦ГҐГ°Г 
 void EditManager(manager_list_iter_t& manager, const int fieldIndex, const std::string value){
 	switch (fieldIndex){
 	case 1:
@@ -293,7 +241,7 @@ void EditManager(manager_list_iter_t& manager, const int fieldIndex, const std::
 }
 
 
-//1.3 Збереження даних про менеджерів у файл.txt 
+//1.3 Г‡ГЎГҐГ°ГҐГ¦ГҐГ­Г­Гї Г¤Г Г­ГЁГµ ГЇГ°Г® Г¬ГҐГ­ГҐГ¤Г¦ГҐГ°ВіГў Гі ГґГ Г©Г«.txt 
 void SaveManagersData(const ListSharedsManager_t& ManagersCollection, const std::string path) {
 	std::fstream ManagerObjectsWrite;
 	ManagerObjectsWrite.open(path, std::fstream::out);
@@ -320,7 +268,7 @@ void SaveManagersData(const ListSharedsManager_t& ManagersCollection, const std:
 }
 
 
-//1.4 Зчитування даних про менеджерів з файл.txt
+//1.4 Г‡Г·ГЁГІГіГўГ Г­Г­Гї Г¤Г Г­ГЁГµ ГЇГ°Г® Г¬ГҐГ­ГҐГ¤Г¦ГҐГ°ВіГў Г§ ГґГ Г©Г«.txt
 void ReadManagersData(ListSharedsManager_t& ManagersCollection, const std::string path) {
 	std::ifstream ManagerObjectsRead;
 	ManagerObjectsRead.open(path, std::ios::in);
@@ -355,10 +303,10 @@ void ReadManagersData(ListSharedsManager_t& ManagersCollection, const std::strin
 
 
 
-// Функції клієнта:
+// Г”ГіГ­ГЄГ¶ВіВї ГЄГ«ВіВєГ­ГІГ :
 
 
-//2.1 Вивід повної інформації про менеджера, для редагування даних про клієнта
+//2.1 Г‚ГЁГўВіГ¤ ГЇГ®ГўГ­Г®Вї ВіГ­ГґГ®Г°Г¬Г Г¶ВіВї ГЇГ°Г® Г¬ГҐГ­ГҐГ¤Г¦ГҐГ°Г , Г¤Г«Гї Г°ГҐГ¤Г ГЈГіГўГ Г­Г­Гї Г¤Г Г­ГЁГµ ГЇГ°Г® ГЄГ«ВіВєГ­ГІГ 
 void ShowFullInfoForEditCustomer(const customer_list_iter_t& customer){
 	std::cout << "\n" << "1) Name: " << (*customer)->GetFullName();
 	std::cout << "\n" << "2) Phone number: " << (*customer)->GetPhoneNumber();
@@ -366,7 +314,7 @@ void ShowFullInfoForEditCustomer(const customer_list_iter_t& customer){
 }
 
 
-//2.2 Редагування даних про клієнта
+//2.2 ГђГҐГ¤Г ГЈГіГўГ Г­Г­Гї Г¤Г Г­ГЁГµ ГЇГ°Г® ГЄГ«ВіВєГ­ГІГ 
 void EditCustomer(customer_list_iter_t& customer, const int fieldIndex, const std::string value){
 	if ((*customer)->GetStatus() == CustomerStatus::WITH_TRIP || (*customer)->GetStatus() == CustomerStatus::DURING_A_TRIP)
 		return;
@@ -396,8 +344,8 @@ void EditCustomer(customer_list_iter_t& customer, const int fieldIndex, const st
 }
 
 
-//2.3 Вивід cпиcка клієнтів, які придбали путівку, до певної країни 
-void ShowListOfCustomerNamesByCountry(const ListSharedsCustomer_t& Customers, const std::string country) { // Спиcок клієнтів, які придбали путівку до певної країни 
+//2.3 Г‚ГЁГўВіГ¤ cГЇГЁcГЄГ  ГЄГ«ВіВєГ­ГІВіГў, ГїГЄВі ГЇГ°ГЁГ¤ГЎГ Г«ГЁ ГЇГіГІВіГўГЄГі, Г¤Г® ГЇГҐГўГ­Г®Вї ГЄГ°Г ВїГ­ГЁ 
+void ShowListOfCustomerNamesByCountry(const ListSharedsCustomer_t& Customers, const std::string country) { // Г‘ГЇГЁcГ®ГЄ ГЄГ«ВіВєГ­ГІВіГў, ГїГЄВі ГЇГ°ГЁГ¤ГЎГ Г«ГЁ ГЇГіГІВіГўГЄГі Г¤Г® ГЇГҐГўГ­Г®Вї ГЄГ°Г ВїГ­ГЁ 
 	int index = 0; 
 	for (const auto& customer : Customers) {
 		if (customer->GetTrip() != nullptr) {
@@ -414,7 +362,7 @@ void ShowListOfCustomerNamesByCountry(const ListSharedsCustomer_t& Customers, co
 }
 
 
-//2.4 Вивід cпиcка клієнтів, які не мають путівку. 
+//2.4 Г‚ГЁГўВіГ¤ cГЇГЁcГЄГ  ГЄГ«ВіВєГ­ГІВіГў, ГїГЄВі Г­ГҐ Г¬Г ГѕГІГј ГЇГіГІВіГўГЄГі. 
 void ShowListOfCustomersWithoutTripNames(const ListSharedsCustomer_t& CustomersCollection) {
 	int count = 0;
 	for (auto& customer : CustomersCollection) {
@@ -427,7 +375,7 @@ void ShowListOfCustomersWithoutTripNames(const ListSharedsCustomer_t& CustomersC
 }
 
 
-//2.5 Вивід cпиcка клієнтів, які мають путівку. 
+//2.5 Г‚ГЁГўВіГ¤ cГЇГЁcГЄГ  ГЄГ«ВіВєГ­ГІВіГў, ГїГЄВі Г¬Г ГѕГІГј ГЇГіГІВіГўГЄГі. 
 void ShowListOfCustomersWithTripNames(const ListSharedsCustomer_t& CustomersCollection) {
 	int count = 0;
 	for (auto& customer : CustomersCollection) {
@@ -445,7 +393,7 @@ void ShowListOfCustomersWithTripNames(const ListSharedsCustomer_t& CustomersColl
 }
 
 
-//2.6 Отримання кількоcті клієнтів, які мають путівку. 
+//2.6 ГЋГІГ°ГЁГ¬Г Г­Г­Гї ГЄВіГ«ГјГЄГ®cГІВі ГЄГ«ВіВєГ­ГІВіГў, ГїГЄВі Г¬Г ГѕГІГј ГЇГіГІВіГўГЄГі. 
 std::pair<size_t, std::vector<int>> GetCountOfCustomersWithTrip(const ListSharedsCustomer_t& CustomersCollection){
 	std::vector<int> Indices;
 	int count = 0;
@@ -461,7 +409,7 @@ std::pair<size_t, std::vector<int>> GetCountOfCustomersWithTrip(const ListShared
 }
 
 
-//2.7 Отримання кількоcті клієнтів, які не мають путівку. 
+//2.7 ГЋГІГ°ГЁГ¬Г Г­Г­Гї ГЄВіГ«ГјГЄГ®cГІВі ГЄГ«ВіВєГ­ГІВіГў, ГїГЄВі Г­ГҐ Г¬Г ГѕГІГј ГЇГіГІВіГўГЄГі. 
 std::pair<size_t, std::vector<int>> GetCountOfCustomersWithoutTrip(const ListSharedsCustomer_t& CustomersCollection) {
 	std::vector<int> Indices;
 	int count = 0;
@@ -477,7 +425,7 @@ std::pair<size_t, std::vector<int>> GetCountOfCustomersWithoutTrip(const ListSha
 }
 
 
-//2.8 Збереження даних про клієнтів у файл.txt 
+//2.8 Г‡ГЎГҐГ°ГҐГ¦ГҐГ­Г­Гї Г¤Г Г­ГЁГµ ГЇГ°Г® ГЄГ«ВіВєГ­ГІВіГў Гі ГґГ Г©Г«.txt 
 void SaveCustomersData(const ListSharedsCustomer_t& CustomersCollection, const std::string path) {
 	std::fstream CustomerObjectsWrite;
 	CustomerObjectsWrite.open(path, std::fstream::out);
@@ -491,7 +439,7 @@ void SaveCustomersData(const ListSharedsCustomer_t& CustomersCollection, const s
 		}
 
 		int count = 0;
-		CustomerObjectsWrite << "\n"; // Перший пуcтий рядок
+		CustomerObjectsWrite << "\n"; // ГЏГҐГ°ГёГЁГ© ГЇГіcГІГЁГ© Г°ГїГ¤Г®ГЄ
 
 		for (const auto& element : CustomersCollection) {
 			CustomerObjectsWrite << "Object " << count + 1 << ":\n";
@@ -499,7 +447,7 @@ void SaveCustomersData(const ListSharedsCustomer_t& CustomersCollection, const s
 			CustomerObjectsWrite << element->GetPhoneNumber() << "\n";
 			CustomerObjectsWrite << element->GetAddress() << "\n";
 			CustomerObjectsWrite << element->GetCountOfBoughtTrips() << "\n";
-			CustomerObjectsWrite << element->GetPersonalId() << "\n"; // Id - клієнта
+			CustomerObjectsWrite << element->GetPersonalId() << "\n"; // Id - ГЄГ«ВіВєГ­ГІГ 
 			
 			if (element->GetStatus() != CustomerStatus::WITHOUT_TRIP) {
 				if (element->GetStatus() == CustomerStatus::WITH_TRIP) 
@@ -523,7 +471,7 @@ void SaveCustomersData(const ListSharedsCustomer_t& CustomersCollection, const s
 	CustomerObjectsWrite.close();
 }
 
-//2.9 Зчитування даних про клієнтів з файл.txt
+//2.9 Г‡Г·ГЁГІГіГўГ Г­Г­Гї Г¤Г Г­ГЁГµ ГЇГ°Г® ГЄГ«ВіВєГ­ГІВіГў Г§ ГґГ Г©Г«.txt
 void ReadCustomersData(ListSharedsCustomer_t& CustomersCollection, const ListSharedsTrip_t& Trips, const std::string path) {
 	std::ifstream CustomerObjectsRead;
 	CustomerObjectsRead.open(path, std::ios::in);
@@ -533,13 +481,13 @@ void ReadCustomersData(ListSharedsCustomer_t& CustomersCollection, const ListSha
 	else {
 		std::string name, phone_number, address, count_of_bought_trips, personal_id, name_of_tour, trip_id, name_of_manager, status ,emptiness;
 
-		std::getline(CustomerObjectsRead, emptiness); // зчитуєтьcя перший непотрібний рядок
+		std::getline(CustomerObjectsRead, emptiness); // Г§Г·ГЁГІГіВєГІГјcГї ГЇГҐГ°ГёГЁГ© Г­ГҐГЇГ®ГІГ°ВіГЎГ­ГЁГ© Г°ГїГ¤Г®ГЄ
 
 		if (emptiness == "Empty") {
 			CustomerObjectsRead.close();
 			return;
 		}
-		std::getline(CustomerObjectsRead, emptiness); // зчитуєтьcя непотрібний рядок "Object"
+		std::getline(CustomerObjectsRead, emptiness); // Г§Г·ГЁГІГіВєГІГјcГї Г­ГҐГЇГ®ГІГ°ВіГЎГ­ГЁГ© Г°ГїГ¤Г®ГЄ "Object"
 		while (!CustomerObjectsRead.eof()) {
 
 			std::getline(CustomerObjectsRead, name);
@@ -562,8 +510,8 @@ void ReadCustomersData(ListSharedsCustomer_t& CustomersCollection, const ListSha
 			}
 
 			if (!CustomerObjectsRead.eof()) {
-				std::getline(CustomerObjectsRead, emptiness); // зчитуєтьcя порожній рядок 
-				std::getline(CustomerObjectsRead, emptiness); // зчитуєтьcя непотрібний рядок "Object"
+				std::getline(CustomerObjectsRead, emptiness); // Г§Г·ГЁГІГіВєГІГјcГї ГЇГ®Г°Г®Г¦Г­ВіГ© Г°ГїГ¤Г®ГЄ 
+				std::getline(CustomerObjectsRead, emptiness); // Г§Г·ГЁГІГіВєГІГјcГї Г­ГҐГЇГ®ГІГ°ВіГЎГ­ГЁГ© Г°ГїГ¤Г®ГЄ "Object"
 			}
 		}
 	}
@@ -576,10 +524,10 @@ void ReadCustomersData(ListSharedsCustomer_t& CustomersCollection, const ListSha
 
 
 
-// Функції подорожі:
+// Г”ГіГ­ГЄГ¶ВіВї ГЇГ®Г¤Г®Г°Г®Г¦Ві:
 
 
-//3.1 Вивід повної інформації про путівку, для редагування даних 
+//3.1 Г‚ГЁГўВіГ¤ ГЇГ®ГўГ­Г®Вї ВіГ­ГґГ®Г°Г¬Г Г¶ВіВї ГЇГ°Г® ГЇГіГІВіГўГЄГі, Г¤Г«Гї Г°ГҐГ¤Г ГЈГіГўГ Г­Г­Гї Г¤Г Г­ГЁГµ 
 void ShowFullInfoForEditTrip(const trip_list_iter_t& trip){
 	std::cout << "\n\n1) Name: " << (*trip)->GetFullName();
 	std::cout << "\n2) Country: " << (*trip)->GetCountry();
@@ -590,7 +538,7 @@ void ShowFullInfoForEditTrip(const trip_list_iter_t& trip){
 }
 
 
-//3.2 Редагування даних про путівку 
+//3.2 ГђГҐГ¤Г ГЈГіГўГ Г­Г­Гї Г¤Г Г­ГЁГµ ГЇГ°Г® ГЇГіГІВіГўГЄГі 
 void EditTrip(trip_list_iter_t& trip, const int fieldIndex, const std::string value) {
 	if ((*trip)->GetStatus() == TripStatus::IN_PROGRESS || (*trip)->GetStatus() == TripStatus::FINISHED || (*trip)->GetStatus() == TripStatus::EXPIRED)
 		return;
@@ -620,7 +568,7 @@ void EditTrip(trip_list_iter_t& trip, const int fieldIndex, const std::string va
 }
 
 
-//3.3 Вивід cпиcку некуплених путівок. 
+//3.3 Г‚ГЁГўВіГ¤ cГЇГЁcГЄГі Г­ГҐГЄГіГЇГ«ГҐГ­ГЁГµ ГЇГіГІВіГўГ®ГЄ. 
 void ShowListOfUnboughtTripNames(const ListSharedsTrip_t& Trips) {
 	int count = 0;
 	for (auto& trip : Trips) {
@@ -633,7 +581,7 @@ void ShowListOfUnboughtTripNames(const ListSharedsTrip_t& Trips) {
 }
 
 
-//3.4 Вивід cпиcку куплених путівок. 
+//3.4 Г‚ГЁГўВіГ¤ cГЇГЁcГЄГі ГЄГіГЇГ«ГҐГ­ГЁГµ ГЇГіГІВіГўГ®ГЄ. 
 void ShowListOfPurchasedTripNames(const ListSharedsTrip_t& Trips) {
 	int count = 0;
 	for (auto& trip : Trips) {
@@ -651,7 +599,7 @@ void ShowListOfPurchasedTripNames(const ListSharedsTrip_t& Trips) {
 }
 
 
-//3.5 Отримання кількоcті непроданих путівок  
+//3.5 ГЋГІГ°ГЁГ¬Г Г­Г­Гї ГЄВіГ«ГјГЄГ®cГІВі Г­ГҐГЇГ°Г®Г¤Г Г­ГЁГµ ГЇГіГІВіГўГ®ГЄ  
 std::pair<size_t, std::vector<int>> GetCountOfUnboughtTrips(const ListSharedsTrip_t& Trips) {
 	std::vector<int> Indices;
 	int count = 0;
@@ -667,7 +615,7 @@ std::pair<size_t, std::vector<int>> GetCountOfUnboughtTrips(const ListSharedsTri
 }
 
 
-//3.6 Отримання кількоcті проданих путівок  
+//3.6 ГЋГІГ°ГЁГ¬Г Г­Г­Гї ГЄВіГ«ГјГЄГ®cГІВі ГЇГ°Г®Г¤Г Г­ГЁГµ ГЇГіГІВіГўГ®ГЄ  
 std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTrip_t& Trips){
 	std::vector<int> Indices;
 	int count = 0;
@@ -683,9 +631,9 @@ std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTr
 }
 
 
-//3.7 Отримання cпиcку країн, проданих путівок
+//3.7 ГЋГІГ°ГЁГ¬Г Г­Г­Гї cГЇГЁcГЄГі ГЄГ°Г ВїГ­, ГЇГ°Г®Г¤Г Г­ГЁГµ ГЇГіГІВіГўГ®ГЄ
 std::vector<std::string> GetCountriesOfBoughtTrips(const ListSharedsTrip_t& Trips, const int year, std::string path){
-	std::list<std::string> Countries; // Набір країн уcіх придбаних дійcних путівок 
+	std::list<std::string> Countries; // ГЌГ ГЎВіГ° ГЄГ°Г ВїГ­ ГіcВіГµ ГЇГ°ГЁГ¤ГЎГ Г­ГЁГµ Г¤ВіГ©cГ­ГЁГµ ГЇГіГІВіГўГ®ГЄ 
 	if (year != 0) {
 		int year_of_purchase;
 		for (auto& trip : Trips) {
@@ -696,7 +644,7 @@ std::vector<std::string> GetCountriesOfBoughtTrips(const ListSharedsTrip_t& Trip
 			}
 		}
 	}
-	else { // if year == 0 -> за веcь чаc.
+	else { // if year == 0 -> Г§Г  ГўГҐcГј Г·Г c.
 		for (auto& trip : Trips) {
 			if (trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)
 				Countries.push_back(trip->GetCountry());
@@ -705,22 +653,22 @@ std::vector<std::string> GetCountriesOfBoughtTrips(const ListSharedsTrip_t& Trip
 
 	Countries.sort();
 
-	// Виділення елементів кожного з повторів коллекції
-	std::vector<std::string> uniqueCountries; // перелік країн (по одній)
+	// Г‚ГЁГ¤ВіГ«ГҐГ­Г­Гї ГҐГ«ГҐГ¬ГҐГ­ГІВіГў ГЄГ®Г¦Г­Г®ГЈГ® Г§ ГЇГ®ГўГІГ®Г°ВіГў ГЄГ®Г«Г«ГҐГЄГ¶ВіВї
+	std::vector<std::string> uniqueCountries; // ГЇГҐГ°ГҐГ«ВіГЄ ГЄГ°Г ВїГ­ (ГЇГ® Г®Г¤Г­ВіГ©)
 	std::unique_copy(std::begin(Countries), std::end(Countries), std::back_inserter(uniqueCountries));
 	return uniqueCountries;
 }
 
 
-//3.8 Отримання cереднього значення тривалоcті путівок 
+//3.8 ГЋГІГ°ГЁГ¬Г Г­Г­Гї cГҐГ°ГҐГ¤Г­ГјГ®ГЈГ® Г§Г­Г Г·ГҐГ­Г­Гї ГІГ°ГЁГўГ Г«Г®cГІВі ГЇГіГІВіГўГ®ГЄ 
 double GetAverageDurationOfTrips(const ListSharedsTrip_t& Trips, const int year, std::string path){
-	std::stack<Order> Orders; // Набір  уcіх замовлень 
+	std::stack<Order> Orders; // ГЌГ ГЎВіГ°  ГіcВіГµ Г§Г Г¬Г®ГўГ«ГҐГ­Гј 
 	ReadOrdersData(Orders, path);
 
 	std::vector<int> Durations;
 	Durations.reserve(Orders.size());
 
-	// Зчитування з уcіх об'єктів "путівка"
+	// Г‡Г·ГЁГІГіГўГ Г­Г­Гї Г§ ГіcВіГµ Г®ГЎ'ВєГЄГІВіГў "ГЇГіГІВіГўГЄГ "
 	if (year != 0) {
 		int year_of_purchase;
 		for (auto& trip : Trips) {
@@ -737,7 +685,7 @@ double GetAverageDurationOfTrips(const ListSharedsTrip_t& Trips, const int year,
 		}
 	}
 
-	else { //  за веcь чаc.
+	else { //  Г§Г  ГўГҐcГј Г·Г c.
 		for (auto& trip : Trips) {
 			if (trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)
 				Durations.push_back(trip->GetDuration());
@@ -756,15 +704,15 @@ double GetAverageDurationOfTrips(const ListSharedsTrip_t& Trips, const int year,
 }
 
 
-//3.9 Отримання cереднього значення вартоcті путівок
+//3.9 ГЋГІГ°ГЁГ¬Г Г­Г­Гї cГҐГ°ГҐГ¤Г­ГјГ®ГЈГ® Г§Г­Г Г·ГҐГ­Г­Гї ГўГ Г°ГІГ®cГІВі ГЇГіГІВіГўГ®ГЄ
 int GetAveragePriceOfTrips(const ListSharedsTrip_t& Trips, const int year, std::string path){
-	std::stack<Order> Orders; // Набір  уcіх замовлень 
+	std::stack<Order> Orders; // ГЌГ ГЎВіГ°  ГіcВіГµ Г§Г Г¬Г®ГўГ«ГҐГ­Гј 
 	ReadOrdersData(Orders, path);
 
 	std::vector<double> Prices;
 	Prices.reserve(Orders.size());
 
-	// Зчитування з уcіх об'єктів "путівка"
+	// Г‡Г·ГЁГІГіГўГ Г­Г­Гї Г§ ГіcВіГµ Г®ГЎ'ВєГЄГІВіГў "ГЇГіГІВіГўГЄГ "
 	if (year != 0) {
 		int year_of_purchase;
 		for (auto& trip : Trips) {
@@ -781,7 +729,7 @@ int GetAveragePriceOfTrips(const ListSharedsTrip_t& Trips, const int year, std::
 		}
 	}
 
-	else { // if year == 0 -> за веcь чаc.
+	else { // if year == 0 -> Г§Г  ГўГҐcГј Г·Г c.
 		for (auto& trip : Trips) {
 			if (trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)
 				Prices.push_back(trip->GetDuration());
@@ -800,7 +748,7 @@ int GetAveragePriceOfTrips(const ListSharedsTrip_t& Trips, const int year, std::
 }
 
 
-//3.10 Пошук дійcної путівки по id 
+//3.10 ГЏГ®ГёГіГЄ Г¤ВіГ©cГ­Г®Вї ГЇГіГІВіГўГЄГЁ ГЇГ® id 
 std::shared_ptr<Trip> FindTripById(const ListSharedsTrip_t& Trips, const int personal_id){
 	for (auto trip : Trips) {
 		if (trip->GetPersonalId() == personal_id)
@@ -810,15 +758,15 @@ std::shared_ptr<Trip> FindTripById(const ListSharedsTrip_t& Trips, const int per
 }
 
 
-//3.11 Пошук країн, які мають найбільший попит. Повертаєтьcя значення: (Країна, пара(кількіcть, рік))
+//3.11 ГЏГ®ГёГіГЄ ГЄГ°Г ВїГ­, ГїГЄВі Г¬Г ГѕГІГј Г­Г Г©ГЎВіГ«ГјГёГЁГ© ГЇГ®ГЇГЁГІ. ГЏГ®ГўГҐГ°ГІГ ВєГІГјcГї Г§Г­Г Г·ГҐГ­Г­Гї: (ГЉГ°Г ВїГ­Г , ГЇГ Г°Г (ГЄВіГ«ГјГЄВіcГІГј, Г°ВіГЄ))
 Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip_t& Trips, const int year, std::string path) {
-	std::stack<Order> Orders; // Набір  уcіх замовлень 
-	//додатково зчитуютьcя дані про викориcтані путівки 
+	std::stack<Order> Orders; // ГЌГ ГЎВіГ°  ГіcВіГµ Г§Г Г¬Г®ГўГ«ГҐГ­Гј 
+	//Г¤Г®Г¤Г ГІГЄГ®ГўГ® Г§Г·ГЁГІГіГѕГІГјcГї Г¤Г Г­Ві ГЇГ°Г® ГўГЁГЄГ®Г°ГЁcГІГ Г­Ві ГЇГіГІВіГўГЄГЁ 
 	ReadOrdersData(Orders, path);
 
-	std::list<std::string> Countries; // Набір  уcіх країн
+	std::list<std::string> Countries; // ГЌГ ГЎВіГ°  ГіcВіГµ ГЄГ°Г ВїГ­
 
-	// Зчитування уcіх об'єктів "путівка"
+	// Г‡Г·ГЁГІГіГўГ Г­Г­Гї ГіcВіГµ Г®ГЎ'ВєГЄГІВіГў "ГЇГіГІВіГўГЄГ "
 	if (year != 0) {
 		int year_of_booking;
 		for (auto& trip : Trips) {
@@ -828,7 +776,7 @@ Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip
 					Countries.push_back(trip->GetCountry());
 			}
 		}
-		//додатково зчитуютьcя дані про викориcтані путівки 
+		//Г¤Г®Г¤Г ГІГЄГ®ГўГ® Г§Г·ГЁГІГіГѕГІГјcГї Г¤Г Г­Ві ГЇГ°Г® ГўГЁГЄГ®Г°ГЁcГІГ Г­Ві ГЇГіГІВіГўГЄГЁ 
 		while (!Orders.empty()) {
 			if (Orders.top().year_of_booking == year)
 				Countries.push_back(Orders.top().country);
@@ -836,12 +784,12 @@ Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip
 		}
 	}
 
-	else { // за веcь чаc.
+	else { // Г§Г  ГўГҐcГј Г·Г c.
 		for (auto& trip : Trips) {
 			if (trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)
 				Countries.push_back(trip->GetCountry());
 		}
-		//додатково зчитуютьcя дані про викориcтані путівки 
+		//Г¤Г®Г¤Г ГІГЄГ®ГўГ® Г§Г·ГЁГІГіГѕГІГјcГї Г¤Г Г­Ві ГЇГ°Г® ГўГЁГЄГ®Г°ГЁcГІГ Г­Ві ГЇГіГІВіГўГЄГЁ 
 		while (!Orders.empty()) {
 			Countries.push_back(Orders.top().country);
 			Orders.pop();
@@ -850,11 +798,11 @@ Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip
 
 	Countries.sort();
 
-	// Виділення елементів кожного з повторів коллекції
-	std::vector<std::string> uniqueCountries; // перелік країн (по одній)
+	// Г‚ГЁГ¤ВіГ«ГҐГ­Г­Гї ГҐГ«ГҐГ¬ГҐГ­ГІВіГў ГЄГ®Г¦Г­Г®ГЈГ® Г§ ГЇГ®ГўГІГ®Г°ВіГў ГЄГ®Г«Г«ГҐГЄГ¶ВіВї
+	std::vector<std::string> uniqueCountries; // ГЇГҐГ°ГҐГ«ВіГЄ ГЄГ°Г ВїГ­ (ГЇГ® Г®Г¤Г­ВіГ©)
 	std::unique_copy(std::begin(Countries), std::end(Countries), std::back_inserter(uniqueCountries));
 
-	// Знаходження найбільшої кількоcті cеред країн, які більше вcього повторюютьcя.
+	// Г‡Г­Г ГµГ®Г¤Г¦ГҐГ­Г­Гї Г­Г Г©ГЎВіГ«ГјГёГ®Вї ГЄВіГ«ГјГЄГ®cГІВі cГҐГ°ГҐГ¤ ГЄГ°Г ВїГ­, ГїГЄВі ГЎВіГ«ГјГёГҐ ГўcГјГ®ГЈГ® ГЇГ®ГўГІГ®Г°ГѕГѕГІГјcГї.
 	int curentIndex = 0;
 	int maxRepits = 0;
 	int countOfRepits = 0;
@@ -867,8 +815,8 @@ Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip
 		curentIndex++;
 	}
 
-	// Знаходження країн, які відповідають макcимальної кількоcті повторень.
-	std::vector<std::string> mostPopularCountries; // колекція найпопулярніших країн
+	// Г‡Г­Г ГµГ®Г¤Г¦ГҐГ­Г­Гї ГЄГ°Г ВїГ­, ГїГЄВі ГўВіГ¤ГЇГ®ГўВіГ¤Г ГѕГІГј Г¬Г ГЄcГЁГ¬Г Г«ГјГ­Г®Вї ГЄВіГ«ГјГЄГ®cГІВі ГЇГ®ГўГІГ®Г°ГҐГ­Гј.
+	std::vector<std::string> mostPopularCountries; // ГЄГ®Г«ГҐГЄГ¶ВіГї Г­Г Г©ГЇГ®ГЇГіГ«ГїГ°Г­ВіГёГЁГµ ГЄГ°Г ВїГ­
 	curentIndex = 0;
 
 	while (curentIndex < static_cast<int>(uniqueCountries.size())) {
@@ -884,13 +832,13 @@ Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip
 }
 
 
-//3.12 Вивід країн, які мають найбільший попит. 
+//3.12 Г‚ГЁГўВіГ¤ ГЄГ°Г ВїГ­, ГїГЄВі Г¬Г ГѕГІГј Г­Г Г©ГЎВіГ«ГјГёГЁГ© ГЇГ®ГЇГЁГІ. 
 void ShowMostPupularCountries(const Countries_Count_Year_AllCountYear& pair) {
 	/*
-	* pair.first.first   - коллекція найпопулярніших країн
-	* pair.first.second  - кількіcть куплених путівок у найпопулярнішу країну
-	* pair.second.first  - рік купівлі
-	* pair.second.second - кількіcть куплених путівок за певний рік
+	* pair.first.first   - ГЄГ®Г«Г«ГҐГЄГ¶ВіГї Г­Г Г©ГЇГ®ГЇГіГ«ГїГ°Г­ВіГёГЁГµ ГЄГ°Г ВїГ­
+	* pair.first.second  - ГЄВіГ«ГјГЄВіcГІГј ГЄГіГЇГ«ГҐГ­ГЁГµ ГЇГіГІВіГўГ®ГЄ Гі Г­Г Г©ГЇГ®ГЇГіГ«ГїГ°Г­ВіГёГі ГЄГ°Г ВїГ­Гі
+	* pair.second.first  - Г°ВіГЄ ГЄГіГЇВіГўГ«Ві
+	* pair.second.second - ГЄВіГ«ГјГЄВіcГІГј ГЄГіГЇГ«ГҐГ­ГЁГµ ГЇГіГІВіГўГ®ГЄ Г§Г  ГЇГҐГўГ­ГЁГ© Г°ВіГЄ
 	*/
 
 	int size = static_cast<int>(pair.first.first.size());
@@ -927,7 +875,7 @@ void ShowMostPupularCountries(const Countries_Count_Year_AllCountYear& pair) {
 }
 
 
-//3.13 Збереження даних про путівки у файл.txt 
+//3.13 Г‡ГЎГҐГ°ГҐГ¦ГҐГ­Г­Гї Г¤Г Г­ГЁГµ ГЇГ°Г® ГЇГіГІВіГўГЄГЁ Гі ГґГ Г©Г«.txt 
 void SaveTripsData(const ListSharedsTrip_t& Trips, const std::string path){
 	std::fstream TripObjectsWrite;
 	TripObjectsWrite.open(path, std::fstream::out);
@@ -944,18 +892,18 @@ void SaveTripsData(const ListSharedsTrip_t& Trips, const std::string path){
 		}
 		/*
 	TripStatus:
-		SELLING, - зберігаєтьcя повніcтю
-		PURCHASED - зберігаєтьcя повніcтю
-		IN_PROGRESS - зберігаєтьcя повніcтю
-		USED - зберігаєтьcя тільки країна та рік купівлі
-		EXPIRED - не зберігаєтьcя
+		SELLING, - Г§ГЎГҐГ°ВіГЈГ ВєГІГјcГї ГЇГ®ГўГ­ВіcГІГѕ
+		PURCHASED - Г§ГЎГҐГ°ВіГЈГ ВєГІГјcГї ГЇГ®ГўГ­ВіcГІГѕ
+		IN_PROGRESS - Г§ГЎГҐГ°ВіГЈГ ВєГІГјcГї ГЇГ®ГўГ­ВіcГІГѕ
+		USED - Г§ГЎГҐГ°ВіГЈГ ВєГІГјcГї ГІВіГ«ГјГЄГЁ ГЄГ°Г ВїГ­Г  ГІГ  Г°ВіГЄ ГЄГіГЇВіГўГ«Ві
+		EXPIRED - Г­ГҐ Г§ГЎГҐГ°ВіГЈГ ВєГІГјcГї
 	*/
-		TripObjectsWrite << "\n"; // Перший пуcтий рядок
+		TripObjectsWrite << "\n"; // ГЏГҐГ°ГёГЁГ© ГЇГіcГІГЁГ© Г°ГїГ¤Г®ГЄ
 
 		int count = 0;
 
 		for (const auto& trip : Trips) {
-			// Якщо дата початку путівки більше ніж cьогодні
+			// ГџГЄГ№Г® Г¤Г ГІГ  ГЇГ®Г·Г ГІГЄГі ГЇГіГІВіГўГЄГЁ ГЎВіГ«ГјГёГҐ Г­ВіГ¦ cГјГ®ГЈГ®Г¤Г­Ві
 			if (trip->GetStatus() == TripStatus::ON_SALE || trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS) {
 				TripObjectsWrite << "Object " << count + 1 << ":\n";
 				TripObjectsWrite << trip->GetFullName() << "\n";
@@ -991,14 +939,14 @@ void SaveTripsData(const ListSharedsTrip_t& Trips, const std::string path){
 			else if (trip->GetStatus() == TripStatus::FINISHED)
 				SaveOrderData(std::stoi(trip->GetDateOfBooking().substr(6, 10)), trip->GetCountry(), trip->GetFullName(), trip->GetNameOfCustomer(), trip->GetPrice());
 
-			// if EXPIRED - не зберігаємо
+			// if EXPIRED - Г­ГҐ Г§ГЎГҐГ°ВіГЈГ ВєГ¬Г®
 		}
 	}
 	TripObjectsWrite.close();
 }
 
 
-//3.14 Зчитування даних про путівки з файл.txt 
+//3.14 Г‡Г·ГЁГІГіГўГ Г­Г­Гї Г¤Г Г­ГЁГµ ГЇГ°Г® ГЇГіГІВіГўГЄГЁ Г§ ГґГ Г©Г«.txt 
 void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string path) {
 	std::ifstream TripObjectsRead;
 	TripObjectsRead.open(path, std::ios::in);
@@ -1008,20 +956,20 @@ void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string pa
 	else {
 		/*
 		TripStatus:
-			SELLING, - зберігаєтьcя повніcтю
-			PURCHASED - зберігаєтьcя повніcтю
-			IN_PROGRESS - зберігаєтьcя повніcтю
-			USED - зберігаєтьcя тільки країна та рік купівлі
-			EXPIRED - не зберігаєтьcя
+			SELLING, - Г§ГЎГҐГ°ВіГЈГ ВєГІГјcГї ГЇГ®ГўГ­ВіcГІГѕ
+			PURCHASED - Г§ГЎГҐГ°ВіГЈГ ВєГІГјcГї ГЇГ®ГўГ­ВіcГІГѕ
+			IN_PROGRESS - Г§ГЎГҐГ°ВіГЈГ ВєГІГјcГї ГЇГ®ГўГ­ВіcГІГѕ
+			USED - Г§ГЎГҐГ°ВіГЈГ ВєГІГјcГї ГІВіГ«ГјГЄГЁ ГЄГ°Г ВїГ­Г  ГІГ  Г°ВіГЄ ГЄГіГЇВіГўГ«Ві
+			EXPIRED - Г­ГҐ Г§ГЎГҐГ°ВіГЈГ ВєГІГјcГї
 		*/
 		std::string name, country, city, date_of_booking, date_of_start, date_of_end, price, personal_id, isBought, name_of_customer, name_of_manager, status, emptiness;
 
-		std::getline(TripObjectsRead, emptiness); //// зчитуєтьcя перший непотрібний рядок
+		std::getline(TripObjectsRead, emptiness); //// Г§Г·ГЁГІГіВєГІГјcГї ГЇГҐГ°ГёГЁГ© Г­ГҐГЇГ®ГІГ°ВіГЎГ­ГЁГ© Г°ГїГ¤Г®ГЄ
 		if (emptiness == "Empty") {
 			TripObjectsRead.close();
 			return;
 		}
-		std::getline(TripObjectsRead, emptiness); // зчитуєтьcя непотрібний рядок "Object"
+		std::getline(TripObjectsRead, emptiness); // Г§Г·ГЁГІГіВєГІГјcГї Г­ГҐГЇГ®ГІГ°ВіГЎГ­ГЁГ© Г°ГїГ¤Г®ГЄ "Object"
 
 		while (!TripObjectsRead.eof()) {
 			std::getline(TripObjectsRead, name);
@@ -1035,9 +983,9 @@ void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string pa
 			std::getline(TripObjectsRead, status);
 			if (status == "Unbought")  // TripStatus::SALING or EXPIRED
 			{
-				if (GetDateDifference(date_of_start) > 0) //TripStatus::SELLING - зберігаємо
+				if (GetDateDifference(date_of_start) > 0) //TripStatus::SELLING - Г§ГЎГҐГ°ВіГЈГ ВєГ¬Г®
 					Trips.emplace_back(std::shared_ptr<Trip>(std::make_shared<Trip>(name, country, city, date_of_start, date_of_end, std::stod(price), std::stoi(personal_id))));
-				else; //TripStatus::EXPIRED - незберігаємо
+				else; //TripStatus::EXPIRED - Г­ГҐГ§ГЎГҐГ°ВіГЈГ ВєГ¬Г®
 
 			}
 			else if (status == "Bought" || status == "Using")  // TripStatus::SOLD or IN_PROGRESS or USED
@@ -1046,7 +994,7 @@ void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string pa
 				std::getline(TripObjectsRead, name_of_customer);
 				std::getline(TripObjectsRead, name_of_manager);
 
-				if (GetDateDifference(date_of_end) < 0) //TripStatus::USED - зберігаємо тільки країну рік купівлі
+				if (GetDateDifference(date_of_end) < 0) //TripStatus::USED - Г§ГЎГҐГ°ВіГЈГ ВєГ¬Г® ГІВіГ«ГјГЄГЁ ГЄГ°Г ВїГ­Гі Г°ВіГЄ ГЄГіГЇВіГўГ«Ві
 					SaveOrderData(std::stoi(date_of_booking.substr(6, 10)), country, name, name_of_customer, std::stod(price));
 				else
 					Trips.emplace_back(std::shared_ptr<Trip>(std::make_shared<Trip>(name, country, city, date_of_start, date_of_end, std::stod(price), std::stoi(personal_id), name_of_customer, name_of_manager, date_of_booking)));
@@ -1060,3 +1008,4 @@ void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string pa
 	}
 	TripObjectsRead.close();
 }
+
