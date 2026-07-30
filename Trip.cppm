@@ -1,14 +1,33 @@
 module;
+
+#include <cstring>
 #include <iostream>
-#include <ctime> 
-
-#include <memory>
-
-#include <list>
+#include <chrono>
 #include <vector> 
 
 
 export module CustomerManagerTrip:Trip;
+
+
+export struct bad_date : public std::exception{
+private:
+    char buffer[128]{};
+
+public:
+    bad_date(const char* msg, std::chrono::year_month_day wrong_date) noexcept {
+        std::snprintf(buffer, sizeof(buffer), "%s: %d/%02u/%02u", 
+            msg ? msg : "Bad date", 
+            static_cast<int>(wrong_date.year()),
+            static_cast<unsigned int>(wrong_date.month()),
+            static_cast<unsigned int>(wrong_date.day())
+        );
+    }
+
+    const char* what() const noexcept override {
+        return buffer; 
+    }
+};
+
 
 
 export enum class TripStatus {
@@ -26,15 +45,16 @@ private:
 	std::string name; 
 	std::string country; 
 	std::string city; 
-	std::string date_of_start; 
-	std::string date_of_end; 
+
+    std::chrono::year_month_day date_of_start; 
+    std::chrono::year_month_day date_of_end; 
 	
 	double price; 
 	int personal_id; 
 
 	std::string name_of_customer;
 	std::string name_of_manager; 
-	std::string date_of_booking; 
+    std::chrono::year_month_day date_of_booking; 
 
 	static int total_duration; 
 	static double total_price; 
@@ -47,7 +67,7 @@ private:
 	int GetDateDifference(const std::string firstDate, const std::string secondDate = "today");
 
 public:
-	Trip(std::string name = "-", std::string country = "-", std::string city = "-", std::string date_of_start = "-", std::string date_of_end = "-", double price = 0, int personal_id = 0, std::string name_of_customer = "-", std::string name_of_manager = "-", std::string date_of_booking = "-");
+	Trip(std::string name = "-", std::string country = "-", std::string city = "-", std::chrono::year_month_day date_of_start = std::chrono::year_month_day{}, std::chrono::year_month_day date_of_end = std::chrono::year_month_day{}, double price = 0, int personal_id = 0, std::string name_of_customer = "-", std::string name_of_manager = "-", std::chrono::year_month_day date_of_booking = std::chrono::year_month_day{});
 
 	Trip(const Trip& trip); 
 
@@ -64,13 +84,13 @@ public:
 	std::string GetCity(); 
     void SetCity(std::string city); 
 
-	std::string GetDateOfStart(); 
-	void SetDateOfStart(std::string date_of_start); 
+    std::chrono::year_month_day GetDateOfStart(); 
+	void SetDateOfStart(std::chrono::year_month_day date_of_start); 
 
-	std::string GetDateOfEnd(); 
-	void SetDateOfEnd(std::string date_of_end); 
+    std::chrono::year_month_day GetDateOfEnd(); 
+	void SetDateOfEnd(std::chrono::year_month_day date_of_end); 
 
-	int GetDuration(); 
+	long GetDuration(); 
 
 	double GetPrice(); 
     void SetPrice(double price); 
@@ -79,7 +99,7 @@ public:
 
 	TripStatus GetStatus();
 
-	std::string GetDateOfBooking(); // date when this trip was bought
+    std::chrono::year_month_day GetDateOfBooking(); // date when this trip was bought
 	std::string GetNameOfCustomer(); // customer, who bought this trip
 	std::string GetNameOfManager(); // manager who sold this trip
 	
@@ -88,11 +108,49 @@ public:
 };
 
 
+
+
+
+
+// ------------------- Interface --------------------------
+//
+//////////////////////////////////////////////////////////////////////////////
+//
+// ------------------- Implementation --------------------------
+
+
+
+
+
+
 std::vector<int> Trip::Identifiers;
 double Trip::total_price = 0;
 int Trip::total_duration = 0;
 
-Trip::Trip(std::string name, std::string country, std::string city, std::string date_of_start, std::string date_of_end, double price, int personal_id, std::string name_of_customer, std::string name_of_manager, std::string date_of_booking)
+
+
+long getDateDifference(std::chrono::year_month_day startDate, std::chrono::year_month_day endDate){
+    std::chrono::sys_days start{startDate};
+    std::chrono::sys_days end{endDate};
+    std::chrono::days result = end - start;
+    return result.count();
+}
+
+
+std::ostream& operator<<(std::ostream& os, const std::chrono::year_month_day& ymd) {
+    if (ymd.ok()) {
+        os << static_cast<int>(ymd.year()) << "/"
+           << static_cast<unsigned>(ymd.month()) << "/"
+           << static_cast<unsigned>(ymd.day());
+    } else {
+        os << "Invalid Date";
+    }
+    return os;
+}
+
+
+
+Trip::Trip(std::string name, std::string country, std::string city, std::chrono::year_month_day date_of_start, std::chrono::year_month_day date_of_end, double price, int personal_id, std::string name_of_customer, std::string name_of_manager, std::chrono::year_month_day date_of_booking)
 {
 	this->name = name;
 	this->country = country;
@@ -104,28 +162,27 @@ Trip::Trip(std::string name, std::string country, std::string city, std::string 
 	this->name_of_manager = name_of_manager;
 	this->date_of_booking = date_of_booking;
 
-	std::time_t my_time = std::time(NULL);
-	std::tm now;
-    
-    ::gmtime_r(&my_time, &now);
 
-	int start_day, start_month, start_year;
-	int end_day, end_month, end_year;
-
-	bool is_wrong_symbol;
-	if ((date_of_start != "-" && date_of_end != "-") && date_of_booking == "-")
-	{
+    if (date_of_start.ok()){
         SetDateOfStart(date_of_start);
-        SetDateOfEnd(date_of_end);
+    }
+    else {
+        throw bad_date("Invalid date of start: ", date_of_start);
+    }
+    if (date_of_end.ok()){
+        if (int duration = getDateDifference(date_of_start, date_of_end); 
+            duration > 1 && duration < 61 ){
+            SetDateOfEnd(date_of_end);
+        }
+        else{
+            throw bad_date("Tour duration must be within [1; 60]. Your date of end: ", date_of_end);        
+        }
 	}
+    else{
+        throw bad_date("Invalid date of end: ", date_of_end);
+    }
 
-	else {
-		this->date_of_start = date_of_start;
-		this->date_of_end = date_of_end;
-	}
-
-	if (date_of_start != "-" && date_of_end != "-")
-		total_duration += GetDateDifference(this->date_of_start, this->date_of_end);
+	total_duration += getDateDifference(this->date_of_start, this->date_of_end);
 
 	if (!(personal_id == 0)) {
 		this->personal_id = personal_id;
@@ -135,7 +192,7 @@ Trip::Trip(std::string name, std::string country, std::string city, std::string 
 		srand(static_cast<unsigned>(time(nullptr))); 
 		while (true) {
 			this->personal_id = rand() % 9'999'999 + 1'000'000;
-
+        
 			bool availability = false;
 			for (size_t i = 0; i < Identifiers.size(); ++i) {
 				if (this->personal_id == Identifiers[i]) {
@@ -165,7 +222,7 @@ Trip::Trip(const Trip& trip)
 	this->date_of_end = trip.date_of_end;
 	this->price = trip.price;
 
-	this->date_of_booking = "-";
+	this->date_of_booking = std::chrono::year_month_day{};
 	this->name_of_customer = "-";
 	this->name_of_manager = "-";
 
@@ -190,7 +247,7 @@ Trip::Trip(const Trip& trip)
 	}
 
 	total_price += price;
-	total_duration += GetDateDifference(this->date_of_start, this->date_of_end);
+	total_duration += getDateDifference(this->date_of_start, this->date_of_end);
 }
 
 Trip::~Trip()
@@ -214,7 +271,7 @@ void Trip::ShowInfo()
 	std::cout << "\n3) City: " << city;
 	std::cout << "\n4) Date of start: " << date_of_start;
 	std::cout << "\n5) Date of end: " << date_of_end;
-	std::cout << "\n6) Duration: " << GetDateDifference(this->date_of_start, this->date_of_end) << " days ";
+	std::cout << "\n6) Duration: " << getDateDifference(date_of_start, date_of_end);
 	std::cout << "\n7) Price: " << price << " grn.";
 	std::cout << "\n8) Id: " << personal_id;
 	if (GetStatus() == TripStatus::SOLD) {
@@ -259,518 +316,33 @@ void Trip::SetCity(std::string city)
 }
 
 
-std::string Trip::GetDateOfBooking()
+std::chrono::year_month_day Trip::GetDateOfBooking()
 {
 	return this->date_of_booking;
 }
 
 
-std::string Trip::GetDateOfStart() {
+std::chrono::year_month_day Trip::GetDateOfStart() {
 	return this->date_of_start;
 }
 
-void Trip::SetDateOfStart(std::string date_of_start) {
-	std::time_t mytime = std::time(NULL);
-	std::tm now;
-	gmtime_r(&mytime, &now);
 
-	int start_day, start_month, start_year;
-	bool is_wrong_symbol;
-	if (date_of_end == "-") {
-		while (true) {
-
-			if (date_of_start.length() < 10) {
-				std::cout << "\n\nThe start date value is less than required.";
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal or greater than the current date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			if (date_of_start.length() > 10) {
-
-				std::cout << "\n\nThe start date value is greater than required.";
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal or greater than the current date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			is_wrong_symbol = false;
-			for (size_t i = 1; i < date_of_start.length(); i++) {
-				if (i != 2 && i != 5) {
-					if (static_cast<int>(date_of_start[i]) < 48 || static_cast<int>(date_of_start[i]) > 57) {
-						std::cout << "\n\nThe start date contains a symbol. Try again";
-						std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-						std::cout << "\nEnter a start date that is equal or greater than the current date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-						std::cout << "\nNew start date (dd/mm/yyyy): ";
-						std::cin >> date_of_start;
-						std::cin.ignore(LLONG_MAX, '\n');
-						is_wrong_symbol = true;
-						break;
-					}
-				}
-				else {
-					if (date_of_start[i] != '/') {
-						std::cout << "\n\nThe start date value is not in the correct format.";
-						std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-						std::cout << "\nEnter a start date that is equal or greater than the current date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-						std::cout << "\nNew start date (dd/mm/yyyy): ";
-						std::cin >> date_of_start;
-						std::cin.ignore(LLONG_MAX, '\n');
-					}
-				}
-			}
-			if (is_wrong_symbol)
-				continue;
-
-			start_day = std::stoi(date_of_start.substr(0, 2));
-			start_month = std::stoi(date_of_start.substr(3, 2));
-			start_year = std::stoi(date_of_start.substr(6, 4));
-
-			if (start_year > now.tm_year + 1901) {
-				std::cout << "\n\nThe start date contains too much year value. The year value cannot exceed " << now.tm_year + 1901;
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal or greater than the current date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			if (start_month < 1 && start_month > 12) {
-				std::cout << "\n\nThe start date contains an incorrect month value. Month value: 01-12";
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal or greater than the current date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			if ((start_month == 1 || start_month == 3 || start_month == 5 || start_month == 7 || start_month == 8 || start_month == 10 || start_month == 12) && (start_day < 1 || start_day > 31)) {
-				std::cout << "\n\nThe start date contains the wrong day.";
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal or greater than the current date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			if ((start_month == 4 || start_month == 6 || start_month == 9 || start_month == 11) && (start_day < 1 || start_day > 30)) {
-				std::cout << "\n\nThe start date contains the wrong day.";
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal or greater than the current date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-			
-			if ((start_month == 2 && start_year % 4 == 0) && (start_day < 1 || start_day > 29)) {
-				std::cout << "\n\nThe start date contains the wrong day.";
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal or greater than the current date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-			
-			if ((start_month == 2 && start_year % 4 != 0) && (start_day < 1 || start_day > 28)) {
-				std::cout << "\n\nThe start date contains the wrong day.";
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal or greater than the current date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			if (
-				(start_year > (now.tm_year + 1900))
-				||
-				((start_year >= (now.tm_year + 1900)) && (start_month > (now.tm_mon + 1)))
-				||
-				((start_year >= (now.tm_year + 1900)) && (start_month >= (now.tm_mon + 1)) && (start_day > now.tm_mday))
-				) {
-				this->date_of_start = date_of_start; 
-				break;
-			}
-
-			else {
-				std::cout << "\nTicket \"" << name << "\" has an start date less than or equal to the current date.";
-				std::cout << "\nPlease, enter a start date that is equal or greater than the current date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-			}
-		}
-	}
-	else {
-		int end_day = std::stoi(this->date_of_end.substr(0, 2));
-		int end_month = std::stoi(this->date_of_end.substr(3, 2));
-		int end_year = std::stoi(this->date_of_end.substr(6, 4));
-
-		int start_day, start_month, start_year;
-		while (true) {
-
-			if (date_of_start.length() < 10) {
-				std::cout << "\n\nThe start date value is less than required.";
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal to or greater than the current date and less than the end date: ";
-				std::cout << "\n\tcurrent date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\n\tend date: " << date_of_end;
-
-				std::cout << "\n\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			if (date_of_start.length() > 10) {
-
-				std::cout << "\n\nThe start date value is greater than required.";
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal to or greater than the current date and less than the end date: ";
-				std::cout << "\n\tcurrent date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\n\tend date: " << date_of_end;
-
-				std::cout << "\n\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			if (date_of_start[2] != '/' || date_of_start[5] != '/') {
-				std::cout << "\n\nThe start date value is not in the correct format.";
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal to or greater than the current date and less than the end date: ";
-				std::cout << "\n\tcurrent date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\n\tend date: " << date_of_end;
-
-				std::cout << "\n\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			is_wrong_symbol = false;
-			for (size_t i = 1; i < date_of_start.length(); i++) {
-				if (i != 2 && i != 5) {
-					if (static_cast<int>(date_of_start[i]) < 48 || static_cast<int>(date_of_start[i]) > 57) {
-						std::cout << "\n\nThe start date contains a symbol. Try again";
-						std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-						std::cout << "\nEnter a start date that is equal to or greater than the current date and less than the end date: ";
-						std::cout << "\n\tcurrent date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-						std::cout << "\n\tend date: " << date_of_end;
-
-						std::cout << "\n\nNew start date (dd/mm/yyyy): ";
-						std::cin >> date_of_start;
-						std::cin.ignore(LLONG_MAX, '\n');
-						is_wrong_symbol = true;
-						break;
-					}
-				}
-				else {
-					if (date_of_start[i] != '/') {
-						std::cout << "\n\nThe start date value is not in the correct format.";
-						std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-						std::cout << "\nEnter a start date that is equal or greater than the current date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-						std::cout << "\nNew start date (dd/mm/yyyy): ";
-						std::cin >> date_of_start;
-						std::cin.ignore(LLONG_MAX, '\n');
-					}
-				}
-			}
-			if (is_wrong_symbol)
-				continue;
-
-			start_day = std::stoi(date_of_start.substr(0, 2));
-			start_month = std::stoi(date_of_start.substr(3, 2));
-			start_year = std::stoi(date_of_start.substr(6, 4));
-
-			if (start_year > now.tm_year + 1901) {
-				std::cout << "\n\nThe start date contains too much year value. The year value cannot exceed " << now.tm_year + 1901;
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal to or greater than the current date and less than the end date: ";
-				std::cout << "\n\tcurrent date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\n\tend date: " << date_of_end;
-
-				std::cout << "\n\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			if (start_month < 1 && start_month > 12) {
-				std::cout << "\n\nThe start date contains an incorrect month value. Month value: 01-12";
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal to or greater than the current date and less than the end date: ";
-				std::cout << "\n\tcurrent date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\n\tend date: " << date_of_end;
-
-				std::cout << "\n\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			if ((start_month == 1 || start_month == 3 || start_month == 5 || start_month == 7 || start_month == 8 || start_month == 10 || start_month == 12) && (start_day < 1 || start_day > 31)) {
-				std::cout << "\n\nThe start date contains the wrong day.";
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal to or greater than the current date and less than the end date: ";
-				std::cout << "\n\tcurrent date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\n\tend date: " << date_of_end;
-
-				std::cout << "\n\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			if ((start_month == 4 || start_month == 6 || start_month == 9 || start_month == 11) && (start_day < 1 || start_day > 30)) {
-				std::cout << "\n\nThe start date contains the wrong day.";
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal to or greater than the current date and less than the end date: ";
-				std::cout << "\n\tcurrent date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\n\tend date: " << date_of_end;
-
-				std::cout << "\n\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			if ((start_month == 2 && start_year % 4 == 0) && (start_day < 1 || start_day > 29)) {
-				std::cout << "\n\nThe start date contains the wrong day.";
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal to or greater than the current date and less than the end date: ";
-				std::cout << "\n\tcurrent date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\n\tend date: " << date_of_end;
-
-				std::cout << "\n\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			if ((start_month == 2 && start_year % 4 != 0) && (start_day < 1 || start_day > 28)) {
-				std::cout << "\n\nThe start date contains the wrong day.";
-				std::cout << "\nPlease, enter the start date in the format (dd/mm/yyyy).";
-				std::cout << "\nEnter a start date that is equal to or greater than the current date and less than the end date: ";
-				std::cout << "\n\tcurrent date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\n\tend date: " << date_of_end;
-
-				std::cout << "\n\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			if (
-				(start_year < (now.tm_year + 1900))
-				||
-				((start_year  <= (now.tm_year + 1900)) && (start_month < (now.tm_mon + 1)))
-				||
-				( (start_year <= (now.tm_year + 1900)) && (start_month <= (now.tm_mon + 1)) && (start_day <= now.tm_mday ) )
-				) {
-				std::cout << "\nTicket \"" << name << "\" has an start date less than or equal to the current date.";
-				std::cout << "\nPlease, enter a start date that is equal to or greater than the current date and less than the end date: ";
-				std::cout << "\n\tcurrent date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\n\tend date: " << date_of_end;
-
-				std::cout << "\n\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			if (
-				(start_year > end_year)
-				||
-				((start_year >= end_year) && (start_month > end_month))
-				||
-				((start_year >= end_year) && (start_month >= end_month) && (start_day >= end_day))
-				) 
-			{
-				std::cout << "\nTicket \"" << name << "\" has an start date is greater than or equal to end date";
-				std::cout << "\nPlease, enter a start date that is equal to or greater than the current date and less than the end date: ";
-				std::cout << "\n\tcurrent date: " << std::to_string(now.tm_mday) + "/" + std::to_string(now.tm_mon + 1) + "/" + std::to_string(now.tm_year + 1900) << "";
-				std::cout << "\n\tend date: " << date_of_end;
-
-				std::cout << "\n\nNew start date (dd/mm/yyyy): ";
-				std::cin >> date_of_start;
-				std::cin.ignore(LLONG_MAX, '\n');
-				continue;
-			}
-
-			else {
-				this->date_of_start = date_of_start; 
-				break;
-			}
-		}
-	}
+void Trip::SetDateOfStart(std::chrono::year_month_day date_of_start) {
+    this->date_of_start = date_of_start;
 }
 
 
-std::string Trip::GetDateOfEnd() {
+std::chrono::year_month_day Trip::GetDateOfEnd() {
 	return this->date_of_end;
 }
 
-void Trip::SetDateOfEnd(std::string date_of_end) {
-	if (date_of_start == "-")
-		return;
-
-	std::time_t mytime = std::time(NULL);
-	std::tm now;
-	gmtime_r(&mytime, &now);
-	int end_day, end_month, end_year;
-
-	int start_day = std::stoi(date_of_start.substr(0, 2));
-	int start_month = std::stoi(date_of_start.substr(3, 2));
-	int start_year = std::stoi(date_of_start.substr(6, 4));
-
-	bool is_wrong_symbol;
-	while (true) {
-
-		if (date_of_end.length() < 10) {
-			std::cout << "\n\nThe end date value is less than required.";
-			std::cout << "\nPlease, enter the end date in the format (dd/mm/yyyy).";
-			std::cout << "\nEnter an end date that is greater than the start date: " << this->date_of_start;
-			std::cout << "\nNew end date (dd/mm/yyyy): ";
-			std::cin >> date_of_end;
-			std::cin.ignore(LLONG_MAX, '\n');
-			continue;
-		}
-		if (date_of_end.length() > 10) {
-			std::cout << "\n\nThe end date value is greater than required.";
-			std::cout << "\nPlease, enter the end date in the format (dd/mm/yyyy).";
-			std::cout << "\nEnter an end date that is greater than the start date: " << this->date_of_start;
-			std::cout << "\nNew end date (dd/mm/yyyy): ";
-			std::cin >> date_of_end;
-			std::cin.ignore(LLONG_MAX, '\n');
-			continue;
-		}
-		is_wrong_symbol = false;
-		for (size_t i = 1; i < date_of_end.length(); i++) {
-			if (i != 2 && i != 5) {
-				if (static_cast<int>(date_of_end[i]) < 48 || static_cast<int>(date_of_end[i]) > 57) {
-					std::cout << "\n\nThe end date contains a symbol. Try again";
-					std::cout << "\nPlease, enter the end date in the format (dd/mm/yyyy)";
-					std::cout << "\nEnter an end date that is greater than the start date: " << this->date_of_start;
-					std::cout << "\nNew start date (dd/mm/yyyy): ";
-
-					std::cin >> date_of_end;
-					std::cin.ignore(LLONG_MAX, '\n');
-					is_wrong_symbol = true;
-					break;
-				}
-			}
-			else {
-				if (date_of_end[i] != '/') {
-					std::cout << "\n\nThe end date value is not in the correct format.";
-					std::cout << "\nPlease, enter the end date in the format (dd/mm/yyyy)";
-					std::cout << "\nEnter an end date that is greater than the start date: " << this->date_of_start;
-					std::cout << "\nNew start date (dd/mm/yyyy): ";
-					std::cin >> date_of_end;
-					std::cin.ignore(LLONG_MAX, '\n');
-				}
-			}
-		}
-		if (is_wrong_symbol)
-			continue;
-
-		end_day = std::stoi(date_of_end.substr(0, 2));
-		end_month = std::stoi(date_of_end.substr(3, 2));
-		end_year = std::stoi(date_of_end.substr(6, 4));
-
-		if (end_year > start_year + 1901) {
-			std::cout << "\n\nThe end date contains too much year value. The year value cannot exceed " << start_year + 1901;
-			std::cout << "\nPlease, enter the end date in the format (dd/mm/yyyy)";
-			std::cout << "\nEnter an end date that is greater than the start date: " << this->date_of_start;
-			std::cout << "\nNew start date (dd/mm/yyyy): ";
-			std::cin >> date_of_end;
-			std::cin.ignore(LLONG_MAX, '\n');
-		}
-
-		if (end_month < 1 && end_month > 12) {
-			std::cout << "\n\nThe start date contains an incorrect month value. Month value: 01-12";
-			std::cout << "\nPlease, enter the end date in the format (dd/mm/yyyy)";
-			std::cout << "\nEnter an end date that is greater than the start date: " << this->date_of_start;
-			std::cout << "\nNew start date (dd/mm/yyyy): ";
-			std::cin >> date_of_end;
-			std::cin.ignore(LLONG_MAX, '\n');
-		}
-
-		if ((end_month == 1 || end_month == 3 || end_month == 5 || end_month == 7 || end_month == 8 || end_month == 10 || end_month == 12) && (end_day < 1 || end_day > 31)) {
-			std::cout << "\n\nThe start date contains the wrong day.";
-			std::cout << "\nPlease, enter the end date in the format (dd/mm/yyyy)";
-			std::cout << "\nEnter an end date that is greater than the start date: " << this->date_of_start;
-			std::cout << "\nNew start date (dd/mm/yyyy): ";
-			std::cin >> date_of_end;
-			std::cin.ignore(LLONG_MAX, '\n');
-		}
-
-		if ((end_month == 4 || end_month == 6 || end_month == 9 || end_month == 11) && (end_day < 1 || end_day > 30)) {
-			std::cout << "\n\nThe start date contains the wrong day.";
-			std::cout << "\nPlease, enter the end date in the format (dd/mm/yyyy)";
-			std::cout << "\nEnter an end date that is greater than the start date: " << this->date_of_start;
-			std::cout << "\nNew start date (dd/mm/yyyy): ";
-			std::cin >> date_of_end;
-			std::cin.ignore(LLONG_MAX, '\n');
-		}
-		
-		if ((end_month == 2 && end_year % 4 == 0) && (end_day < 1 || end_day > 29)) {
-			std::cout << "\n\nThe start date contains the wrong day.";
-			std::cout << "\nPlease, enter the end date in the format (dd/mm/yyyy)";
-			std::cout << "\nEnter an end date that is greater than the start date: " << this->date_of_start;
-			std::cout << "\nNew start date (dd/mm/yyyy): ";
-			std::cin >> date_of_end;
-			std::cin.ignore(LLONG_MAX, '\n');
-		}
-		
-		if ((end_month == 2 && end_year % 4 != 0) && (end_day < 1 || end_day > 28)) {
-			std::cout << "\n\nThe start date contains the wrong day.";
-			std::cout << "\nPlease, enter the end date in the format (dd/mm/yyyy)";
-			std::cout << "\nEnter an end date that is greater than the start date: " << this->date_of_start;
-			std::cout << "\nNew start date (dd/mm/yyyy): ";
-			std::cin >> date_of_end;
-			std::cin.ignore(LLONG_MAX, '\n');
-		}
-
-		if (
-			(end_year > start_year)
-			||
-			((end_year >= start_year) && (end_month > start_month))
-			||
-			((end_year >= start_year) && (end_month >= start_month) && (end_day > start_day))
-			) {
-			this->date_of_end = date_of_end;
-			break;
-		}
-
-		else {
-			std::cout << "\nTicket \"" << name << "\" has an end date less than or equal to the start date.";
-			std::cout << "\nPlease enter a new date that is greater than the start date: " << this->date_of_start;
-			std::cout << "\nNew end date (dd/mm/yyyy): ";
-			std::cin >> date_of_end;
-			std::cin.ignore(LLONG_MAX, '\n');
-		}
-	}
+void Trip::SetDateOfEnd(std::chrono::year_month_day date_of_end) {
+    this->date_of_end = date_of_end;
 }
 
 
-int Trip::GetDuration() {
-	if (date_of_start != "-" && date_of_end != "-")
-		return GetDateDifference(this->date_of_start, this->date_of_end);
-	else
-		return 0;
+long Trip::GetDuration() {
+	return getDateDifference(this->date_of_start, this->date_of_end);
 }
 
 
@@ -781,7 +353,7 @@ void Trip::SetPrice(double price) {
 		if (price <= 0) {
 			std::cout << "\nThe product price cannot be less than 0. Enter a new price: ";
 			std::cin >> price;
-			std::cin.ignore(LLONG_MAX, '\n');
+			std::cin.ignore(std::numeric_limits<long>::max(), '\n');
 			continue;
 		}
 		else 
@@ -797,26 +369,35 @@ int Trip::GetPersonalId(){
 
 
 TripStatus Trip::GetStatus()
-{
-	if (this->date_of_booking == "-") {
+{    
+    std::chrono::time_point now{std::chrono::system_clock::now()};
+    std::chrono::year_month_day today{std::chrono::floor<std::chrono::days>(now)};
 
-		if (GetDateDifference(this->date_of_start) > 0)
-			return TripStatus::ON_SALE;
+    auto from_today_to_start = getDateDifference(today, this->date_of_start);
 
-		else if (GetDateDifference(this->date_of_start) <= 0)
-			return TripStatus::EXPIRED;
-	}
+	if (this->date_of_booking.ok()) {
+    
+        auto from_today_to_end = getDateDifference(today, this->date_of_end);
+		
+        if (from_today_to_start > 0){
+			return TripStatus::SOLD;
+        } 
+        else if ((from_today_to_start <= 0) && (from_today_to_end >= 0)){
+			return TripStatus::IN_PROGRESS;
+        } 
+        else{ 
+			return TripStatus::FINISHED;
+	    }
+    }
 	else
 	{
-		if (GetDateDifference(this->date_of_start) > 0)
-			return TripStatus::SOLD;
-		
-		else if ((GetDateDifference(this->date_of_start) <= 0) && (GetDateDifference(this->date_of_end) >=0 ))
-			return TripStatus::IN_PROGRESS;
-		
-		else if (GetDateDifference(this->date_of_end) < 0)
-			return TripStatus::FINISHED;
-	}
+		if (from_today_to_start > 0){
+			return TripStatus::ON_SALE;
+        }
+        else{ 
+			return TripStatus::EXPIRED;
+	    }
+    }
 }
 
 
@@ -832,23 +413,9 @@ void Trip::SetDataOfPurchase(std::string name_of_manager, std::string name_of_cu
 {
 	this->name_of_manager = name_of_manager;
 	this->name_of_customer = name_of_customer;
-	
-	std::time_t mytime = std::time(NULL);
-	std::tm now;
-	gmtime_r(&mytime, &now);
 
-	this->date_of_booking = "";
-	if (now.tm_mday < 10) 
-		this->date_of_booking += "0" + std::to_string(now.tm_mday) + "/";
-	else
-		this->date_of_booking +=  std::to_string(now.tm_mday) + "/";
-
-	if ((now.tm_mon + 1) < 10)
-		this->date_of_booking += "0" + std::to_string(now.tm_mon + 1) + "/";
-	else
-		this->date_of_booking += std::to_string(now.tm_mon + 1) + "/";
-
-	this->date_of_booking += std::to_string(now.tm_year + 1900);
+	std::chrono::time_point now{std::chrono::system_clock::now()};
+    this->date_of_booking = std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(now)};
 }
 
 
@@ -865,7 +432,7 @@ double Trip::GetAverageDuration() {
 
 
 void Trip::Return(){
-	date_of_booking = "-";
+	date_of_booking = std::chrono::year_month_day{};
 	name_of_customer = "-";
 	name_of_manager = "-";
 }
