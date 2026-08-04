@@ -1,7 +1,7 @@
 module;
 
 #include <iostream>
-#include <ctime>
+#include <chrono>
 #include <cmath>
 #include <memory>
 
@@ -10,6 +10,20 @@ export module Functions:Interface;
 import :QueryFunctions;
 import Order;
 
+
+
+std::ostream& operator<<(std::ostream& os, const std::chrono::year_month_day& ymd) {
+    if (ymd.ok()) {
+        os << static_cast<int>(ymd.year()) << "/"
+           << static_cast<unsigned>(ymd.month()) << "/"
+           << static_cast<unsigned>(ymd.day());
+    } else {
+        os << "Invalid Date";
+    }
+    return os;
+}
+
+
 export void Interface(ListSharedsManager_t& Managers, ListSharedsCustomer_t& Customers, ListSharedsTrip_t& Trips,
 	std::string ManagersDataPath,
 	std::string CustomersDataPath,
@@ -17,19 +31,20 @@ export void Interface(ListSharedsManager_t& Managers, ListSharedsCustomer_t& Cus
 	std::string OrdersPath,
 	std::string HistoryDataPath)
 {
-	size_t managerIndex = 0, customerIndex = 0, tripIndex = 0, fieldIndex = 0; // çì³íí³, äëÿ çáåðåæåííÿ ³íäåêc³â îáðàíèõ îá'º³êâò
-	int menuItem = 0; // çì³íí³, äëÿ çáåðåæåííÿ ³íäåêc³â îáðàíîãî ïóíêòó ìåíþ
-	int index = 0; // çì³íí³, äëÿ çáåðåæåííÿ ³íäåêcó
+	size_t managerIndex = 0, customerIndex = 0, tripIndex = 0, fieldIndex = 0;
+	int menuItem = 0; // index of choised menu item
+	int index = 0; // index of choised element/object of list 
 
-	std::time_t mytime = std::time(NULL);
-	std::tm now = {};
-	int current_year = 0; // ïîòî÷íèé ð³ê
-	int year = 0; // çì³íí³, äëÿ çáåðåæåííÿ ââåäåíîãî ðîêó
+    unsigned short input_year = 0, current_year = 0; // çì³íí³, äëÿ çáåðåæåííÿ ââåäåíîãî ðîêó
 
 	bool try_again = false; // çì³íí³, äëÿ ïåðåâ³ðêè, ÷è áàæàº åë³ºíò ââåcòè íîâå çíà÷åííÿ ³íäåêcó
 	
 	// çì³íí³, äëÿ çáåðåæåííÿ âäàíèõ, ïðè còâîðåíí³ àáî ðåäàãóâàíí³ îá'ºêò³â êëàc³â
-	std::string customer_name, customer_phone_number = "-", customer_address = "-", value = "-", name = "-", phone_number = "-", address = "-", country = "-", date_of_start = "-", date_of_end = "-", city = "-";
+    
+    std::string input_date;
+    std::chrono::year_month_day date_of_start, date_of_end;
+
+	std::string customer_name, customer_phone_number = "-", customer_address = "-", value = "-", name = "-", phone_number = "-", address = "-", country = "-", city = "-";
 	double price = 0;
 	int id = 0;
 	
@@ -2581,10 +2596,10 @@ MAIN:
 					case 1:
 						ClearConsole();
 						std::cout << "\n\n|--- Add new trip ---|\n";
-
+                        
 						Trips.emplace_back(std::shared_ptr<Trip>(std::make_shared<Trip>()));
-
-						std::cout << "\nEnter trip`s name: ";
+					
+                        std::cout << "\nEnter trip`s name: ";
 						std::getline(std::cin, name);
 						Trips.back()->SetFullName(name);
 
@@ -2595,19 +2610,67 @@ MAIN:
 						std::cout << "\nEnter trip`s city: ";
 						std::getline(std::cin, city);
 						Trips.back()->SetCity(city);
+                       
+                        try_again = true;
+                        while (try_again){
+                            std::cout << "\nEnter trip`s date of start (yyyy/mm/dd): ";
+                            if (std::cin >> input_date) {
+                                try{
+                                    date_of_start = stringToYearMonthDay(input_date);
 
-						std::cout << "\nEnter trip`s date of start (dd/mm/yyyy): ";
-						std::getline(std::cin, date_of_start);
-						Trips.back()->SetDateOfStart(date_of_start);
+                                    if (date_of_start.ok()) {
+                                        Trips.back()->SetDateOfStart(date_of_start);
+                                        try_again = false;
+                                    } 
+                                    else {
+                                        std::cout << "Error: Invalid calendar date entered! Try again\n";
+                                    }
+                                }
+                                catch(std::exception& ex){
+                                    std::cout<<ex.what();
+                                }
+                            } 
+                            else {
+                                std::cout << "Error: Wrong input format!\n";
+                                std::cin.clear();
+                                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                            }
+                        }
 
-						std::cout << "\nEnter trip`s date of end (dd/mm/yyyy): ";
-						std::getline(std::cin, date_of_end);
-						Trips.back()->SetDateOfEnd(date_of_end);
 
-						std::cout << "\nEnter trip`s price (grn.): ";
-						ValidatedInput(price);
-						Trips.back()->SetPrice(price);
+                        try_again = true;
+                        while (try_again){
+                            std::cout << "\nEnter trip`s date of start (yyyy/mm/dd): ";
+                            if (std::cin >> input_date) {
+                                try{
+                                    date_of_end = stringToYearMonthDay(input_date);
 
+                                    if (date_of_start.ok()) {
+                                        Trips.back()->SetDateOfEnd(date_of_end);
+                                        try_again = false;
+                                    } 
+                                    else {
+                                        std::cout << "Error: Invalid calendar date entered! Try again\n";
+                                    }
+                                }
+                                catch(std::exception& ex){
+                                    std::cout<<ex.what();
+                                }
+                            } 
+                            else {
+                                std::cout << "Error: Wrong input format!\n";
+                                std::cin.clear();
+                                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                            }
+                        }
+                        
+                        try_again = true;
+					    while (try_again){
+                            std::cout << "\nEnter trip`s price (grn.): ";
+                            ValidatedInput(price);
+                            if (price > 0) {try_again = false;}
+                        }
+                        Trips.back()->SetPrice(price);
 						SaveMessage("Trip by name \"" + Trips.back()->GetFullName() + "\" was added. It id: " + std::to_string(Trips.back()->GetPersonalId()), historyDataPath);
 						
 						break;
@@ -3580,16 +3643,19 @@ case 3: // case 3: Trips
 
 				GENERAL_INFORMATION_ABOUT_TRIPS_BY_YEAR:
 					std::cout << "\n\n|--- General information about trips ---|\n";
-					
-					mytime = std::time(NULL);
-                    std::tm now;
-					gmtime_r(&mytime, &now);
-					current_year = now.tm_year + 1900;
+       
+					current_year = static_cast<unsigned short>(
+                                        static_cast<int>(
+                                            std::chrono::year_month_day{
+                                                floor<std::chrono::days>(std::chrono::system_clock::now())
+                                            }.year()
+                                        )
+                                    );
 
-					std::cout << "\nEnter the year you are interested in (recomended  2021-" << current_year << "): ";
-					ValidatedInput(year);
+					std::cout << "\nEnter the year you are interested in (recomended  2021 - " << current_year << "): ";
+					ValidatedInput(input_year);
 					
-					if (year > current_year) {
+					if (input_year > current_year) {
 						while (true) {
 							std::cout << "\n\nInvalid year: you may have entered a future year.";
 							std::cout << "\n1) See a general information about trips for another year (recomended  2021-" << current_year<<")";
@@ -3638,7 +3704,7 @@ case 3: // case 3: Trips
 
 						}// ê³íåöü case 2: - No - while (true) ó DETAILED_INFORMATION_ABOUT_MANAGER
 					}
-					if (year < current_year && year < 2021) {
+					if (input_year < current_year && input_year < 2021) {
 						while (true) {
 							std::cout << "\n\nInvalid year: you may have entered a year that is too old..";
 							std::cout << "\n1) See a general information about trips for another year (recomended  2021-" << current_year<<")";
@@ -3691,21 +3757,21 @@ case 3: // case 3: Trips
 					ClearConsole();
 
 					std::cout << "\n\n|--- General information about trips ---|\n";
-					std::cout << "\nGeneral information for " << year << " year:";
-					if (year == current_year)
-						std::cout << "\n\tCount of sold trips: " << GetCountOfOrders(year) + GetCountOfPurchasedTrips(Trips).first;
-					else if (year < current_year && year >= 2021)
-						std::cout << "\n\tCount of sold trips: " << GetCountOfOrders(year);
+					std::cout << "\nGeneral information for " << input_year << " year:";
+					if (input_year == current_year)
+						std::cout << "\n\tCount of sold trips: " << GetCountOfOrders(input_year) + GetCountOfPurchasedTrips(Trips).first;
+					else if (input_year < current_year && input_year >= 2021)
+						std::cout << "\n\tCount of sold trips: " << GetCountOfOrders(input_year);
 					
 					std::cout << "\n\tAverage duration of the trip: ";
-					if ((std::ceil(GetAverageDurationOfTrips(Trips, year)) - GetAverageDurationOfTrips(Trips, year)) > 0.5)
-						std::cout << std::floor(GetAverageDurationOfTrips(Trips, year)) << " days ";
+					if ((std::ceil(GetAverageDurationOfTrips(Trips, input_year)) - GetAverageDurationOfTrips(Trips, input_year)) > 0.5)
+						std::cout << std::floor(GetAverageDurationOfTrips(Trips, input_year)) << " days ";
 					else
-						std::cout << std::ceil(GetAverageDurationOfTrips(Trips, year)) << " days";
+						std::cout << std::ceil(GetAverageDurationOfTrips(Trips, input_year)) << " days";
 
-					std::cout << "\n\tAverage cost of the trip: " << GetAveragePriceOfTrips(Trips, year) << " UAH";
+					std::cout << "\n\tAverage cost of the trip: " << GetAveragePriceOfTrips(Trips, input_year) << " UAH";
 					
-					ShowMostPupularCountries(FindMostPupularCountries(Trips, year));
+					ShowMostPupularCountries(FindMostPupularCountries(Trips, input_year));
 
 					while (true) {
 						std::cout << "\n\n1) See a general information about trips for another year";
@@ -3823,33 +3889,82 @@ case 3: // case 3: Trips
 		ADD_NEW_TRIP:
 
 			std::cout << "\n\n|--- Add new trip ---|\n";
-			
-			Trips.emplace_back(std::shared_ptr<Trip>(std::make_shared<Trip>()));
+        
+            Trips.emplace_back(std::shared_ptr<Trip>(std::make_shared<Trip>()));
 
-			std::cout << "\nEnter trip`s name: ";
-			std::getline(std::cin, name);
-			Trips.back()->SetFullName(name);
+            std::cout << "\nEnter trip`s name: ";
+            std::getline(std::cin, name);
+            Trips.back()->SetFullName(name);
 
-			std::cout << "\nEnter trip`s country: ";
-			std::getline(std::cin, country);
-			Trips.back()->SetCountry(country);
+            std::cout << "\nEnter trip`s country: ";
+            std::getline(std::cin, country);
+            Trips.back()->SetCountry(country);
 
-			std::cout << "\nEnter trip`s city: ";
-			std::getline(std::cin, city);
-			Trips.back()->SetCity(city);
+            std::cout << "\nEnter trip`s city: ";
+            std::getline(std::cin, city);
+            Trips.back()->SetCity(city);
+           
+            try_again = true;
+            while (try_again){
+                std::cout << "\nEnter trip`s date of start (yyyy/mm/dd): ";
+                if (std::cin >> input_date) {
+                    try{
+                        date_of_start = stringToYearMonthDay(input_date);
 
-			std::cout << "\nEnter trip`s date of start (dd/mm/yyyy): ";
-			std::getline(std::cin, date_of_start);
-			Trips.back()->SetDateOfStart(date_of_start);
+                        if (date_of_start.ok()) {
+                            Trips.back()->SetDateOfStart(date_of_start);
+                            try_again = false;
+                        } 
+                        else {
+                            std::cout << "Error: Invalid calendar date entered! Try again\n";
+                        }
+                    }
+                    catch(std::exception& ex){
+                        std::cout<<ex.what();
+                    }
+                } 
+                else {
+                    std::cout << "Error: Wrong input format!\n";
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                }
+            }
 
-			std::cout << "\nEnter trip`s date of end (dd/mm/yyyy): ";
-			std::getline(std::cin, date_of_end);
-			Trips.back()->SetDateOfEnd(date_of_end);
 
-			std::cout << "\nEnter trip`s price (grn.): ";
-			ValidatedInput(price);
-			Trips.back()->SetPrice(price);
+                  
+            try_again = true;
+            while (try_again){
+                std::cout << "\nEnter trip`s date of start (yyyy/mm/dd): ";
+                if (std::cin >> input_date) {
+                    try{
+                        date_of_end = stringToYearMonthDay(input_date);
 
+                        if (date_of_start.ok()) {
+                            Trips.back()->SetDateOfEnd(date_of_end);
+                            try_again = false;
+                        } 
+                        else {
+                            std::cout << "Error: Invalid calendar date entered! Try again\n";
+                        }
+                    }
+                    catch(std::exception& ex){
+                        std::cout<<ex.what();
+                    }
+                } 
+                else {
+                    std::cout << "Error: Wrong input format!\n";
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                }
+            }
+            
+            try_again = true;
+            while (try_again){
+                std::cout << "\nEnter trip`s price (grn.): ";
+                ValidatedInput(price);
+                if (price > 0) {try_again = false;}
+            }
+            Trips.back()->SetPrice(price);
 		    std::cout << "\n\nTrip by name \"" << Trips.back()->GetFullName() << "\" was added.\nIt id: " << Trips.back()->GetPersonalId() << "\n";
 			SaveMessage("Trip by name \"" + Trips.back()->GetFullName() + "\" was added. It id: " + std::to_string(Trips.back()->GetPersonalId()), historyDataPath);
 

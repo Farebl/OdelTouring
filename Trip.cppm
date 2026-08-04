@@ -8,26 +8,7 @@ module;
 
 export module CustomerManagerTrip:Trip;
 
-
-export struct bad_date : public std::exception{
-private:
-    char buffer[128]{};
-
-public:
-    bad_date(const char* msg, std::chrono::year_month_day wrong_date) noexcept {
-        std::snprintf(buffer, sizeof(buffer), "%s: %d/%02u/%02u", 
-            msg ? msg : "Bad date", 
-            static_cast<int>(wrong_date.year()),
-            static_cast<unsigned int>(wrong_date.month()),
-            static_cast<unsigned int>(wrong_date.day())
-        );
-    }
-
-    const char* what() const noexcept override {
-        return buffer; 
-    }
-};
-
+const unsigned char MAX_TRIP_DURATION = 60; // days
 
 
 export enum class TripStatus {
@@ -67,11 +48,13 @@ private:
 	int GetDateDifference(const std::string firstDate, const std::string secondDate = "today");
 
 public:
-	Trip(std::string name = "-", std::string country = "-", std::string city = "-", std::chrono::year_month_day date_of_start = std::chrono::year_month_day{}, std::chrono::year_month_day date_of_end = std::chrono::year_month_day{}, double price = 0, int personal_id = 0, std::string name_of_customer = "-", std::string name_of_manager = "-", std::chrono::year_month_day date_of_booking = std::chrono::year_month_day{});
+    Trip();
+
+    Trip(std::string name, std::string country, std::string city, std::chrono::year_month_day date_of_start, std::chrono::year_month_day date_of_end, double price, int personal_id, std::string name_of_customer, std::string name_of_manager, std::chrono::year_month_day date_of_booking);
 
 	Trip(const Trip& trip); 
 
-	~Trip(); 
+    ~Trip(); 
 
 	void ShowInfo(); 
 
@@ -85,10 +68,10 @@ public:
     void SetCity(std::string city); 
 
     std::chrono::year_month_day GetDateOfStart(); 
-	void SetDateOfStart(std::chrono::year_month_day date_of_start); 
+    std::optional<const char*> SetDateOfStart(std::chrono::year_month_day date_of_start); 
 
     std::chrono::year_month_day GetDateOfEnd(); 
-	void SetDateOfEnd(std::chrono::year_month_day date_of_end); 
+    std::optional<const char*> SetDateOfEnd(std::chrono::year_month_day date_of_end); 
 
 	long GetDuration(); 
 
@@ -129,7 +112,7 @@ int Trip::total_duration = 0;
 
 
 
-long getDateDifference(std::chrono::year_month_day startDate, std::chrono::year_month_day endDate){
+export long getDateDifference(std::chrono::year_month_day startDate, std::chrono::year_month_day endDate){
     std::chrono::sys_days start{startDate};
     std::chrono::sys_days end{endDate};
     std::chrono::days result = end - start;
@@ -148,6 +131,34 @@ std::ostream& operator<<(std::ostream& os, const std::chrono::year_month_day& ym
     return os;
 }
 
+Trip::Trip():
+     name("-"),
+    country("-"),
+    city("-"),
+    name_of_customer("-"),
+    name_of_manager("-") 
+{
+    srand(static_cast<unsigned>(time(nullptr))); 
+    while (true) {
+        this->personal_id = rand() % 9'999'999 + 1'000'000;
+    
+        bool availability = false;
+        for (size_t i = 0; i < Identifiers.size(); ++i) {
+            if (this->personal_id == Identifiers[i]) {
+                availability = true;
+                break;
+            }
+        }
+
+        if (availability) {
+            continue;
+        }
+        else {
+            Identifiers.push_back(this->personal_id);
+            break;
+        }
+    }
+}
 
 
 Trip::Trip(std::string name, std::string country, std::string city, std::chrono::year_month_day date_of_start, std::chrono::year_month_day date_of_end, double price, int personal_id, std::string name_of_customer, std::string name_of_manager, std::chrono::year_month_day date_of_booking)
@@ -158,31 +169,31 @@ Trip::Trip(std::string name, std::string country, std::string city, std::chrono:
 	this->price = price;
 	total_price += this->price;
 
-	this->name_of_customer = name_of_customer;
-	this->name_of_manager = name_of_manager;
-	this->date_of_booking = date_of_booking;
 
 
     if (date_of_start.ok()){
         SetDateOfStart(date_of_start);
     }
     else {
-        throw bad_date("Invalid date of start: ", date_of_start);
+        throw std::runtime_error("Invalid date of start");
     }
+    
     if (date_of_end.ok()){
         if (int duration = getDateDifference(date_of_start, date_of_end); 
-            duration > 1 && duration < 61 ){
+            duration > 1 && duration < MAX_TRIP_DURATION){
             SetDateOfEnd(date_of_end);
         }
         else{
-            throw bad_date("Tour duration must be within [1; 60]. Your date of end: ", date_of_end);        
+            throw std::runtime_error("Tour duration must be within [1; 60]. Your date of end");        
         }
-	}
+    }
     else{
-        throw bad_date("Invalid date of end: ", date_of_end);
+        throw std::runtime_error("Invalid date of end");
     }
 
-	total_duration += getDateDifference(this->date_of_start, this->date_of_end);
+    total_duration += getDateDifference(this->date_of_start, this->date_of_end);
+
+
 
 	if (!(personal_id == 0)) {
 		this->personal_id = personal_id;
@@ -210,6 +221,21 @@ Trip::Trip(std::string name, std::string country, std::string city, std::chrono:
 			}
 		}
 	}
+
+    this->name_of_customer = name_of_customer;
+	this->name_of_manager = name_of_manager;
+
+
+    if (date_of_booking.ok()){
+        auto diff_booking_and_start = getDateDifference(date_of_booking, date_of_start);
+	    if (diff_booking_and_start < 1){
+            throw std::runtime_error("The trip cannot be purchased on the start date or after");
+        }
+        this->date_of_booking = date_of_booking;
+    }
+    else{
+        throw std::runtime_error("Invalid date of booking");
+    }
 }
 
 
@@ -327,8 +353,14 @@ std::chrono::year_month_day Trip::GetDateOfStart() {
 }
 
 
-void Trip::SetDateOfStart(std::chrono::year_month_day date_of_start) {
+std::optional<const char*> Trip::SetDateOfStart(std::chrono::year_month_day date_of_start) {
+    if (date_of_start >= this->date_of_end)
+        return "Date of start cannot be greater or equal then date of end";
+    else if (getDateDifference(date_of_start, this->date_of_end) > MAX_TRIP_DURATION)
+        return "Max trip duration cannot be over than 60 days";
+
     this->date_of_start = date_of_start;
+    return std::nullopt;
 }
 
 
@@ -336,8 +368,14 @@ std::chrono::year_month_day Trip::GetDateOfEnd() {
 	return this->date_of_end;
 }
 
-void Trip::SetDateOfEnd(std::chrono::year_month_day date_of_end) {
+std::optional<const char*> Trip::SetDateOfEnd(std::chrono::year_month_day date_of_end) {
+    if (date_of_end <= this->date_of_start)
+        return "Date of end cannot be less or equal then date of start";
+    else if (getDateDifference(this->date_of_start, date_of_end) > MAX_TRIP_DURATION)
+        return "Max trip duration cannot be over than 60 days";
+
     this->date_of_end = date_of_end;
+    return std::nullopt;
 }
 
 

@@ -3,6 +3,7 @@ module;
 
 #include <iostream>
 
+#include <chrono> 
 #include <memory>
 
 #include <list>
@@ -68,9 +69,7 @@ void ValidatedInput(T& val) {
     std::cin.ignore(INT_MAX, '\n');
 }
 
-
-
-int GetDateDifference(const std::string firstDate, const std::string secondDate = "today");
+export std::chrono::year_month_day stringToYearMonthDay(const std::string& date);
 
 // logging actions
 export void SaveMessage(const std::string msg, const std::string path = "History.txt");
