@@ -2640,12 +2640,20 @@ MAIN:
 
                         try_again = true;
                         while (try_again){
+<<<<<<< Updated upstream
                             std::cout << "\nEnter trip`s date of start (yyyy/mm/dd): ";
+=======
+                            std::cout << "\nEnter trip`s date of end (yyyy/mm/dd): ";
+>>>>>>> Stashed changes
                             if (std::cin >> input_date) {
                                 try{
                                     date_of_end = stringToYearMonthDay(input_date);
 
+<<<<<<< Updated upstream
                                     if (date_of_start.ok()) {
+=======
+                                    if (date_of_end.ok()) {
+>>>>>>> Stashed changes
                                         Trips.back()->SetDateOfEnd(date_of_end);
                                         try_again = false;
                                     } 
@@ -3934,12 +3942,20 @@ case 3: // case 3: Trips
                   
             try_again = true;
             while (try_again){
+<<<<<<< Updated upstream
                 std::cout << "\nEnter trip`s date of start (yyyy/mm/dd): ";
+=======
+                std::cout << "\nEnter trip`s date of end (yyyy/mm/dd): ";
+>>>>>>> Stashed changes
                 if (std::cin >> input_date) {
                     try{
                         date_of_end = stringToYearMonthDay(input_date);
 
+<<<<<<< Updated upstream
                         if (date_of_start.ok()) {
+=======
+                        if (date_of_end.ok()) {
+>>>>>>> Stashed changes
                             Trips.back()->SetDateOfEnd(date_of_end);
                             try_again = false;
                         } 

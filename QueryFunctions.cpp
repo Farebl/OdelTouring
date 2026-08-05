@@ -27,10 +27,16 @@ import :QueryFunctions; // Імпортуємо свою ж партицію, щ
 
 // 0 General fucntions:
 
+// yyyy/mm/dd --> std::chrono::year_month_day
 
 std::chrono::year_month_day stringToYearMonthDay(const std::string& date){
+<<<<<<< Updated upstream
     short d, m, y; // fot parsing inoput date: dauy, month, year;
     if (std::sscanf(date.c_str(), "%hd/%hd/%hd", &d, &m, &y) == 3){
+=======
+    short y, m, d; // fot parsing inoput date: dauy, month, year;
+    if (std::sscanf(date.c_str(), "%hd/%hd/%hd", &y, &m, &d) == 3){
+>>>>>>> Stashed changes
 
         std::chrono::year_month_day date_of_start = std::chrono::year_month_day{
             std::chrono::year(y), 
@@ -870,6 +876,7 @@ void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string pa
                 std::getline(TripObjectsRead, emptiness);
                 std::getline(TripObjectsRead, emptiness);
             }
+<<<<<<< Updated upstream
 
 
             try{
@@ -887,8 +894,28 @@ void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string pa
 			{
 				if (getDateDifference(today, date_of_start) > 0) //TripStatus::SELLING - çáåð³ãàºìî
 					Trips.emplace_back(std::make_shared<Trip>(name, country, city, date_of_start, date_of_end, std::stod(price), std::stoi(personal_id), "-", "-", std::chrono::year_month_day{}));
+=======
+
+
+            try{
+                date_of_start = stringToYearMonthDay(date_of_start_str);
+                date_of_end = stringToYearMonthDay(date_of_end_str);
+                if (status == "Sold" || status == "In progress") 
+                    date_of_booking = stringToYearMonthDay(date_of_booking_str);
+
+            }
+            catch(std::exception& ex){
+                std::cout << "Exception while reading date of start/end/booking of the trip \"" << name << "\" (id: " << personal_id <<"): "<< ex.what();
+                continue;
+            }
+            
+			if (status == "On sale")  // TripStatus::ON_SALE or EXPIRED
+			{
+				if (getDateDifference(today, date_of_start) > 0) //TripStatus::SELLING - çáåð³ãàºìî
+					Trips.emplace_back(std::make_shared<Trip>(name, country, city, date_of_start, date_of_end, std::stod(price), std::stoi(personal_id)));
+>>>>>>> Stashed changes
 			}
-			else if (status == "Bought" || status == "Using")  // TripStatus::SOLD or IN_PROGRESS or USED
+			else if (status == "Sold" || status == "In progress")  // TripStatus::SOLD or IN_PROGRESS or FINISHED
 			{
 				if (getDateDifference(today, date_of_end) < 0) 
 					SaveOrderData(static_cast<int>(date_of_booking.year()), country, name, name_of_customer, std::stod(price));
