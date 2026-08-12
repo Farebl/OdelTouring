@@ -31,11 +31,5 @@ int main() {
     }
 	return 0;
 }
-// need to soleve problem with default Trip-constructor --> need to separate true default and param (throw out default params)
 
-<<<<<<< Updated upstream
-=======
-
-
->>>>>>> Stashed changes
 // need to add exception safety

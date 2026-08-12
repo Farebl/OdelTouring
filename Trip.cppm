@@ -50,10 +50,7 @@ private:
 public:
     Trip();
 
-<<<<<<< Updated upstream
-=======
     Trip(std::string name, std::string country, std::string city, std::chrono::year_month_day date_of_start, std::chrono::year_month_day date_of_end, double price, int personal_id);
->>>>>>> Stashed changes
     Trip(std::string name, std::string country, std::string city, std::chrono::year_month_day date_of_start, std::chrono::year_month_day date_of_end, double price, int personal_id, std::string name_of_customer, std::string name_of_manager, std::chrono::year_month_day date_of_booking);
 
 	Trip(const Trip& trip); 
@@ -136,36 +133,7 @@ std::ostream& operator<<(std::ostream& os, const std::chrono::year_month_day& ym
 }
 
 Trip::Trip():
-     name("-"),
-    country("-"),
-    city("-"),
-    name_of_customer("-"),
-    name_of_manager("-") 
-{
-    srand(static_cast<unsigned>(time(nullptr))); 
-    while (true) {
-        this->personal_id = rand() % 9'999'999 + 1'000'000;
-    
-        bool availability = false;
-        for (size_t i = 0; i < Identifiers.size(); ++i) {
-            if (this->personal_id == Identifiers[i]) {
-                availability = true;
-                break;
-            }
-        }
-
-        if (availability) {
-            continue;
-        }
-        else {
-            Identifiers.push_back(this->personal_id);
-            break;
-        }
-    }
-}
-
-Trip::Trip():
-     name("-"),
+    name("-"),
     country("-"),
     city("-"),
     name_of_customer("-"),
@@ -227,14 +195,10 @@ Trip::Trip(std::string name, std::string country, std::string city, std::chrono:
 
     total_duration += getDateDifference(this->date_of_start, this->date_of_end);
 
-<<<<<<< Updated upstream
-=======
     
     this->name_of_customer = "-";
 	this->name_of_manager = "-";
     this->date_of_booking = std::chrono::year_month_day{};
-
->>>>>>> Stashed changes
 
 
 	if (!(personal_id == 0)) {
@@ -263,24 +227,6 @@ Trip::Trip(std::string name, std::string country, std::string city, std::chrono:
 			}
 		}
 	}
-
-<<<<<<< Updated upstream
-    this->name_of_customer = name_of_customer;
-	this->name_of_manager = name_of_manager;
-
-
-    if (date_of_booking.ok()){
-        auto diff_booking_and_start = getDateDifference(date_of_booking, date_of_start);
-	    if (diff_booking_and_start < 1){
-            throw std::runtime_error("The trip cannot be purchased on the start date or after");
-        }
-        this->date_of_booking = date_of_booking;
-    }
-    else{
-        throw std::runtime_error("Invalid date of booking");
-    }
-=======
->>>>>>> Stashed changes
 }
 
 
@@ -420,12 +366,6 @@ std::chrono::year_month_day Trip::GetDateOfStart() {
 
 
 std::optional<const char*> Trip::SetDateOfStart(std::chrono::year_month_day date_of_start) {
-<<<<<<< Updated upstream
-    if (date_of_start >= this->date_of_end)
-        return "Date of start cannot be greater or equal then date of end";
-    else if (getDateDifference(date_of_start, this->date_of_end) > MAX_TRIP_DURATION)
-        return "Max trip duration cannot be over than 60 days";
-=======
     if (date_of_end.ok()) {
         if (date_of_start >= this->date_of_end)
             return "Date of start cannot be greater or equal then date of end";
@@ -433,7 +373,6 @@ std::optional<const char*> Trip::SetDateOfStart(std::chrono::year_month_day date
         else if (getDateDifference(date_of_start, this->date_of_end) > MAX_TRIP_DURATION)
             return "Max trip duration cannot be over than 60 days";
     }
->>>>>>> Stashed changes
 
     this->date_of_start = date_of_start;
     return std::nullopt;
@@ -445,17 +384,12 @@ std::chrono::year_month_day Trip::GetDateOfEnd() {
 }
 
 std::optional<const char*> Trip::SetDateOfEnd(std::chrono::year_month_day date_of_end) {
-<<<<<<< Updated upstream
-    if (date_of_end <= this->date_of_start)
-        return "Date of end cannot be less or equal then date of start";
-=======
     if (!this->date_of_start.ok())
         return "Before setting the date of end, set valid date of start";
      
     else if (date_of_end <= this->date_of_start)
         return "Date of end cannot be less or equal then date of start";
-    
->>>>>>> Stashed changes
+   
     else if (getDateDifference(this->date_of_start, date_of_end) > MAX_TRIP_DURATION)
         return "Max trip duration cannot be over than 60 days";
 
