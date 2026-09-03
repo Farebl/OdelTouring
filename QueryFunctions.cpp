@@ -23,6 +23,18 @@ import :QueryFunctions; // Імпортуємо свою ж партицію, щ
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+std::ostream& operator<<(std::ostream& os, const std::chrono::year_month_day& ymd) {
+    if (ymd.ok()) {
+        os << static_cast<int>(ymd.year()) << "/"
+           << static_cast<unsigned>(ymd.month()) << "/"
+           << static_cast<unsigned>(ymd.day());
+    } else {
+        os << "Invalid Date";
+    }
+    return os;
+}
+
+
 
 
 // 0 General fucntions:
@@ -60,7 +72,7 @@ void SaveMessage(const std::string msg, const std::string path) {
 }
 
 
-void ClearConsole() {std::system("cls");}
+void ClearConsole() {std::cout << "\033[2J\033[H" << std::flush;}
 
 
 int GetCountOfOrders(const int year, const std::string path){
@@ -132,27 +144,25 @@ void ReadOrdersData(std::stack<Order>& Collection, const std::string path) {
 
 
 void ShowFullInfoForEditManager(const manager_list_iter_t& manager){
-	std::cout << "\n" << "1) Name: " << (*manager)->GetFullName();
-	std::cout << "\n" << "2) Phone number: " << (*manager)->GetPhoneNumber();
-	std::cout << "\n" << "!!! By changing the \"Name of the company\", you will change it for all managers and customers.";
+	std::cout << "\n" << "1) First name: " << (*manager)->GetFirstName();
+	std::cout << "\n" << "2) Second name: " << (*manager)->GetSecondName();
+	std::cout << "\n" << "3) Patronymic name: " << (*manager)->GetPatronymicName();
+	std::cout << "\n" << "4) Phone number: " << (*manager)->GetPhoneNumber();
 }
 
 
 void EditManager(manager_list_iter_t& manager, const int fieldIndex, const std::string value){
 	switch (fieldIndex){
 	case 1:
-		(*manager)->SetFullName(value);
-		break;
-	case 2:
+		(*manager)->SetFirstName(value);
+		break;	
+    case 2:
 		(*manager)->SetSecondName(value);
 		break;
 	case 3:
-		(*manager)->SetFirstName(value);
-		break;
-	case 4:
 		(*manager)->SetPatronymicName(value);
 		break;
-	case 5:
+	case 4:
 		(*manager)->SetPhoneNumber(value);
 		break;
 	default:
@@ -237,21 +247,18 @@ void EditCustomer(customer_list_iter_t& customer, const int fieldIndex, const st
 
 	switch (fieldIndex){
 	case 1:
-		(*customer)->SetFullName(value);
+		(*customer)->SetFirstName(value);
 		break;
-	case 2:
+    case 2:
 		(*customer)->SetSecondName(value);
 		break;
 	case 3:
-		(*customer)->SetFirstName(value);
-		break;
-	case 4:
 		(*customer)->SetPatronymicName(value);
 		break;
-	case 5:
+	case 4:
 		(*customer)->SetPhoneNumber(value);
 		break;
-	case 6:
+	case 5:
 		(*customer)->SetAddress(value);
 		break;
 	default:

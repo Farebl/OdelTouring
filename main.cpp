@@ -1,10 +1,11 @@
 import Functions;
 
-ListSharedsManager_t Managers;
-ListSharedsCustomer_t Customers;
-ListSharedsTrip_t Trips;
 #include <iostream>
 int main() {
+    ListSharedsManager_t Managers;
+    ListSharedsCustomer_t Customers;
+    ListSharedsTrip_t Trips;
+
     try{
         ReadManagersData(Managers, "Managers.txt");
         ReadTripsData(Trips, "Trips.txt");
@@ -18,7 +19,7 @@ int main() {
         Interface(Managers, Customers, Trips, "Managers.txt", "Customers.txt", "Trips.txt", "Orders.txt", "History.txt");
     }
     catch(std::exception& ex){
-        std::cout<< "Exception in interface: " << ex.what();
+        std::cout<< "Exception from interface: " << ex.what();
     }
 
     try{     
