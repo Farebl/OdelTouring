@@ -44,33 +44,14 @@ std::coroutine_handle<> MenuItem::get_handle() const { return m_handle; }
 
    
 
-struct MenuItemsHandles {
-    std::coroutine_handle<> main_menu;
-    std::coroutine_handle<> managers_menu;
-        std::coroutine_handle<> managers_info_menu;
-            std::coroutine_handle<> managers_show_full_info_menu;
-            std::coroutine_handle<> managers_edit_info_menu;
-        std::coroutine_handle<> managers_add_manager_menu;
-        std::coroutine_handle<> managers_remove_manager_menu;
-
-    std::coroutine_handle<> customers_menu;
-        std::coroutine_handle<> customers_info_menu;
-            std::coroutine_handle<> customers_show_full_info_menu;
-            std::coroutine_handle<> customers_edit_info_menu;
-        std::coroutine_handle<> customers_add_customer_menu;
-        std::coroutine_handle<> customers_remove_customer_menu;
-
-};
-
-
 
 
 
 //////////////////// HELP GUI FUNCTIONS //////////////////////////
 
 void StopInterface(){
-        throw std::logic_error{"stop signal"};
-    }
+    throw std::logic_error{"stop signal"};
+}
 
 bool ConfirmationOfProgramCompletionMenu(){
     size_t menu_item = 0;
@@ -106,8 +87,7 @@ bool ConfirmationOfProgramCompletionMenu(){
 
 
 
-MenuItem MainMenu(const MenuItemsHandles& handles)
-{
+MenuItem MainMenu(const MenuItemsHandles& handles){
     size_t menu_item = 0; 
 
     while (true) {
@@ -128,8 +108,7 @@ MenuItem MainMenu(const MenuItemsHandles& handles)
                 break;
 
             case 2:
-                //co_await CustomersMenu(Customers); 
-                std::cout << "\n!!! Not ready yet !!!";  
+                co_await SwitchTo{ handles.customers_menu };  
                 break;
 
             case 3:
@@ -159,8 +138,7 @@ MenuItem MainMenu(const MenuItemsHandles& handles)
 
 
 
-MenuItem ManagersMenu(const MenuItemsHandles& handles)
-{
+MenuItem ManagersMenu(const MenuItemsHandles& handles){
     size_t menu_item = 0;
 
     while(true){
@@ -209,43 +187,46 @@ MenuItem ManagersMenu(const MenuItemsHandles& handles)
 
 MenuItem ManagersInfoMenu(ListSharedsManager_t& managers, const MenuItemsHandles& handles) {
     size_t menu_item = 0;
+    
+    if (managers.empty()) {
+        while (true) {
+            ClearConsole();
+            std::cout << "\n\n|--- Information about managers ---|";
+
+            std::cout << "\n\nUnfortunately, there are no managers";
+            std::cout << "\n1) Add new manager";
+            std::cout << "\n2) Go to the \"Main menu\"";
+            std::cout << "\n3) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+            case 1:
+                co_await SwitchTo{handles.managers_add_manager_menu}; 
+                break;
+
+            case 2:
+                co_await SwitchTo{handles.main_menu}; 
+                break;
+
+            case 3:
+                if (ConfirmationOfProgramCompletionMenu()){
+                    StopInterface();
+                }
+                break;
+
+            default:
+                std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                break;
+            }
+        }
+    }
 
     while(true){
-
         ClearConsole();
         std::cout << "\n\n|--- Information about managers ---|";
-        
-        if (managers.empty()) {
-            while (true) {
-                std::cout << "\n\nUnfortunately, there are no managers";
-                std::cout << "\n1) Add new manager";
-                std::cout << "\n2) Go to the \"Main menu\"";
-                std::cout << "\n3) Close the program";
 
-                std::cout << "\n\nEnter item number: ";
-                ValidatedInput(menu_item);
-                switch (menu_item) {
-                case 1:
-                    co_await SwitchTo{handles.managers_add_manager_menu}; 
-                    break;
-
-                case 2:
-                    co_await SwitchTo{handles.main_menu}; 
-                    break;
-
-                case 3:
-                    if (ConfirmationOfProgramCompletionMenu()){
-                        StopInterface();
-                    }
-                    break;
-
-                default:
-                    std::cout << "\n\n!!! Incorrect action number entered. Try again:";
-                    break;
-                }
-            }
-		} 
-
+        std::cout << "\n\nCount of managers: " << managers.size();
 
         std::cout << "\n\n1) Full information about the manager";
         std::cout << "\n2) Edit information about the manager";
@@ -289,7 +270,7 @@ MenuItem ManagersInfoMenu(ListSharedsManager_t& managers, const MenuItemsHandles
 
 
 
-MenuItem ManagersShowFullInformationAboutManagerMenu(const ListSharedsManager_t& managers, const MenuItemsHandles& handles){
+MenuItem ShowFullInformationAboutManagerMenu(const ListSharedsManager_t& managers, const MenuItemsHandles& handles){
     size_t menu_item = 0;
     size_t manager_index = 0;
     bool try_again_select_manager = true;
@@ -671,6 +652,41 @@ MenuItem AddNewManagerMenu(ListSharedsManager_t& managers, const std::string& hi
 
 MenuItem RemoveManagerMenu(ListSharedsManager_t& managers, const std::string& historyDataPath, const MenuItemsHandles& handles){
     size_t menu_item = 0;
+    
+    if (managers.empty()) {
+        while (true) {
+            ClearConsole();
+            std::cout << "\n\n|--- Remove manager ---|\n";
+
+            std::cout << "\n\nUnfortunately, there are no managers (no one to delete)";
+            std::cout << "\n1) Back to \"Managers\"";
+            std::cout << "\n2) Go to the \"Main menu\"";
+            std::cout << "\n3) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+                case 1:
+                    co_await SwitchTo{handles.managers_menu}; 
+                    break;
+                    
+                case 2:
+                     co_await SwitchTo{handles.main_menu}; 
+                    break;
+                    
+                case 3:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                    break;
+            }
+        }
+    } 
+
     size_t manager_index = 0;
     bool try_again_select_manager = true;
     bool remove_another_manager = true;
@@ -681,37 +697,7 @@ MenuItem RemoveManagerMenu(ListSharedsManager_t& managers, const std::string& hi
         ClearConsole();
         std::cout << "\n\n|--- Remove manager ---|\n";
 
-        if (managers.empty()) {
-            while (true) {
-                std::cout << "\n\nUnfortunately, there are no managers (no one to delete)";
-                std::cout << "\n1) Back to \"Managers\"";
-                std::cout << "\n2) Go to the \"Main menu\"";
-                std::cout << "\n3) Close the program";
-
-                std::cout << "\n\nEnter item number: ";
-                ValidatedInput(menu_item);
-                switch (menu_item) {
-                    case 1:
-                        co_await SwitchTo{handles.managers_menu}; 
-                        break;
-                        
-                    case 2:
-                         co_await SwitchTo{handles.main_menu}; 
-                        break;
-                        
-                    case 3:
-                        if (ConfirmationOfProgramCompletionMenu()){
-                            StopInterface();
-                        }
-                        break;
-
-                    default:
-                        std::cout << "\n\n!!! Incorrect action number entered. Try again:";
-                        break;
-                }
-            }
-        } 
-
+ 
         std::cout << "\nManagers: \n";
         ShowListOfCollectionElementNames(managers);
 
@@ -806,6 +792,847 @@ MenuItem RemoveManagerMenu(ListSharedsManager_t& managers, const std::string& hi
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///
+///  END MANAGERS MENU
+///
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///
+/// CUSTOMERS MENU
+///
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+MenuItem CustomersMenu(const MenuItemsHandles& handles)
+{
+    size_t menu_item = 0;
+
+    while(true){
+        ClearConsole();
+    	std::cout << "\n\n|--- Customers ---|";
+
+		std::cout << "\n\n1) Information";
+		std::cout << "\n2) Add new customer";
+		std::cout << "\n3) Remove customer";
+		std::cout << "\n4) Back to \"Main menu\"";
+		std::cout << "\n5) Close the program";
+
+
+        std::cout << "\n\nEnter item number: ";
+        ValidatedInput(menu_item);
+        switch (menu_item) {
+            case 1:
+                co_await SwitchTo{handles.customers_info_menu}; 
+                break;
+
+            case 2:
+                co_await SwitchTo{handles.customers_add_customer_menu}; 
+                break;
+
+            case 3:
+                co_await SwitchTo{handles.customers_remove_customer_menu}; 
+                break;
+
+            case 4:
+                co_await SwitchTo{handles.main_menu}; 
+                break;
+
+            case 5:
+                if (ConfirmationOfProgramCompletionMenu()){
+                    StopInterface();
+                }
+                break;
+
+            default:
+                std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                break;
+        }
+    }
+}
+
+
+MenuItem CustomersInfoMenu(ListSharedsCustomer_t& customers, const MenuItemsHandles& handles) {
+    size_t menu_item = 0;
+    
+    if (customers.empty()) {
+        while (true) {
+            ClearConsole();
+            std::cout << "\n\n|--- Information about customers ---|";
+
+            std::cout << "\n\nUnfortunately, there are no customers";
+            std::cout << "\n1) Add new customer";
+            std::cout << "\n2) Go to the \"Main menu\"";
+            std::cout << "\n3) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+            case 1:
+                co_await SwitchTo{handles.customers_add_customer_menu}; 
+                break;
+
+            case 2:
+                co_await SwitchTo{handles.main_menu}; 
+                break;
+
+            case 3:
+                if (ConfirmationOfProgramCompletionMenu()){
+                    StopInterface();
+                }
+                break;
+
+            default:
+                std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                break;
+            }
+        }
+    } 
+
+    while(true){
+        ClearConsole();
+        std::cout << "\n\n|--- Information about customers ---|";
+
+        std::cout << "\n\nCount of customers: " << customers.size();
+        
+        std::cout << "\n\n1) Show full information about the customer"; 
+        std::cout << "\n2) Edit information about the customer";
+        std::cout << "\n3) List of customers by trip`s country";
+        std::cout << "\n4) Back to \"Customers\"";
+        std::cout << "\n5) Go to \"Main menu\"";
+        std::cout << "\n6) Close the program";
+        std::cout << "\n\n!!! If you choose (1) or (2) you will see full list of managers";
+
+        std::cout << "\n\nEnter item number: ";
+        ValidatedInput(menu_item);
+        switch (menu_item) {
+            case 1:
+                co_await SwitchTo{handles.customers_show_full_info_menu};
+                break;
+                
+            case 2:
+                co_await SwitchTo{handles.customers_edit_info_menu}; 
+                break;
+
+            case 3:
+                co_await SwitchTo{handles.customers_list_by_trip_country_menu}; 
+                break;
+            
+            case 4:
+                co_await SwitchTo{handles.customers_menu}; 
+                break;
+                
+            case 5:
+                 co_await SwitchTo{handles.main_menu}; 
+                break;
+                
+            case 6:
+                if (ConfirmationOfProgramCompletionMenu()){
+                    StopInterface();
+                }
+                break;
+
+            default:
+                std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                break;
+        }
+    }
+}
+
+
+
+
+MenuItem ShowFullInformationAboutCustomerMenu(const ListSharedsCustomer_t& customers, const MenuItemsHandles& handles){
+    size_t menu_item = 0;
+    size_t customer_index = 0;
+    bool try_again_select_customer = true;
+    while(try_again_select_customer){
+        try_again_select_customer = false;
+
+        ClearConsole();
+        std::cout << "\n\n|--- Full information about the customer ---|\n";
+
+        std::cout << "\nCustomers: \n";
+        ShowListOfCollectionElementNames(customers);
+
+        std::cout << "\n\nSelect the number of the customer you want to see full information about: ";
+        ValidatedInput(customer_index);
+
+        if (customer_index < 1 || customer_index > customers.size()) {
+            while (true) {
+                std::cout << "\n\nThere is no customer with such a serial number.";
+                std::cout << "\n1) Try again to select a customer";
+                std::cout << "\n2) Back to \"Information about customers\"";
+                std::cout << "\n3) Go to \"Main menu\"";
+                std::cout << "\n4) Close the program";
+
+                std::cout << "\n\nEnter item number: ";
+                ValidatedInput(menu_item);
+                switch (menu_item) {
+                    case 1:
+                        try_again_select_customer = true;
+                        break;
+
+                    case 2:
+                        co_await SwitchTo{handles.customers_info_menu}; 
+                        break;
+
+                    case 3:
+                        co_await SwitchTo{handles.main_menu}; 
+                        break;
+
+                    case 4:
+                        if (ConfirmationOfProgramCompletionMenu()){
+                            StopInterface();
+                        }
+                        break;
+
+                    default:
+                        std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                        break;
+                }
+                if (try_again_select_customer) break;
+            } 
+            if (try_again_select_customer) continue;
+        } 
+
+        auto customer = customers.begin();
+        std::advance(customer, customer_index - 1);
+
+        ClearConsole();
+        std::cout << "\n\n|--- Full information about the customer ---|\n";
+        (*customer)->ShowInfo();
+
+        while (true) {
+            std::cout << "\n\n1) See detailed information about another customer";
+            std::cout << "\n2) Back to \"Information about customers\"";
+            std::cout << "\n3) Go to \"Main menu\"";
+            std::cout << "\n4) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+                case 1:
+                    try_again_select_customer = true;
+                    break;
+
+                case 2:
+                    co_await SwitchTo{handles.customers_info_menu}; 
+                    break;
+
+                case 3:
+                    co_await SwitchTo{handles.main_menu}; 
+                    break;
+
+                case 4:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                    break;
+            }
+            if (try_again_select_customer) break;
+        }
+        if (try_again_select_customer) continue;
+    }
+}
+
+
+
+
+MenuItem EditInformationAboutCustomerMenu(const ListSharedsCustomer_t& customers, const std::string& historyDataPath, const MenuItemsHandles& handles){
+    size_t menu_item = 0;
+    size_t customer_index = 0;
+    size_t field_index = 0;
+    bool try_again_select_customer = true;
+    std::string new_value; 
+
+    while(try_again_select_customer){
+        try_again_select_customer = false;
+
+        ClearConsole();
+        std::cout << "\n|--- Edit information about the customer ---|\n";
+
+        std::cout << "\nCustomers: \n";
+        ShowListOfCollectionElementNames(customers);
+
+        std::cout << "\n\nSelect the number of the customer, whose information you want to edit: ";
+        ValidatedInput(customer_index);
+
+        if (customer_index < 1 || customer_index > customers.size()) {
+            while (true) {
+                std::cout << "\n\nThere is no customer with such a serial number";
+                std::cout << "\n1) Try again to select a customer";
+                std::cout << "\n2) Back to \"Information about customers\"";
+                std::cout << "\n3) Go to \"Main menu\"";
+                std::cout << "\n4) Close the program";
+
+                std::cout << "\n\nEnter item number: ";
+                ValidatedInput(menu_item);
+                switch (menu_item) {
+                    case 1:
+                        try_again_select_customer = true;
+                        break;
+
+                    case 2:
+                        co_await SwitchTo{handles.customers_info_menu}; 
+                        break;
+
+                    case 3:
+                        co_await SwitchTo{handles.main_menu}; 
+                        break;
+
+                    case 4:
+                        if (ConfirmationOfProgramCompletionMenu()){
+                            StopInterface();
+                        }
+                        break;
+
+                    default:
+                        std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                        break;
+                }
+                if (try_again_select_customer) break;
+            } 
+            if (try_again_select_customer) continue;
+        }
+
+        auto customer = customers.begin();
+        std::advance(customer, customer_index - 1);
+        
+        bool try_again_select_field = true;
+        while(try_again_select_field){
+            try_again_select_field = false;
+            
+            ClearConsole();
+            std::cout << "\n|--- Edit information about the customer \"" << (*customer)->GetFullName() << "\" " << (*customer)->GetPhoneNumber() << " ---|\n";
+           	std::cout << "\n" << "1) First name: " << (*customer)->GetFirstName();
+            std::cout << "\n" << "2) Second name: " << (*customer)->GetSecondName();
+            std::cout << "\n" << "3) Patronymic name: " << (*customer)->GetPatronymicName();
+            std::cout << "\n" << "4) Phone number: " << (*customer)->GetPhoneNumber();
+            std::cout << "\n" << "5) Address: " << (*customer)->GetAddress();
+
+            std::cout << "\n\nSelect the number of the field, that you want to edit: ";
+            ValidatedInput(field_index);
+
+            if (field_index < 1 || field_index > 5) {
+                while (true) {
+                    std::cout << "\n\nThere is no field with such a serial number";
+                    std::cout << "\n1) Try again to select a field";
+                    std::cout << "\n2) Select another customer to edit";
+                    std::cout << "\n3) Back to \"Information about customers\"";
+                    std::cout << "\n4) Go to \"Main menu\"";
+                    std::cout << "\n5) Close the program";
+
+                    std::cout << "\n\nEnter item number: ";
+                    ValidatedInput(menu_item);
+                    switch (menu_item) {
+                        case 1:
+                            try_again_select_field = true;
+                            break;
+
+                        case 2:
+                            try_again_select_customer = true;
+                            break;
+
+                        case 3:
+                            co_await SwitchTo{handles.customers_info_menu}; 
+                            break;
+
+                        case 4:
+                            co_await SwitchTo{handles.main_menu}; 
+                            break;
+
+                        case 5:
+                            if (ConfirmationOfProgramCompletionMenu()){
+                                StopInterface();
+                            }
+                            break;
+
+                        default:
+                            std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                            break;
+                    }
+                            
+                    if (try_again_select_field || try_again_select_customer) break;
+                }
+                if (try_again_select_field)  continue;
+                if (try_again_select_customer) break;
+            }
+            
+
+            bool try_again_edit_selected_field = true;
+            while(try_again_edit_selected_field){
+                try_again_edit_selected_field = false;
+
+                std::cout << "\n\nEnter a new value for selected field: ";
+                ValidatedInput(new_value);
+
+                switch (field_index){
+                    case 1:
+                        (*customer)->SetFirstName(new_value);
+                        break;
+
+                    case 2:
+                        (*customer)->SetSecondName(new_value);
+                        break;
+
+                    case 3:
+                        (*customer)->SetPatronymicName(new_value);
+                        break;
+
+                    case 4:
+                        (*customer)->SetPhoneNumber(new_value);
+                        break;
+
+                    case 5:
+                        (*customer)->SetAddress(new_value);
+                        break;
+
+                    default:
+                        break;
+                }
+                
+                ClearConsole();
+                std::cout << "\n\n|--- Edit information about the customer ---|\n";
+
+                std::cout << "\nInformation about the customer \"" << (*customer)->GetFullName() << "\" has been edited:";
+                (*customer)->ShowInfo();
+                SaveMessage("Changing information about customer by id: " + std::to_string((*customer)->GetPersonalId()), historyDataPath);
+
+
+                while (true) {
+                    std::cout << "\n\n1) Enter another value for selected field: " << 
+                        (field_index == 1 ? "First name" : (field_index == 2 ? "Second name" : (field_index == 3 ? "Patronymic name" : (field_index == 4 ? "Pnone number" : "Address"))));
+                    std::cout << "\n2) Select another field of the current customer " << "(\"" << (*customer)->GetFullName() << "\" " << (*customer)->GetPhoneNumber() << ") to edit"; 
+                    std::cout << "\n3) Select another customer to edit";
+                    std::cout << "\n4) Back to \"Information about customers\"";
+                    std::cout << "\n5) Go to \"Main menu\"";
+                    std::cout << "\n6) Close the program";
+
+                    std::cout << "\n\nEnter item number: ";
+                    ValidatedInput(menu_item);
+                    switch (menu_item) {
+                        case 1:
+                            try_again_edit_selected_field = true;
+                            break;
+
+                        case 2:
+                            try_again_select_field = true;
+                            break;
+
+                        case 3:
+                            try_again_select_customer = true;
+                            break;
+
+                        case 4:
+                            co_await SwitchTo{handles.customers_info_menu}; 
+                            break;
+
+                        case 5:
+                            co_await SwitchTo{handles.main_menu}; 
+                            break;
+
+                        case 6:
+                            if (ConfirmationOfProgramCompletionMenu()){
+                                StopInterface();
+                            }
+                            break;
+
+                        default:
+                            std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                            break;
+                    }
+
+                    if (try_again_edit_selected_field || try_again_select_field || try_again_select_customer) break;
+                }
+                if (try_again_edit_selected_field) continue;
+                if (try_again_select_field || try_again_select_customer) break;
+            }
+            if (try_again_select_field) continue;
+            if (try_again_select_customer) break;
+        }
+    }
+}
+
+
+
+MenuItem ListOfCustomersByTripsCountryMenu(const ListSharedsCustomer_t& customers, const ListSharedsTrip_t& trips, const MenuItemsHandles& handles){
+    size_t menu_item = 0;
+    
+    if (GetCountOfCustomersWithTrip(customers).first == 0) {
+        while (true) {
+            ClearConsole();
+            std::cout << "\n\n|--- List of customers by trip`s country  ---|";
+
+            std::cout << "\n\nUnfortunately, there are no customers with a trip.";
+            std::cout << "\n1) Back to \"Customers information\"";
+            std::cout << "\n2) Go to \"Main menu\"";
+            std::cout << "\n3) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+                case 1:
+                    co_await SwitchTo{handles.customers_info_menu}; 
+                    break;
+
+                case 2:
+                    co_await SwitchTo{handles.main_menu}; 
+                    break;
+
+                case 3:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                    break;
+            }
+        }
+    }
+
+    size_t customer_index = 0;
+    size_t country_index = 1;
+    std::string country;
+    bool try_to_select_country_again = true;
+    
+    while(try_to_select_country_again){
+        try_to_select_country_again = false;
+        
+        ClearConsole();
+        std::cout << "\n\n|--- List of customers by trip`s country  ---|\n";
+
+        auto countries_of_bought_trips = GetCountriesOfBoughtTrips(trips);
+        std::cout << "\nCountries: ";
+        country_index = 1;
+        for (const auto& country : countries_of_bought_trips) {
+            std::cout << "\n" << country_index << ") " << country;
+            country_index++;
+        }
+					
+				
+        std::cout << "\n\nSelect the country number, you are interested in: ";
+        ValidatedInput(country_index);
+
+    	if (country_index < 1 || country_index > countries_of_bought_trips.size()) {
+            while (true) {
+                std::cout << "\n\nThere is no country with such a serial number.";
+                std::cout << "\n1) Try again";
+                std::cout << "\n2) Back to \"Information about customers\"";
+                std::cout << "\n3) Go to \"Main menu\"";
+                std::cout << "\n4) Close the program";
+
+                std::cout << "\n\nEnter item number: ";
+                ValidatedInput(menu_item);
+                switch (menu_item) {
+                    case 1:
+                        try_to_select_country_again = true;
+                        break;
+                    
+                    case 2:
+                        co_await SwitchTo{handles.customers_info_menu}; 
+                        break;
+
+                    case 3:
+                        co_await SwitchTo{handles.main_menu}; 
+                        break;
+
+                    case 4:
+                        if (ConfirmationOfProgramCompletionMenu()){
+                            StopInterface();
+                        }
+                        break;
+
+                    default:
+                        std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                        break;
+                }
+                if (try_to_select_country_again) break;
+            } 
+            if (try_to_select_country_again) continue;
+        }
+
+        country = countries_of_bought_trips.at(country_index - 1);
+				
+		std::cout << "\nCustomers who have a trip to \""<< country <<"\":";
+		ShowListOfCustomerNamesByCountry(customers, country);
+
+        while (true) {
+            std::cout << "\n\n1) See list of customers by trip`s of another country";
+            std::cout << "\n2) Back to \"Information about customers\"";
+            std::cout << "\n3) Go to \"Main menu\"";
+            std::cout << "\n4) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+                case 1:
+                    try_to_select_country_again = true;
+                    break;
+                
+                case 2:
+                    co_await SwitchTo{handles.customers_info_menu}; 
+                    break;
+
+                case 3:
+                    co_await SwitchTo{handles.main_menu}; 
+                    break;
+
+                case 4:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                    break;
+            }
+            if (try_to_select_country_again) break;
+        }
+    }
+}
+
+
+
+
+
+MenuItem AddNewCustomerMenu(ListSharedsCustomer_t& customers, const std::string& historyDataPath, const MenuItemsHandles& handles){
+    size_t menu_item = 0;
+    bool add_new_customer_again = true;
+    std::string name;
+    std::string phone_number;
+    std::string address;
+
+    while (add_new_customer_again){
+
+        add_new_customer_again = false;
+        auto new_customer = std::make_shared<Customer>();
+        
+        ClearConsole();
+        std::cout << "\n\n|--- Add new customer ---|\n";
+
+        std::cout << "\nEnter customer`s name: ";
+        std::getline(std::cin, name);
+        new_customer->SetFullName(name);
+
+        std::cout << "\nEnter customer`s phone number (format: +380XXXXXXXXX): ";
+        std::getline(std::cin, phone_number);
+        new_customer->SetPhoneNumber(phone_number);
+
+        std::cout << "\nEnter customer`s address ";
+        std::getline(std::cin, address);
+        new_customer->SetAddress(address);
+
+
+        try{
+            customers.emplace_back(new_customer);
+            std::cout << "\n\nCustomer by name\"" << new_customer->GetFullName() << "\" was added.\nHis/Her id: " << new_customer->GetPersonalId() << "\n";
+            SaveMessage("Customer by name \"" + new_customer->GetFullName() + "\" was added. His/Her id: " + std::to_string(new_customer->GetPersonalId()), historyDataPath);
+        }
+        catch(...){
+            std::cout << "\n\nERROR: something went wrong while adding the customer by name\"" << new_customer->GetFullName();
+        }
+
+        while (true) {
+            std::cout << "\n\n1) Add new customer";
+            std::cout << "\n2) Back to \"Customers\"";
+            std::cout << "\n3) Go to \"Main menu\"";
+            std::cout << "\n4) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+                case 1:
+                    add_new_customer_again = true;
+                    break;
+
+                case 2:
+                    co_await SwitchTo{handles.customers_menu}; 
+                    break;
+                    
+                case 3:
+                     co_await SwitchTo{handles.main_menu}; 
+                    break;
+                    
+                case 4:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                    break;
+            }
+
+            if (add_new_customer_again) break;
+        }
+    }
+}
+
+
+MenuItem RemoveCustomerMenu(ListSharedsCustomer_t& customers, const std::string& historyDataPath, const MenuItemsHandles& handles){
+    size_t menu_item = 0;
+    
+    if (customers.empty()) {
+        while (true) {
+            ClearConsole();
+            std::cout << "\n\n|--- Remove customer ---|\n";
+
+            std::cout << "\n\nUnfortunately, there are no customers (no one to delete)";
+            std::cout << "\n1) Back to \"Customers\"";
+            std::cout << "\n2) Go to the \"Main menu\"";
+            std::cout << "\n3) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+                case 1:
+                    co_await SwitchTo{handles.customers_menu}; 
+                    break;
+                    
+                case 2:
+                     co_await SwitchTo{handles.main_menu}; 
+                    break;
+                    
+                case 3:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                    break;
+            }
+        }
+    } 
+
+    size_t customer_index = 0;
+    bool try_again_select_customer = true;
+    bool remove_another_customer = true;
+
+    while(remove_another_customer){
+        remove_another_customer = false;
+
+        ClearConsole();
+        std::cout << "\n\n|--- Remove customer ---|\n";
+
+        std::cout << "\nCustomers: \n";
+        ShowListOfCollectionElementNames(customers);
+
+        std::cout << "\n\nSelect the number of the customer you want to remove: ";
+        ValidatedInput(customer_index);
+
+        if (customer_index < 1 || customer_index > customers.size()) {
+            while (try_again_select_customer) {
+                try_again_select_customer = false;
+
+                std::cout << "\n\nThere is no customer with such a serial number.";
+                std::cout << "\n1) Try again";
+                std::cout << "\n2) Back to \"Customers\"";
+                std::cout << "\n3) Go to \"Main menu\"";
+                std::cout << "\n4) Close the program";
+
+                std::cout << "\n\nEnter item number: ";
+                ValidatedInput(menu_item);
+                switch (menu_item) {
+                    case 1:
+                         try_again_select_customer = true;
+                        break;
+
+                    case 2:
+                        co_await SwitchTo{handles.customers_menu}; 
+                        break;
+                        
+                    case 3:
+                         co_await SwitchTo{handles.main_menu}; 
+                        break;
+                        
+                    case 4:
+                        if (ConfirmationOfProgramCompletionMenu()){
+                            StopInterface();
+                        }
+                        break;
+
+                    default:
+                        std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                        break;
+                }
+                if (try_again_select_customer) break;
+            } 
+            if (try_again_select_customer) continue;
+        }
+    
+
+        auto customer = customers.begin();
+        std::advance(customer, customer_index - 1);
+
+        auto name = (*customer)->GetFullName();
+        auto id = (*customer)->GetPersonalId();
+
+        customers.remove(*customer);
+        std::cout << "\nCustomer \"" << name << "\" has been removed.";
+
+        SaveMessage("Customer by name \"" + name + "\" has been removed." + " His/Her id : " + std::to_string(id), historyDataPath);
+        
+        while (true) {
+            std::cout << "\n\n1) Remove another customer";
+            std::cout << "\n2) Back to \"Customers\"";
+            std::cout << "\n3) Go to \"Main menu\"";
+            std::cout << "\n4) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+                case 1:
+                    try_again_select_customer = true;
+                    break;
+
+                case 2:
+                    co_await SwitchTo{handles.customers_menu}; 
+                    break;
+                    
+                case 3:
+                     co_await SwitchTo{handles.main_menu}; 
+                    break;
+                    
+                case 4:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                    break;
+            }
+            if (try_again_select_customer) break;
+        }
+    }
+}
 
 
 
