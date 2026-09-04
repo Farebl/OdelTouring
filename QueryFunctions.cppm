@@ -146,7 +146,7 @@ export void ShowListOfPurchasedTripNames(const ListSharedsTrip_t& Trips);
 
 export std::pair<size_t, std::vector<int>> GetCountOfUnboughtTrips(const ListSharedsTrip_t& Trips);
 
-export std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTrip_t& Trips);
+export std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTrip_t& Trips, unsigned short year = 0);
 
 export std::vector<std::string> GetCountriesOfBoughtTrips(const ListSharedsTrip_t& Trips, const int year = 0, std::string path = "Orders.txt");
 

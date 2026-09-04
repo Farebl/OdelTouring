@@ -58,9 +58,29 @@ Main
 |   |
 |	|---Back to the main menu
 |	|---Close the program
-
-|---Trips (not ready)
 |
+|---Trips
+|   |---Information
+|   |   |---Show full information about the trip
+|   |   |---Edit information about the trip
+|   |   |---General information
+|	|	|---Back to Trips
+|   |	|---Go to Main menu
+|	|	|---Close the program
+|   |
+|	|---Add new trip
+|	|	|---Back to Trips 
+|   |	|---Go to Main menu
+|	|	|---Close the program
+|   |
+|	|---Remove trip
+|	|	|---Back to Trips 
+|   |	|---Go to Main menu
+|	|	|---Close the program
+|   |
+|	|---Back to the main menu
+|	|---Close the program
+
 |---Orders (not ready)
 |
 |---Close the program
@@ -112,6 +132,15 @@ export struct MenuItemsHandles {
             std::coroutine_handle<> customers_list_by_trip_country_menu;
         std::coroutine_handle<> customers_add_customer_menu;
         std::coroutine_handle<> customers_remove_customer_menu;
+
+    std::coroutine_handle<> trips_menu;
+        std::coroutine_handle<> trips_info_menu;
+            std::coroutine_handle<> trips_show_full_info_menu;
+            std::coroutine_handle<> trips_edit_info_menu;
+            std::coroutine_handle<> trips_general_info_menu;
+                std::coroutine_handle<> trips_info_for_specific_year_menu;
+        std::coroutine_handle<> trips_add_trip_menu;
+        std::coroutine_handle<> trips_remove_trip_menu;
 };
 
 
@@ -136,3 +165,13 @@ export MenuItem EditInformationAboutCustomerMenu(const ListSharedsCustomer_t& cu
 export MenuItem ListOfCustomersByTripsCountryMenu(const ListSharedsCustomer_t& customers, const ListSharedsTrip_t& trips, const MenuItemsHandles& handles);
 export MenuItem AddNewCustomerMenu(ListSharedsCustomer_t& customers, const std::string& historyDataPath, const MenuItemsHandles& handles);
 export MenuItem RemoveCustomerMenu(ListSharedsCustomer_t& customers, const std::string& historyDataPath, const MenuItemsHandles& handles);
+
+// Trips menu
+export MenuItem TripsMenu(const MenuItemsHandles& handles);
+export MenuItem TripsInfoMenu(ListSharedsTrip_t& trips, const MenuItemsHandles& handles);
+export MenuItem ShowFullInformationAboutTripMenu(const ListSharedsTrip_t& trips, const MenuItemsHandles& handles);
+export MenuItem EditInformationAboutTripMenu(const ListSharedsTrip_t& trips, const std::string& historyDataPath, const MenuItemsHandles& handles);
+export MenuItem TripsGeneralInformationMenu(const ListSharedsTrip_t& trips, std::string orders_path, const MenuItemsHandles& handles);
+export MenuItem TripsInformationForSpecificYearMenu(const ListSharedsTrip_t& trips, std::string orders_path, const MenuItemsHandles& handles);
+export MenuItem AddNewTripMenu(ListSharedsTrip_t& trips, const std::string& historyDataPath, const MenuItemsHandles& handles);
+export MenuItem RemoveTripMenu(ListSharedsTrip_t& trips, const std::string& historyDataPath, const MenuItemsHandles& handles);

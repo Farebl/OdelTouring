@@ -6,9 +6,13 @@ import Functions;
 
 int main() {
 
-    ListSharedsManager_t Managers;
-    ListSharedsCustomer_t Customers;
-    ListSharedsTrip_t Trips;
+    std::string history_path = "History.txt";
+    std::string orders_path = "Orders.txt";
+
+
+    ListSharedsManager_t managers;
+    ListSharedsCustomer_t customers;
+    ListSharedsTrip_t trips;
 
 
     MenuItemsHandles handles;
@@ -17,11 +21,11 @@ int main() {
 
 //Managers menu items 
     MenuItem managers_menu                = ManagersMenu(handles);
-    MenuItem managers_info_menu           = ManagersInfoMenu(Managers, handles);
-    MenuItem managers_show_full_info_menu = ShowFullInformationAboutManagerMenu(Managers, handles);
-    MenuItem managers_edit_info_menu      = EditInformationAboutManagerMenu(Managers, "History.txt", handles);
-    MenuItem managers_add_manager_menu    = AddNewManagerMenu(Managers, "History.txt", handles);
-    MenuItem managers_remove_manager_menu = RemoveManagerMenu(Managers, "History.txt", handles);
+    MenuItem managers_info_menu           = ManagersInfoMenu(managers, handles);
+    MenuItem managers_show_full_info_menu = ShowFullInformationAboutManagerMenu(managers, handles);
+    MenuItem managers_edit_info_menu      = EditInformationAboutManagerMenu(managers, "History.txt", handles);
+    MenuItem managers_add_manager_menu    = AddNewManagerMenu(managers, history_path, handles);
+    MenuItem managers_remove_manager_menu = RemoveManagerMenu(managers, history_path, handles);
  
     handles.main_menu                    = main_menu.get_handle();
     handles.managers_menu                = managers_menu.get_handle();
@@ -33,11 +37,11 @@ int main() {
 
 //Customers menu items 
     MenuItem customers_menu                 = CustomersMenu(handles);
-    MenuItem customers_info_menu            = CustomersInfoMenu(Customers, handles);
-    MenuItem customers_show_full_info_menu  = ShowFullInformationAboutCustomerMenu(Customers, handles);
-    MenuItem customers_edit_info_menu       = EditInformationAboutCustomerMenu(Customers, "History.txt", handles);
-    MenuItem customers_add_customer_menu    = AddNewCustomerMenu(Customers, "History.txt", handles);
-    MenuItem customers_remove_customer_menu = RemoveCustomerMenu(Customers, "History.txt", handles);
+    MenuItem customers_info_menu            = CustomersInfoMenu(customers, handles);
+    MenuItem customers_show_full_info_menu  = ShowFullInformationAboutCustomerMenu(customers, handles);
+    MenuItem customers_edit_info_menu       = EditInformationAboutCustomerMenu(customers, "History.txt", handles);
+    MenuItem customers_add_customer_menu    = AddNewCustomerMenu(customers, history_path, handles);
+    MenuItem customers_remove_customer_menu = RemoveCustomerMenu(customers, history_path, handles);
  
     handles.customers_menu                 = customers_menu.get_handle();
     handles.customers_info_menu            = customers_info_menu.get_handle();
@@ -46,10 +50,30 @@ int main() {
     handles.customers_add_customer_menu    = customers_add_customer_menu.get_handle();
     handles.customers_remove_customer_menu = customers_remove_customer_menu.get_handle();
 
+
+// Trips menu items
+    MenuItem trips_menu                        = TripsMenu(handles);
+    MenuItem trips_info_menu                   = TripsInfoMenu(trips, handles);
+    MenuItem trips_show_full_info_menu         = ShowFullInformationAboutTripMenu(trips, handles);
+    MenuItem trips_edit_info_menu              = EditInformationAboutTripMenu(trips, history_path, handles);
+    MenuItem trips_general_info_menu           = TripsGeneralInformationMenu(trips, orders_path, handles);
+    MenuItem trips_info_for_specific_year_menu = TripsInformationForSpecificYearMenu(trips, orders_path, handles);
+    MenuItem trips_add_trip_menu               = AddNewTripMenu(trips, history_path, handles);
+    MenuItem trips_remove_trip_menu            = RemoveTripMenu(trips, history_path, handles);
+
+    handles.trips_menu                        = trips_menu.get_handle();
+    handles.trips_info_menu                   = trips_info_menu.get_handle();
+    handles.trips_show_full_info_menu         = trips_show_full_info_menu.get_handle();
+    handles.trips_edit_info_menu              = trips_edit_info_menu.get_handle();
+    handles.trips_general_info_menu           = trips_general_info_menu.get_handle();
+    handles.trips_info_for_specific_year_menu = trips_info_for_specific_year_menu.get_handle();
+    handles.trips_add_trip_menu               = trips_add_trip_menu.get_handle();
+    handles.trips_remove_trip_menu            = trips_remove_trip_menu.get_handle();
+
     try{
-        ReadManagersData(Managers, "Managers.txt");
-        ReadTripsData(Trips, "Trips.txt");
-        ReadCustomersData(Customers, Trips, "Customers.txt");
+        ReadManagersData(managers, "Managers.txt");
+        ReadTripsData(trips, "Trips.txt");
+        ReadCustomersData(customers, trips, "Customers.txt");
     }
     catch(std::exception& ex){
         std::cout<< "Exception in main after reading data: " << ex.what();
@@ -63,9 +87,9 @@ int main() {
     }
 
     try{     
-        SaveManagersData(Managers, "Managers.txt");
-        SaveTripsData(Trips, "Trips.txt");
-        SaveCustomersData(Customers, "Customers.txt");
+        SaveManagersData(managers, "Managers.txt");
+        SaveTripsData(trips, "Trips.txt");
+        SaveCustomersData(customers, "Customers.txt");
     }
     catch(std::exception& ex){
         std::cout<< "Exception in main after writing data: " << ex.what();

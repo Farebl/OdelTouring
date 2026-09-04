@@ -536,17 +536,28 @@ std::pair<size_t, std::vector<int>> GetCountOfUnboughtTrips(const ListSharedsTri
 
 
 // count of bought trips + thier indexes
-std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTrip_t& Trips){
+std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTrip_t& Trips, unsigned short year){
 	std::vector<int> Indices;
 	int count = 0;
 	int index = 0;
-	for (auto& trip : Trips) {
-		if (trip->GetStatus() == TripStatus::SOLD) {
-			count++;
-			Indices.emplace_back(index);
-		}
-		index++;
-	}
+    if (year == 0){
+        for (auto& trip : Trips) {
+            if (trip->GetStatus() == TripStatus::SOLD) {
+                count++;
+                Indices.emplace_back(index);
+            }
+            index++;
+        }
+    }
+    else{
+        for (auto& trip : Trips) {
+            if (trip->GetStatus() == TripStatus::SOLD && static_cast<int>(trip->GetDateOfBooking().year()) == year) {
+                count++;
+                Indices.emplace_back(index);
+            }
+            index++;
+        }
+    }
 	return std::make_pair(count, Indices);
 }
 
@@ -554,11 +565,11 @@ std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTr
 std::vector<std::string> GetCountriesOfBoughtTrips(const ListSharedsTrip_t& Trips, const int year, std::string path){
 	std::list<std::string> Countries; // Íàá³ð êðà¿í óc³õ ïðèäáàíèõ ä³écíèõ ïóò³âîê 
 	if (year != 0) {
-        int date_of_booking;
+        int year_of_booking;
 		for (auto& trip : Trips) {
 			if ((trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)) {
-				date_of_booking = static_cast<int>(trip->GetDateOfBooking().year());
-				if (date_of_booking == year)
+				year_of_booking = static_cast<int>(trip->GetDateOfBooking().year());
+				if (year_of_booking == year)
 					Countries.push_back(trip->GetCountry());
 			}
 		}
@@ -738,10 +749,10 @@ Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip
 
 void ShowMostPupularCountries(const Countries_Count_Year_AllCountYear& pair) {
 	/*
-	* pair.first.first   - êîëëåêö³ÿ íàéïîïóëÿðí³øèõ êðà¿í
-	* pair.first.second  - ê³ëüê³còü êóïëåíèõ ïóò³âîê ó íàéïîïóëÿðí³øó êðà¿íó
-	* pair.second.first  - ð³ê êóï³âë³
-	* pair.second.second - ê³ëüê³còü êóïëåíèõ ïóò³âîê çà ïåâíèé ð³ê
+	* pair.first.first   - names of most popular countries 
+	* pair.first.second  - count of bought trips to those countries
+	* pair.second.first  - year
+	* pair.second.second - count of all countries
 	*/
 
 	int size = static_cast<int>(pair.first.first.size());

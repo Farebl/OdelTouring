@@ -2,8 +2,10 @@ module;
 
 #include <iostream>
 #include <string>
+#include <cmath>
 #include <memory>
 #include <coroutine>
+#include <chrono>
 
 module Functions; 
 import :QueryFunctions; 
@@ -78,14 +80,6 @@ bool ConfirmationOfProgramCompletionMenu(){
 
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-///
-///  END MANAGERS MENU
-///
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
 
 MenuItem MainMenu(const MenuItemsHandles& handles){
     size_t menu_item = 0; 
@@ -112,13 +106,11 @@ MenuItem MainMenu(const MenuItemsHandles& handles){
                 break;
 
             case 3:
-                //co_await TripsMenu(Trips);
-                std::cout << "\n!!! Not ready yet !!!";  
+                co_await SwitchTo{ handles.trips_menu };  
                 break;
 
             case 4:
                 //co_await OrderOrReturnMenu(Managers, Customers, Trips, OrdersPath, HistoryDataPath);
-                std::cout << "\n!!! Not ready yet !!!";  
                 break;
 
             case 5:
@@ -134,6 +126,13 @@ MenuItem MainMenu(const MenuItemsHandles& handles){
     }
 }
 
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///
+///  MANAGERS MENU
+///
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -805,14 +804,25 @@ MenuItem RemoveManagerMenu(ListSharedsManager_t& managers, const std::string& hi
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 ///
 ///  END MANAGERS MENU
 ///
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 ///
 /// CUSTOMERS MENU
 ///
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
 
 
 
@@ -1630,6 +1640,988 @@ MenuItem RemoveCustomerMenu(ListSharedsCustomer_t& customers, const std::string&
                     break;
             }
             if (try_again_select_customer) break;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///
+///  END CUSTOMERS MENU
+///
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///
+/// TRIPS MENU
+///
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+MenuItem TripsMenu(const MenuItemsHandles& handles){
+    size_t menu_item = 0;
+
+    while(true){
+        ClearConsole();
+		std::cout << "\n\n|--- Trips ---|\n";
+		std::cout << "\n1) Information";
+		std::cout << "\n2) Add new trip";
+		std::cout << "\n3) Remove trip";
+		std::cout << "\n4) Back to the main menu";
+		std::cout << "\n5) Close the program";
+
+
+        std::cout << "\n\nEnter item number: ";
+        ValidatedInput(menu_item);
+        switch (menu_item) {
+            case 1:
+                co_await SwitchTo{handles.trips_info_menu}; 
+                break;
+
+            case 2:
+                co_await SwitchTo{handles.trips_add_trip_menu}; 
+                break;
+
+            case 3:
+                co_await SwitchTo{handles.trips_remove_trip_menu}; 
+                break;
+
+            case 4:
+                co_await SwitchTo{handles.main_menu}; 
+                break;
+
+            case 5:
+                if (ConfirmationOfProgramCompletionMenu()){
+                    StopInterface();
+                }
+                break;
+
+            default:
+                std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                break;
+        }
+    }
+}
+
+
+
+MenuItem TripsInfoMenu(ListSharedsTrip_t& trips, const MenuItemsHandles& handles) {
+    size_t menu_item = 0;
+    
+    if (trips.empty()) {
+        while (true) {
+            ClearConsole();
+            std::cout << "\n\n|--- Information about trips ---|";
+
+            std::cout << "\n\nUnfortunately, there are no trips";
+            std::cout << "\n1) Add new trip";
+            std::cout << "\n2) Go to the \"Main menu\"";
+            std::cout << "\n3) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+                case 1:
+                    co_await SwitchTo{handles.trips_add_trip_menu}; 
+                    break;
+
+                case 2:
+                    co_await SwitchTo{handles.main_menu}; 
+                    break;
+
+                case 3:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                    break;
+            }
+        }
+    } 
+
+    while(true){
+        ClearConsole();
+        std::cout << "\n\n|--- Information about trips ---|";
+        std::cout << "\n\n1) General information";
+        std::cout << "\n2) Show full information about the customer"; 
+        std::cout << "\n3) Edit information about the customer";
+        std::cout << "\n4) Back to \"Trips\"";
+        std::cout << "\n5) Go to \"Main menu\"";
+        std::cout << "\n6) Close the program";
+        std::cout << "\n\n!!! If you choose (1) or (2) you will see full list of managers";
+
+        std::cout << "\n\nEnter item number: ";
+        ValidatedInput(menu_item);
+        switch (menu_item) {
+            case 1:
+                co_await SwitchTo{handles.trips_general_info_menu}; 
+                break;
+                
+            case 2:
+                co_await SwitchTo{handles.trips_show_full_info_menu};
+                break;
+
+            case 3:
+                co_await SwitchTo{handles.trips_edit_info_menu}; 
+                break;
+            
+            case 4:
+                co_await SwitchTo{handles.trips_menu}; 
+                break;
+                
+            case 5:
+                 co_await SwitchTo{handles.main_menu}; 
+                break;
+                
+            case 6:
+                if (ConfirmationOfProgramCompletionMenu()){
+                    StopInterface();
+                }
+                break;
+
+            default:
+                std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                break;
+        }
+    }
+}
+
+
+
+
+MenuItem ShowFullInformationAboutTripMenu(const ListSharedsTrip_t& trips, const MenuItemsHandles& handles){
+    size_t menu_item = 0;
+    size_t trip_index = 0;
+    bool try_again_select_trip = true;
+
+    while(try_again_select_trip){
+        try_again_select_trip = false;
+
+        ClearConsole();
+        std::cout << "\n\n|--- Full information about the trip ---|\n";
+
+        std::cout << "\nTrips: \n";
+        ShowListOfCollectionElementNames(trips);
+
+        std::cout << "\n\nSelect the number of the trip you want to see full information about: ";
+        ValidatedInput(trip_index);
+
+        if (trip_index < 1 || trip_index > trips.size()) {
+            while (true) {
+                std::cout << "\n\nThere is no trip with such a serial number.";
+                std::cout << "\n1) Try again to select a trip";
+                std::cout << "\n2) Back to \"Information about trips\"";
+                std::cout << "\n3) Go to \"Main menu\"";
+                std::cout << "\n4) Close the program";
+
+                std::cout << "\n\nEnter item number: ";
+                ValidatedInput(menu_item);
+                switch (menu_item) {
+                    case 1:
+                        try_again_select_trip = true;
+                        break;
+
+                    case 2:
+                        co_await SwitchTo{handles.trips_info_menu}; 
+                        break;
+
+                    case 3:
+                        co_await SwitchTo{handles.main_menu}; 
+                        break;
+
+                    case 4:
+                        if (ConfirmationOfProgramCompletionMenu()){
+                            StopInterface();
+                        }
+                        break;
+
+                    default:
+                        std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                        break;
+                }
+                if (try_again_select_trip) break;
+            } 
+            if (try_again_select_trip) continue;
+        } 
+
+        auto trip = trips.begin();
+        std::advance(trip, trip_index - 1);
+
+        ClearConsole();
+        std::cout << "\n\n|--- Full information about the trip ---|\n";
+        (*trip)->ShowInfo();
+
+        while (true) {
+            std::cout << "\n\n1) See detailed information about another trip";
+            std::cout << "\n2) Back to \"Information about trips\"";
+            std::cout << "\n3) Go to \"Main menu\"";
+            std::cout << "\n4) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+                case 1:
+                    try_again_select_trip = true;
+                    break;
+
+                case 2:
+                    co_await SwitchTo{handles.trips_info_menu}; 
+                    break;
+
+                case 3:
+                    co_await SwitchTo{handles.main_menu}; 
+                    break;
+
+                case 4:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                    break;
+            }
+            if (try_again_select_trip) break;
+        }
+        if (try_again_select_trip) continue;
+    }
+}
+
+
+
+
+MenuItem EditInformationAboutTripMenu(const ListSharedsTrip_t& trips, const std::string& historyDataPath, const MenuItemsHandles& handles){
+    size_t menu_item = 0;
+    size_t trip_index = 0;
+    size_t field_index = 0;
+    bool try_again_select_trip = true;
+    std::string new_str_value;
+    double new_price; 
+
+    while(try_again_select_trip){
+        try_again_select_trip = false;
+
+        ClearConsole();
+        std::cout << "\n|--- Edit information about the trip ---|\n";
+
+        std::cout << "\nTrips: \n";
+        ShowListOfCollectionElementNames(trips);
+
+        std::cout << "\n\nSelect the number of the trip, whose information you want to edit: ";
+        ValidatedInput(trip_index);
+
+        if (trip_index < 1 || trip_index > trips.size()) {
+            while (true) {
+                std::cout << "\n\nThere is no trip with such a serial number";
+                std::cout << "\n1) Try again to select a trip";
+                std::cout << "\n2) Back to \"Information about trips\"";
+                std::cout << "\n3) Go to \"Main menu\"";
+                std::cout << "\n4) Close the program";
+
+                std::cout << "\n\nEnter item number: ";
+                ValidatedInput(menu_item);
+                switch (menu_item) {
+                    case 1:
+                        try_again_select_trip = true;
+                        break;
+
+                    case 2:
+                        co_await SwitchTo{handles.trips_info_menu}; 
+                        break;
+
+                    case 3:
+                        co_await SwitchTo{handles.main_menu}; 
+                        break;
+
+                    case 4:
+                        if (ConfirmationOfProgramCompletionMenu()){
+                            StopInterface();
+                        }
+                        break;
+
+                    default:
+                        std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                        break;
+                }
+                if (try_again_select_trip) break;
+            } 
+            if (try_again_select_trip) continue;
+        }
+
+        auto trip = trips.begin();
+        std::advance(trip, trip_index - 1);
+        
+        bool try_again_select_field = true;
+        while(try_again_select_field){
+            try_again_select_field = false;
+            
+            ClearConsole();
+            std::cout << "\n|--- Edit information about the trip \"" << (*trip)->GetFullName() << "\" ---|\n";
+            std::cout << "\n\n1) Name: " << (*trip)->GetFullName();
+            std::cout << "\n2) Country: " << (*trip)->GetCountry();
+            std::cout << "\n3) City: " << (*trip)->GetCity();
+            std::cout << "\n4) Date of start: " << (*trip)->GetDateOfStart();
+            std::cout << "\n5) Date of end: " << (*trip)->GetDateOfEnd();
+            std::cout << "\n6) Price: " << (*trip)->GetPrice() << " grn.";
+
+            std::cout << "\n\nSelect the number of the field, that you want to edit: ";
+            ValidatedInput(field_index);
+
+            if (field_index < 1 || field_index > 6) {
+                while (true) {
+                    std::cout << "\n\nThere is no field with such a serial number";
+                    std::cout << "\n1) Try again to select a field";
+                    std::cout << "\n2) Select another trip to edit";
+                    std::cout << "\n3) Back to \"Information about trips\"";
+                    std::cout << "\n4) Go to \"Main menu\"";
+                    std::cout << "\n5) Close the program";
+
+                    std::cout << "\n\nEnter item number: ";
+                    ValidatedInput(menu_item);
+                    switch (menu_item) {
+                        case 1:
+                            try_again_select_field = true;
+                            break;
+
+                        case 2:
+                            try_again_select_trip = true;
+                            break;
+
+                        case 3:
+                            co_await SwitchTo{handles.trips_info_menu}; 
+                            break;
+
+                        case 4:
+                            co_await SwitchTo{handles.main_menu}; 
+                            break;
+
+                        case 5:
+                            if (ConfirmationOfProgramCompletionMenu()){
+                                StopInterface();
+                            }
+                            break;
+
+                        default:
+                            std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                            break;
+                    }
+                            
+                    if (try_again_select_field || try_again_select_trip) break;
+                }
+                if (try_again_select_field) continue;
+                if (try_again_select_trip) break;
+            }
+            
+
+            bool try_again_edit_selected_field = true;
+            while(try_again_edit_selected_field){
+                try_again_edit_selected_field = false;
+
+                std::cout << "\n\nEnter a new value for selected field: ";
+                switch (field_index){
+                    case 1:
+                        ValidatedInput(new_str_value);
+                        (*trip)->SetFullName(new_str_value);
+                        break;
+
+                    case 2:
+                        ValidatedInput(new_str_value);
+                        (*trip)->SetCountry(new_str_value);
+                        break;
+
+                    case 3:
+                        ValidatedInput(new_str_value);
+                        (*trip)->SetCity(new_str_value);
+                        break;
+
+                    case 4:
+                        ValidatedInput(new_str_value);
+                        (*trip)->SetDateOfStart(stringToYearMonthDay(new_str_value));
+                        break;
+
+                    case 5:
+                        ValidatedInput(new_str_value);
+                        (*trip)->SetDateOfEnd(stringToYearMonthDay(new_str_value));
+                        break;
+
+                    case 6:
+                        ValidatedInput(new_price);
+                        (*trip)->SetPrice(new_price);
+                        break;
+
+                    default:
+                        break;
+                }
+                
+                ClearConsole();
+                std::cout << "\n\n|--- Edit information about the trip ---|\n";
+
+                std::cout << "\nInformation about the trip \"" << (*trip)->GetFullName() << "\" has been edited:";
+                (*trip)->ShowInfo();
+                SaveMessage("Changing information about trip by id: " + std::to_string((*trip)->GetPersonalId()), historyDataPath);
+
+
+                while (true) {
+                    std::cout << "\n\n1) Enter another value for selected field: " << 
+                        (field_index == 1 ? "Name" : 
+                            (field_index == 2 ? "Country" : 
+                                (field_index == 3 ? "City" : 
+                                    (field_index == 4 ? "Date of start" : 
+                                        (field_index == 5 ? "Date of end" : "Price"))))); 
+                    std::cout << "\n2) Select another field of the current trip " << "(\"" << (*trip)->GetFullName() << "\") to edit"; 
+                    std::cout << "\n3) Select another trip to edit";
+                    std::cout << "\n4) Back to \"Information about trips\"";
+                    std::cout << "\n5) Go to \"Main menu\"";
+                    std::cout << "\n6) Close the program";
+
+                    std::cout << "\n\nEnter item number: ";
+                    ValidatedInput(menu_item);
+                    switch (menu_item) {
+                        case 1:
+                            try_again_edit_selected_field = true;
+                            break;
+
+                        case 2:
+                            try_again_select_field = true;
+                            break;
+
+                        case 3:
+                            try_again_select_trip = true;
+                            break;
+
+                        case 4:
+                            co_await SwitchTo{handles.trips_info_menu}; 
+                            break;
+
+                        case 5:
+                            co_await SwitchTo{handles.main_menu}; 
+                            break;
+
+                        case 6:
+                            if (ConfirmationOfProgramCompletionMenu()){
+                                StopInterface();
+                            }
+                            break;
+
+                        default:
+                            std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                            break;
+                    }
+
+                    if (try_again_edit_selected_field || try_again_select_field || try_again_select_trip) break;
+                }
+                if (try_again_edit_selected_field) continue;
+                if (try_again_select_field || try_again_select_trip) break;
+            }
+            if (try_again_select_field) continue;
+            if (try_again_select_trip) break;
+        }
+    }
+}
+
+
+
+MenuItem TripsGeneralInformationMenu(const ListSharedsTrip_t& trips, std::string orders_path, const MenuItemsHandles& handles){
+    size_t menu_item = 0;
+    size_t trip_index = 0;
+    size_t country_index = 1;
+    std::string country;
+    
+    while(true){
+        std::cout << "\nGeneral information for all time: ";
+        std::cout << "\n\tCount of valid trips in system: " << trips.size();
+        std::cout << "\n\t\ton sale: " << GetCountOfUnboughtTrips(trips).first;
+        std::cout << "\n\t\tsold: " << GetCountOfPurchasedTrips(trips).first;
+        
+        std::cout << "\n\tCount of successful orders: " << GetCountOfOrders(0, orders_path);
+        std::cout << "\n\tAverage duration of the trip: " << std::round(GetAverageDurationOfTrips(trips)) << " days";
+        std::cout << "\n\tAverage cost of the trip: " << std::round(GetAveragePriceOfTrips(trips)) << " UAH";
+        
+        ShowMostPupularCountries(FindMostPupularCountries(trips));
+
+        std::cout << "\n\nDo you want to see the information about trips for a specific year?";
+        std::cout << "\n1)Yes \n2)No";
+        std::cout << "\n\nEnter item number: ";
+        ValidatedInput(menu_item);
+        switch (menu_item) {
+            case 1:
+                co_await SwitchTo{handles.trips_info_for_specific_year_menu}; 
+                break;
+
+            case 2:
+                while (true) {
+                    std::cout << "\n\n1) Back to \"Information about trips\"";
+                    std::cout << "\n2) Go to \"Main menu\"";
+                    std::cout << "\n3) Close the program";
+
+                    std::cout << "\n\nEnter item number: ";
+                    ValidatedInput(menu_item);
+                    switch (menu_item) {
+                        case 1:
+                            co_await SwitchTo{handles.trips_info_menu}; 
+                            break;
+
+                        case 2:
+                            co_await SwitchTo{handles.main_menu}; 
+                            break;
+
+                        case 3:
+                            if (ConfirmationOfProgramCompletionMenu()){
+                                StopInterface();
+                            }
+                            break;
+
+                        default:
+                            std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                            break;
+                    }
+                }
+                break;
+
+            default:
+                std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                break;
+        }
+    } 
+}
+
+
+MenuItem TripsInformationForSpecificYearMenu(const ListSharedsTrip_t& trips, std::string orders_path, const MenuItemsHandles& handles){
+    size_t menu_item = 0;
+    bool try_select_year_again = true;
+
+    while(try_select_year_again){
+        try_select_year_again = false;
+
+        std::cout << "\n\n|--- Information about trips for a specific year ---|\n";
+
+        unsigned short current_year = static_cast<unsigned short>(
+                            static_cast<int>(
+                                std::chrono::year_month_day{
+                                    floor<std::chrono::days>(std::chrono::system_clock::now())
+                                }.year()
+                            )
+                        );
+
+        std::cout << "\nEnter the year you are interested in: ";
+        unsigned short input_year = 0;
+        ValidatedInput(input_year);
+        
+        if (input_year > current_year) {
+            while (true) {
+                std::cout << "\n\nInvalid year: you have entered a future year.";
+                std::cout << "\n1) See the information about trips for another year";
+                std::cout << "\n2) Back to \"General information about trips for all time\"";
+                std::cout << "\n3) Go to \"Information about trips\"";
+                std::cout << "\n4) Go to \"Main menu\"";
+                std::cout << "\n5) Close the program";
+
+                std::cout << "\n\nEnter item number: ";
+                ValidatedInput(menu_item);
+                switch (menu_item) {
+                    case 1:
+                        try_select_year_again = true;
+                        break;
+
+                    case 2:
+                        co_await SwitchTo{handles.trips_general_info_menu}; 
+                        break;
+
+                    case 3:
+                        co_await SwitchTo{handles.trips_info_menu}; 
+                        break;
+
+                    case 4:
+                        co_await SwitchTo{handles.main_menu}; 
+                        break;
+
+                    case 5:
+                        if (ConfirmationOfProgramCompletionMenu()){
+                            StopInterface();
+                        }
+                        break;
+
+                    default:
+                        std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                        break;
+                }
+                if (try_select_year_again) break;
+            }
+            if (try_select_year_again) continue;
+        }
+
+        ClearConsole();
+
+        std::cout << "\n\n|--- Information about trips for a specific year  ---|\n";
+        std::cout << "\nGeneral information for " << input_year << " year:";
+        std::cout << "\n\tCount of sold trips: " << GetCountOfOrders(input_year) + GetCountOfPurchasedTrips(trips, input_year).first;
+        
+        std::cout << "\n\tAverage duration of the trip: " << std::round(GetAverageDurationOfTrips(trips, input_year)) << " days ";
+        std::cout << "\n\tAverage cost of the trip: "     << std::round(GetAveragePriceOfTrips(trips, input_year))    << " UAH";
+        
+        ShowMostPupularCountries(FindMostPupularCountries(trips, input_year));
+
+        while (true) {
+            std::cout << "\n\n1) See a general information about trips for another year";
+            std::cout << "\n2) Back to \"General information about trips for all time\"";
+            std::cout << "\n3) Go to \"Information about trips\"";
+            std::cout << "\n4) Go to \"Main menu\"";
+            std::cout << "\n5) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+                case 1:
+                    try_select_year_again = true;
+                    break;
+
+                case 2:
+                    co_await SwitchTo{handles.trips_general_info_menu}; 
+                    break;
+
+                case 3:
+                    co_await SwitchTo{handles.trips_info_menu}; 
+                    break;
+
+                case 4:
+                    co_await SwitchTo{handles.main_menu}; 
+                    break;
+
+                case 5:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                    break;
+            }
+            if (try_select_year_again) break;
+        }
+    }
+}
+
+
+
+MenuItem AddNewTripMenu(ListSharedsTrip_t& trips, const std::string& historyDataPath, const MenuItemsHandles& handles){
+    size_t menu_item = 0;
+    std::string new_str_value;
+    double new_price; ;
+
+    bool add_new_trip_again = true;
+    bool try_enter_value_again = true;
+
+    while (add_new_trip_again){
+        add_new_trip_again = false;
+
+        ClearConsole();
+        std::cout << "\n\n|--- Add new trip ---|";
+    
+        auto new_trip = std::make_shared<Trip>();
+
+        std::cout << "\n\nEnter trip`s name: ";
+        std::getline(std::cin, new_str_value);
+        new_trip->SetFullName(new_str_value);
+
+        std::cout << "\nEnter trip`s country: ";
+        std::getline(std::cin, new_str_value);
+        new_trip->SetCountry(new_str_value);
+
+        std::cout << "\nEnter trip`s city: ";
+        std::getline(std::cin, new_str_value);
+        new_trip->SetCity(new_str_value);
+       
+        try_enter_value_again = true;
+        while (try_enter_value_again){
+            std::cout << "\nEnter trip`s date of start (yyyy/mm/dd): ";
+            if (std::cin >> new_str_value){
+                try{
+                    std::chrono::year_month_day date_of_start = stringToYearMonthDay(new_str_value);
+
+                    if (date_of_start.ok()) {
+                        new_trip->SetDateOfStart(date_of_start);
+                        try_enter_value_again = false;
+                    } 
+                    else {
+                        std::cout << "Error: Invalid calendar date entered! Try again\n";
+                    }
+                }
+                catch(std::exception& ex){
+                    std::cout<<ex.what();
+                }
+            } 
+            else {
+                std::cout << "Error: Wrong input format!\n";
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            }
+        }
+
+
+              
+        try_enter_value_again = true;
+        while (try_enter_value_again){
+            std::cout << "\nEnter trip`s date of end (yyyy/mm/dd): ";
+            if (std::cin >> new_str_value) {
+                try{
+                    std::chrono::year_month_day date_of_end = stringToYearMonthDay(new_str_value);
+                    if (date_of_end.ok()) {
+                        new_trip->SetDateOfEnd(date_of_end);
+                        try_enter_value_again = false;
+                    } 
+                    else {
+                        std::cout << "Error: Invalid calendar date entered! Try again\n";
+                    }
+                }
+                catch(std::exception& ex){
+                    std::cout<<ex.what();
+                }
+            } 
+            else {
+                std::cout << "Error: Wrong input format!\n";
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            }
+        }
+        
+        try_enter_value_again = true;
+        while (try_enter_value_again){
+            std::cout << "\nEnter trip`s price (grn.): ";
+            ValidatedInput(new_price);
+            if (new_price > 0) 
+                try_enter_value_again = false;
+            else  
+                std::cout << "Error: Invalid calendar date entered! Try again\n";
+
+        }
+        new_trip->SetPrice(new_price);
+
+
+        try{
+            trips.emplace_back(new_trip);
+            std::cout << "\n\nTrip by name \"" << new_trip->GetFullName() << "\" was added.\nIt id: " << new_trip->GetPersonalId() << "\n";
+            SaveMessage("Trip by name \"" + new_trip->GetFullName() + "\" was added. It id: " + std::to_string(new_trip->GetPersonalId()), historyDataPath);
+        }
+        catch(...){
+            std::cout << "\n\nERROR: something went wrong while adding the trip by name\"" << new_trip->GetFullName();
+        }
+
+        while (true) {
+            std::cout << "\n\n1) Add new trip";
+            std::cout << "\n2) Back to \"Trips\"";
+            std::cout << "\n3) Go to \"Main menu\"";
+            std::cout << "\n4) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+                case 1:
+                    add_new_trip_again = true; 
+                    break;
+
+                case 2:
+                    co_await SwitchTo{handles.main_menu}; 
+                    break;
+
+                case 3:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                    break;
+            }
+            if (add_new_trip_again) break;
+        }
+    }
+}
+
+
+MenuItem RemoveTripMenu(ListSharedsTrip_t& trips, const std::string& historyDataPath, const MenuItemsHandles& handles){
+    size_t menu_item = 0;
+    
+    if (trips.empty()) {
+        while (true) {
+            ClearConsole();
+            std::cout << "\n\n|--- Remove trip ---|\n";
+
+            std::cout << "\n\nUnfortunately, there are no trips (no one to delete)";
+            std::cout << "\n1) Back to \"Trips\"";
+            std::cout << "\n2) Go to the \"Main menu\"";
+            std::cout << "\n3) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+                case 1:
+                    co_await SwitchTo{handles.trips_menu}; 
+                    break;
+                    
+                case 2:
+                     co_await SwitchTo{handles.main_menu}; 
+                    break;
+                    
+                case 3:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                    break;
+            }
+        }
+    } 
+
+    size_t trip_index = 0;
+    bool try_again_select_trip = true;
+    bool remove_another_trip = true;
+
+    while(remove_another_trip){
+        remove_another_trip = false;
+
+        ClearConsole();
+        std::cout << "\n\n|--- Remove trip ---|\n";
+
+        std::cout << "\nTrips: \n";
+        ShowListOfCollectionElementNames(trips);
+
+        std::cout << "\n\nSelect the number of the trip you want to remove: ";
+        ValidatedInput(trip_index);
+
+        if (trip_index < 1 || trip_index > trips.size()) {
+            while (try_again_select_trip) {
+                try_again_select_trip = false;
+
+                std::cout << "\n\nThere is no trip with such a serial number.";
+                std::cout << "\n1) Try again";
+                std::cout << "\n2) Back to \"Trips\"";
+                std::cout << "\n3) Go to \"Main menu\"";
+                std::cout << "\n4) Close the program";
+
+                std::cout << "\n\nEnter item number: ";
+                ValidatedInput(menu_item);
+                switch (menu_item) {
+                    case 1:
+                        try_again_select_trip = true;
+                        break;
+
+                    case 2:
+                        co_await SwitchTo{handles.trips_menu}; 
+                        break;
+                        
+                    case 3:
+                         co_await SwitchTo{handles.main_menu}; 
+                        break;
+                        
+                    case 4:
+                        if (ConfirmationOfProgramCompletionMenu()){
+                            StopInterface();
+                        }
+                        break;
+
+                    default:
+                        std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                        break;
+                }
+                if (try_again_select_trip) break;
+            } 
+            if (try_again_select_trip) continue;
+        }
+    
+
+        auto delete_trip = trips.begin();
+        std::advance(delete_trip, trip_index - 1);
+
+        auto name = (*delete_trip)->GetFullName();
+        auto id = (*delete_trip)->GetPersonalId();
+
+        trips.remove(*delete_trip);
+        std::cout << "\nTrip \"" << name << "\" has been removed.";
+
+        SaveMessage("Trip by name \"" + name + "\" has been removed." + " His/Her id : " + std::to_string(id), historyDataPath);
+        
+        while (true) {
+            std::cout << "\n\n1) Remove another trip";
+            std::cout << "\n2) Back to \"Trips\"";
+            std::cout << "\n3) Go to \"Main menu\"";
+            std::cout << "\n4) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+                case 1:
+                    remove_another_trip = true;
+                    break;
+
+                case 2:
+                    co_await SwitchTo{handles.trips_menu}; 
+                    break;
+                    
+                case 3:
+                     co_await SwitchTo{handles.main_menu}; 
+                    break;
+                    
+                case 4:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                    break;
+            }
+            if (remove_another_trip) break;
         }
     }
 }
