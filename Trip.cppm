@@ -74,7 +74,7 @@ public:
     std::chrono::year_month_day GetDateOfEnd(); 
     std::optional<const char*> SetDateOfEnd(std::chrono::year_month_day date_of_end); 
 
-	long GetDuration(); 
+	unsigned int GetDuration(); 
 
 	double GetPrice(); 
     void SetPrice(double price); 
@@ -113,7 +113,7 @@ int Trip::total_duration = 0;
 
 
 
-export long getDateDifference(std::chrono::year_month_day startDate, std::chrono::year_month_day endDate){
+export unsigned int getDateDifference(std::chrono::year_month_day startDate, std::chrono::year_month_day endDate){
     std::chrono::sys_days start{startDate};
     std::chrono::sys_days end{endDate};
     std::chrono::days result = end - start;
@@ -398,7 +398,7 @@ std::optional<const char*> Trip::SetDateOfEnd(std::chrono::year_month_day date_o
 }
 
 
-long Trip::GetDuration() {
+unsigned int Trip::GetDuration() {
 	return getDateDifference(this->date_of_start, this->date_of_end);
 }
 

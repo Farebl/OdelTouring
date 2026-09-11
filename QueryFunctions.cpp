@@ -93,7 +93,7 @@ int GetCountOfOrders(const int year, const std::string path){
 }
 
 
-void SaveOrderData(const int year_of_booking, const std::string country, const std::string name_of_trip, const std::string name_of_customer, const double price, const std::string path){
+void SaveOrderData(int year_of_booking, const std::string& country, const std::string& name_of_trip, const std::string& name_of_customer, unsigned int duration, double price, const std::string& path){
 	std::fstream orderWrite;
 	orderWrite.open(path, std::fstream::app);
 	if (!orderWrite.is_open()) 
@@ -103,6 +103,7 @@ void SaveOrderData(const int year_of_booking, const std::string country, const s
 		orderWrite << "\n" << country;
 		orderWrite << "\n" << name_of_trip;
 		orderWrite << "\n" << name_of_customer;
+		orderWrite << "\n" << duration;
 		orderWrite << "\n" << price;
 	}
 	orderWrite.close();
@@ -842,7 +843,7 @@ void SaveTripsData(const ListSharedsTrip_t& Trips, const std::string path){
 			}
 
 			else if (trip->GetStatus() == TripStatus::FINISHED)
-				SaveOrderData(static_cast<int>(trip->GetDateOfBooking().year()), trip->GetCountry(), trip->GetFullName(), trip->GetNameOfCustomer(), trip->GetPrice());
+				SaveOrderData(static_cast<int>(trip->GetDateOfBooking().year()), trip->GetCountry(), trip->GetFullName(), trip->GetNameOfCustomer(), trip->GetDuration(), trip->GetPrice());
 
 		}
 	}
@@ -909,7 +910,7 @@ void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string pa
 			else if (status == "Sold" || status == "In progress")  // TripStatus::SOLD or IN_PROGRESS or FINISHED
 			{
 				if (getDateDifference(today, date_of_end) < 0) 
-					SaveOrderData(static_cast<int>(date_of_booking.year()), country, name, name_of_customer, std::stod(price));
+					SaveOrderData(static_cast<int>(date_of_booking.year()), country, name, name_of_customer, Trips.back()->GetDuration(), std::stod(price));
 				else
 					Trips.emplace_back(std::make_shared<Trip>(name, country, city, date_of_start, date_of_end, std::stod(price), std::stoi(personal_id), name_of_customer, name_of_manager, date_of_booking));
 			}

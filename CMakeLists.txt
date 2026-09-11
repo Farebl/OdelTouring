@@ -83,4 +83,11 @@ add_executable(test test.cpp)
 target_link_libraries(test PRIVATE TestFunctions)
 
 
+option(USE_SANITIZERS "Enable Address and Undefined behavior sanitizers" OFF)
+
+if(USE_SANITIZERS)
+    target_compile_options(test PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+    target_link_options(test PRIVATE -fsanitize=address,undefined)
+endif()
+
 

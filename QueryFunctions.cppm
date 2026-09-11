@@ -81,7 +81,7 @@ export void ClearConsole();
 export int GetCountOfOrders(const int year = 0, const std::string path = "Orders.txt");
 
 // save orders to storage
-export void SaveOrderData(const int year_of_booking, const std::string country, const std::string name_of_trip, const std::string name_of_customer, const double price, const std::string path = "Orders.txt");
+export void SaveOrderData(int year_of_booking, const std::string& country, const std::string& name_of_trip, const std::string& name_of_customer, unsigned int duration, double price, const std::string& path = "Orders.txt");
 
 // read orders from storage
 export void ReadOrdersData(std::stack<Order>& Collection, const std::string path = "Orders.txt");
