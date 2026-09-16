@@ -3,6 +3,9 @@ import Functions;
 #include <iostream>
 
 
+ПРОБЛЕМА --> колит ти продаєш тур, то замовлення (Order) НЕ ЗБЕРІГАЄТЬСЯ -->  Orders.txt НЕ створюється --> Невалідна статистика загальна/за рік
++ коли ти робиш return order --> треба знайти відповідний запис у Order.txt та видалити
+
 
 int main() {
 
@@ -69,6 +72,15 @@ int main() {
     handles.trips_info_for_specific_year_menu = trips_info_for_specific_year_menu.get_handle();
     handles.trips_add_trip_menu               = trips_add_trip_menu.get_handle();
     handles.trips_remove_trip_menu            = trips_remove_trip_menu.get_handle();
+
+// Orders menu items
+    MenuItem orders_menu                    =  OrdersMenu(handles);
+    MenuItem orders_make_order_menu         =  OrdersMakeOrderMenu(managers, customers, trips, history_path, handles);
+    MenuItem orders_make_order_return_menu  =  OrdersMakeOrderReturnMenu(managers, customers, history_path, handles);
+
+    handles.orders_menu                   = orders_menu.get_handle();
+    handles.orders_make_order_menu        = orders_make_order_menu.get_handle();
+    handles.orders_make_order_return_menu = orders_make_order_return_menu.get_handle();
 
     try{
         ReadManagersData(managers, "Managers.txt");

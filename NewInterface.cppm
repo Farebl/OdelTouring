@@ -34,7 +34,7 @@ Main
 |   |	|---Go to Main menu
 |	|	|---Close the program
 |   |
-|	|---Back to the main menu
+|	|---Back to the Main menu
 |	|---Close the program
 |
 |---Customers 
@@ -56,7 +56,7 @@ Main
 |   |	|---Go to Main menu
 |	|	|---Close the program
 |   |
-|	|---Back to the main menu
+|	|---Back to the Main menu
 |	|---Close the program
 |
 |---Trips
@@ -78,12 +78,24 @@ Main
 |   |	|---Go to Main menu
 |	|	|---Close the program
 |   |
-|	|---Back to the main menu
+|	|---Back to the Main menu
 |	|---Close the program
-
-|---Orders (not ready)
 |
-|---Close the program
+|---Orders (not ready)
+|	|---Make an order
+|   |   |---Make another order arrange purchase return
+|	|	|---Back to Orders
+|   |	|---Go to Main menu
+|	|	|---Close the program
+|   |
+|	|---Make order return
+|   |   |---Make another order return
+|	|	|---Back to Orders
+|   |	|---Go to Main menu
+|	|	|---Close the program
+|   |
+|	|---Back to the Main menu
+|	|---Close the program|---Close the program
 */
 
 
@@ -141,6 +153,10 @@ export struct MenuItemsHandles {
                 std::coroutine_handle<> trips_info_for_specific_year_menu;
         std::coroutine_handle<> trips_add_trip_menu;
         std::coroutine_handle<> trips_remove_trip_menu;
+
+    std::coroutine_handle<> orders_menu;
+        std::coroutine_handle<> orders_make_order_menu;
+        std::coroutine_handle<> orders_make_order_return_menu;
 };
 
 
@@ -175,3 +191,8 @@ export MenuItem TripsGeneralInformationMenu(const ListSharedsTrip_t& trips, std:
 export MenuItem TripsInformationForSpecificYearMenu(const ListSharedsTrip_t& trips, std::string orders_path, const MenuItemsHandles& handles);
 export MenuItem AddNewTripMenu(ListSharedsTrip_t& trips, const std::string& historyDataPath, const MenuItemsHandles& handles);
 export MenuItem RemoveTripMenu(ListSharedsTrip_t& trips, const std::string& historyDataPath, const MenuItemsHandles& handles);
+
+// Orders menu
+export MenuItem OrdersMenu(const MenuItemsHandles& handles);
+export MenuItem OrdersMakeOrderMenu(ListSharedsManager_t& managers, ListSharedsCustomer_t& customers, ListSharedsTrip_t& trips, const std::string& history_data_path, const MenuItemsHandles& handles);
+export MenuItem OrdersMakeOrderReturnMenu(ListSharedsManager_t& managers, ListSharedsCustomer_t& customers, const std::string& history_data_path, const MenuItemsHandles& handles);
