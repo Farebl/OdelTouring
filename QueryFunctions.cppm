@@ -33,8 +33,8 @@ export using Countries_Count_Year_AllCountYear = std::pair <std::pair<std::vecto
 //--------------------------------------------------------------------------------------------------------------------------------------------
 
 
-
 // 0 General functions
+
 
 
 export template<typename T>
@@ -68,6 +68,7 @@ void ValidatedInput(T& val) {
     }
     std::cin.ignore(INT_MAX, '\n');
 }
+export std::ostream& operator<<(std::ostream& os, const std::chrono::year_month_day& ymd);
 
 export std::chrono::year_month_day stringToYearMonthDay(const std::string& date);
 
@@ -80,7 +81,7 @@ export void ClearConsole();
 export int GetCountOfOrders(const int year = 0, const std::string path = "Orders.txt");
 
 // save orders to storage
-export void SaveOrderData(const int year_of_booking, const std::string country, const std::string name_of_trip, const std::string name_of_customer, const double price, const std::string path = "Orders.txt");
+export void SaveOrderData(int year_of_booking, const std::string& country, const std::string& name_of_trip, const std::string& name_of_customer, unsigned int duration, double price, const std::string& path = "Orders.txt");
 
 // read orders from storage
 export void ReadOrdersData(std::stack<Order>& Collection, const std::string path = "Orders.txt");
@@ -145,7 +146,7 @@ export void ShowListOfPurchasedTripNames(const ListSharedsTrip_t& Trips);
 
 export std::pair<size_t, std::vector<int>> GetCountOfUnboughtTrips(const ListSharedsTrip_t& Trips);
 
-export std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTrip_t& Trips);
+export std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTrip_t& Trips, unsigned short year = 0);
 
 export std::vector<std::string> GetCountriesOfBoughtTrips(const ListSharedsTrip_t& Trips, const int year = 0, std::string path = "Orders.txt");
 

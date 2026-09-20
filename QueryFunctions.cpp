@@ -23,6 +23,18 @@ import :QueryFunctions; // Імпортуємо свою ж партицію, щ
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+std::ostream& operator<<(std::ostream& os, const std::chrono::year_month_day& ymd) {
+    if (ymd.ok()) {
+        os << static_cast<int>(ymd.year()) << "/"
+           << static_cast<unsigned>(ymd.month()) << "/"
+           << static_cast<unsigned>(ymd.day());
+    } else {
+        os << "Invalid Date";
+    }
+    return os;
+}
+
+
 
 
 // 0 General fucntions:
@@ -60,7 +72,7 @@ void SaveMessage(const std::string msg, const std::string path) {
 }
 
 
-void ClearConsole() {std::system("cls");}
+void ClearConsole() {std::cout << "\033[2J\033[H" << std::flush;}
 
 
 int GetCountOfOrders(const int year, const std::string path){
@@ -81,7 +93,7 @@ int GetCountOfOrders(const int year, const std::string path){
 }
 
 
-void SaveOrderData(const int year_of_booking, const std::string country, const std::string name_of_trip, const std::string name_of_customer, const double price, const std::string path){
+void SaveOrderData(int year_of_booking, const std::string& country, const std::string& name_of_trip, const std::string& name_of_customer, unsigned int duration, double price, const std::string& path){
 	std::fstream orderWrite;
 	orderWrite.open(path, std::fstream::app);
 	if (!orderWrite.is_open()) 
@@ -91,6 +103,7 @@ void SaveOrderData(const int year_of_booking, const std::string country, const s
 		orderWrite << "\n" << country;
 		orderWrite << "\n" << name_of_trip;
 		orderWrite << "\n" << name_of_customer;
+		orderWrite << "\n" << duration;
 		orderWrite << "\n" << price;
 	}
 	orderWrite.close();
@@ -132,27 +145,25 @@ void ReadOrdersData(std::stack<Order>& Collection, const std::string path) {
 
 
 void ShowFullInfoForEditManager(const manager_list_iter_t& manager){
-	std::cout << "\n" << "1) Name: " << (*manager)->GetFullName();
-	std::cout << "\n" << "2) Phone number: " << (*manager)->GetPhoneNumber();
-	std::cout << "\n" << "!!! By changing the \"Name of the company\", you will change it for all managers and customers.";
+	std::cout << "\n" << "1) First name: " << (*manager)->GetFirstName();
+	std::cout << "\n" << "2) Second name: " << (*manager)->GetSecondName();
+	std::cout << "\n" << "3) Patronymic name: " << (*manager)->GetPatronymicName();
+	std::cout << "\n" << "4) Phone number: " << (*manager)->GetPhoneNumber();
 }
 
 
 void EditManager(manager_list_iter_t& manager, const int fieldIndex, const std::string value){
 	switch (fieldIndex){
 	case 1:
-		(*manager)->SetFullName(value);
-		break;
-	case 2:
+		(*manager)->SetFirstName(value);
+		break;	
+    case 2:
 		(*manager)->SetSecondName(value);
 		break;
 	case 3:
-		(*manager)->SetFirstName(value);
-		break;
-	case 4:
 		(*manager)->SetPatronymicName(value);
 		break;
-	case 5:
+	case 4:
 		(*manager)->SetPhoneNumber(value);
 		break;
 	default:
@@ -237,21 +248,18 @@ void EditCustomer(customer_list_iter_t& customer, const int fieldIndex, const st
 
 	switch (fieldIndex){
 	case 1:
-		(*customer)->SetFullName(value);
+		(*customer)->SetFirstName(value);
 		break;
-	case 2:
+    case 2:
 		(*customer)->SetSecondName(value);
 		break;
 	case 3:
-		(*customer)->SetFirstName(value);
-		break;
-	case 4:
 		(*customer)->SetPatronymicName(value);
 		break;
-	case 5:
+	case 4:
 		(*customer)->SetPhoneNumber(value);
 		break;
-	case 6:
+	case 5:
 		(*customer)->SetAddress(value);
 		break;
 	default:
@@ -529,17 +537,28 @@ std::pair<size_t, std::vector<int>> GetCountOfUnboughtTrips(const ListSharedsTri
 
 
 // count of bought trips + thier indexes
-std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTrip_t& Trips){
+std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTrip_t& Trips, unsigned short year){
 	std::vector<int> Indices;
 	int count = 0;
 	int index = 0;
-	for (auto& trip : Trips) {
-		if (trip->GetStatus() == TripStatus::SOLD) {
-			count++;
-			Indices.emplace_back(index);
-		}
-		index++;
-	}
+    if (year == 0){
+        for (auto& trip : Trips) {
+            if (trip->GetStatus() == TripStatus::SOLD) {
+                count++;
+                Indices.emplace_back(index);
+            }
+            index++;
+        }
+    }
+    else{
+        for (auto& trip : Trips) {
+            if (trip->GetStatus() == TripStatus::SOLD && static_cast<int>(trip->GetDateOfBooking().year()) == year) {
+                count++;
+                Indices.emplace_back(index);
+            }
+            index++;
+        }
+    }
 	return std::make_pair(count, Indices);
 }
 
@@ -547,11 +566,11 @@ std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTr
 std::vector<std::string> GetCountriesOfBoughtTrips(const ListSharedsTrip_t& Trips, const int year, std::string path){
 	std::list<std::string> Countries; // Íàá³ð êðà¿í óc³õ ïðèäáàíèõ ä³écíèõ ïóò³âîê 
 	if (year != 0) {
-        int date_of_booking;
+        int year_of_booking;
 		for (auto& trip : Trips) {
 			if ((trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)) {
-				date_of_booking = static_cast<int>(trip->GetDateOfBooking().year());
-				if (date_of_booking == year)
+				year_of_booking = static_cast<int>(trip->GetDateOfBooking().year());
+				if (year_of_booking == year)
 					Countries.push_back(trip->GetCountry());
 			}
 		}
@@ -731,10 +750,10 @@ Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip
 
 void ShowMostPupularCountries(const Countries_Count_Year_AllCountYear& pair) {
 	/*
-	* pair.first.first   - êîëëåêö³ÿ íàéïîïóëÿðí³øèõ êðà¿í
-	* pair.first.second  - ê³ëüê³còü êóïëåíèõ ïóò³âîê ó íàéïîïóëÿðí³øó êðà¿íó
-	* pair.second.first  - ð³ê êóï³âë³
-	* pair.second.second - ê³ëüê³còü êóïëåíèõ ïóò³âîê çà ïåâíèé ð³ê
+	* pair.first.first   - names of most popular countries 
+	* pair.first.second  - count of bought trips to those countries
+	* pair.second.first  - year
+	* pair.second.second - count of all countries
 	*/
 
 	int size = static_cast<int>(pair.first.first.size());
@@ -824,7 +843,7 @@ void SaveTripsData(const ListSharedsTrip_t& Trips, const std::string path){
 			}
 
 			else if (trip->GetStatus() == TripStatus::FINISHED)
-				SaveOrderData(static_cast<int>(trip->GetDateOfBooking().year()), trip->GetCountry(), trip->GetFullName(), trip->GetNameOfCustomer(), trip->GetPrice());
+				SaveOrderData(static_cast<int>(trip->GetDateOfBooking().year()), trip->GetCountry(), trip->GetFullName(), trip->GetNameOfCustomer(), trip->GetDuration(), trip->GetPrice());
 
 		}
 	}
@@ -891,7 +910,7 @@ void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string pa
 			else if (status == "Sold" || status == "In progress")  // TripStatus::SOLD or IN_PROGRESS or FINISHED
 			{
 				if (getDateDifference(today, date_of_end) < 0) 
-					SaveOrderData(static_cast<int>(date_of_booking.year()), country, name, name_of_customer, std::stod(price));
+					SaveOrderData(static_cast<int>(date_of_booking.year()), country, name, name_of_customer, Trips.back()->GetDuration(), std::stod(price));
 				else
 					Trips.emplace_back(std::make_shared<Trip>(name, country, city, date_of_start, date_of_end, std::stod(price), std::stoi(personal_id), name_of_customer, name_of_manager, date_of_booking));
 			}

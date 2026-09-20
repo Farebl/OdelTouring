@@ -12,16 +12,7 @@ import Order;
 
 
 
-std::ostream& operator<<(std::ostream& os, const std::chrono::year_month_day& ymd) {
-    if (ymd.ok()) {
-        os << static_cast<int>(ymd.year()) << "/"
-           << static_cast<unsigned>(ymd.month()) << "/"
-           << static_cast<unsigned>(ymd.day());
-    } else {
-        os << "Invalid Date";
-    }
-    return os;
-}
+
 
 
 export void Interface(ListSharedsManager_t& Managers, ListSharedsCustomer_t& Customers, ListSharedsTrip_t& Trips,
@@ -4195,4 +4186,10 @@ case 4: // case 4: Close the program
 	}
 
 }
+
+
+
+
+
+
 
