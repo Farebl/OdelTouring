@@ -15,13 +15,14 @@ module;
 #include <vector>
 #include <list>
 
-module Functions; // Вказуємо ГОЛОВНИЙ модуль
-import :QueryFunctions; // Імпортуємо свою ж партицію, щоб бачити її оголошення
 
 
+module Functions; 
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////  HELPER FUNCTIONS ///////////////////////////////
+
+
 
 std::ostream& operator<<(std::ostream& os, const std::chrono::year_month_day& ymd) {
     if (ymd.ok()) {
@@ -34,6 +35,12 @@ std::ostream& operator<<(std::ostream& os, const std::chrono::year_month_day& ym
     return os;
 }
 
+
+
+
+
+
+/////////////////////////MAIN FUNCTIONS///////////////////////////
 
 
 
@@ -93,18 +100,18 @@ int GetCountOfOrders(const int year, const std::string path){
 }
 
 
-void SaveOrderData(int year_of_booking, const std::string& country, const std::string& name_of_trip, const std::string& name_of_customer, unsigned int duration, double price, const std::string& path){
+void SaveOrderData(const Order& order, const std::string& path){
 	std::fstream orderWrite;
 	orderWrite.open(path, std::fstream::app);
 	if (!orderWrite.is_open()) 
 		std::cout << "Error: Could not open the file at the specified path to record orders data. \nSpecified path:" << path << "\n";
 	else {
-		orderWrite << "\n\n" << year_of_booking;
-		orderWrite << "\n" << country;
-		orderWrite << "\n" << name_of_trip;
-		orderWrite << "\n" << name_of_customer;
-		orderWrite << "\n" << duration;
-		orderWrite << "\n" << price;
+		orderWrite << "\n\n" << order.name_of_trip;
+		orderWrite << "\n" << order.year_of_booking;
+		orderWrite << "\n" << order.country;
+		orderWrite << "\n" << order.duration;
+		orderWrite << "\n" << order.price;
+		orderWrite << "\n" << order.name_of_customer;
 	}
 	orderWrite.close();
 }
@@ -122,13 +129,14 @@ void ReadOrdersData(std::stack<Order>& Collection, const std::string path) {
 
 		while (!ordersRead.eof()) {
 			std::getline(ordersRead, emptiness); // ç÷èòóâàííÿ ïîðîæíüîãî ðÿäêà
+			std::getline(ordersRead, name_of_trip);
 			std::getline(ordersRead, year_of_booking);
 			std::getline(ordersRead, country);
-			std::getline(ordersRead, name_of_trip);
-			std::getline(ordersRead, name_of_customer);
 			std::getline(ordersRead, duration);
 			std::getline(ordersRead, price);
-			Collection.push(Order(std::stoi(year_of_booking), country, name_of_trip, name_of_customer, std::stoi(duration), std::stod(price)));
+			std::getline(ordersRead, name_of_customer);
+
+			Collection.push(Order(name_of_trip, std::stoi(year_of_booking), country, std::stoi(duration), std::stod(price), name_of_customer));
 		}
 	}
 	ordersRead.close();
@@ -898,21 +906,18 @@ void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string pa
 
             }
             catch(std::exception& ex){
-                std::cout << "Exception while reading date of start/end/booking of the trip \"" << name << "\" (id: " << personal_id <<"): "<< ex.what();
+                std::cout << "Exception while reading:w
+                    date of start/end/booking of the trip \"" << name << "\" (id: " << personal_id <<"): "<< ex.what();
                 continue;
             }
-            
-			if (status == "On sale")  // TripStatus::ON_SALE or EXPIRED
-			{
-				if (getDateDifference(today, date_of_start) > 0) //TripStatus::SELLING - çáåð³ãàºìî
-					Trips.emplace_back(std::make_shared<Trip>(name, country, city, date_of_start, date_of_end, std::stod(price), std::stoi(personal_id)));
-			}
-			else if (status == "Sold" || status == "In progress")  // TripStatus::SOLD or IN_PROGRESS or FINISHED
-			{
-				if (getDateDifference(today, date_of_end) < 0) 
-					SaveOrderData(static_cast<int>(date_of_booking.year()), country, name, name_of_customer, Trips.back()->GetDuration(), std::stod(price));
-				else
+  
+
+			if (getDateDifference(today, date_of_start) > 0){
+                if (status == "On sale")
+                    Trips.emplace_back(std::make_shared<Trip>(name, country, city, date_of_start, date_of_end, std::stod(price), std::stoi(personal_id)));
+                else if (status == "Sold")
 					Trips.emplace_back(std::make_shared<Trip>(name, country, city, date_of_start, date_of_end, std::stod(price), std::stoi(personal_id), name_of_customer, name_of_manager, date_of_booking));
+
 			}
 		}
 	}

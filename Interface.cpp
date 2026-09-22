@@ -8,7 +8,6 @@ module;
 #include <chrono>
 
 module Functions; 
-import :QueryFunctions; 
 
 
 
@@ -2768,7 +2767,7 @@ MenuItem OrdersMenu(const MenuItemsHandles& handles){
 }
 
 
-MenuItem OrdersMakeOrderMenu(ListSharedsManager_t& managers, ListSharedsCustomer_t& customers, ListSharedsTrip_t& trips, const std::string& history_data_path, const MenuItemsHandles& handles){
+MenuItem OrdersMakeOrderMenu(ListSharedsManager_t& managers, ListSharedsCustomer_t& customers, ListSharedsTrip_t& trips, const std::string& orders_path, const std::string& history_data_path, const MenuItemsHandles& handles){
     size_t menu_item = 0;
 
     while(true){
@@ -3237,11 +3236,53 @@ MenuItem OrdersMakeOrderMenu(ListSharedsManager_t& managers, ListSharedsCustomer
         auto trip = trips.begin();
         std::advance(trip, trip_index);
 
-        (*manager)->SaleTheTrip(*customer, *trip);
-				
-        std::cout << "\n\nManager " << (*manager)->GetFullName() << " sold to client " << (*customer)->GetFullName() << " tour " << (*trip)->GetFullName() << ";\n";
-        SaveMessage("Manager " + (*manager)->GetFullName() + " sold to client " + (*customer)->GetFullName() + " tour " + (*trip)->GetFullName(), history_data_path);
+        auto result_of_sale = (*manager)->SaleTheTrip(*customer, *trip);
+        if (result_of_sale){
+            std::cout << "\n\nManager " << (*manager)->GetFullName() << " sold to client " << (*customer)->GetFullName() << " tour " << (*trip)->GetFullName() << ";\n";
+            SaveMessage("Manager " + (*manager)->GetFullName() + " sold to client " + (*customer)->GetFullName() + " tour " + (*trip)->GetFullName(), history_data_path);
+            SaveOrderData(result_of_sale.value(), orders_path);
+        }
+        else{
+            std::cerr << result_of_sale.error();
 
+            while (!selected_next_menu){
+                std::cout << "\n1) Try again to make an order";
+                std::cout << "\n2) Back to \"Orders\"";
+                std::cout << "\n3) Go to \"Main menu\"";
+                std::cout << "\n4) Close the program";
+
+                std::cout << "\n\nEnter item number: ";
+                ValidatedInput(menu_item);
+                switch (menu_item) {
+                    case 1:
+                        selected_next_menu = true;
+                        break;
+
+                    case 2:
+                        selected_next_menu = true;
+                        co_await SwitchTo{handles.orders_menu}; 
+                        break;
+
+                    case 3:
+                        selected_next_menu = true;
+                        co_await SwitchTo{handles.main_menu}; 
+                        break;
+
+                    case 4:
+                        if (ConfirmationOfProgramCompletionMenu()){
+                            StopInterface();
+                        }
+                        break;
+
+                    default:
+                        std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                        break;
+                }
+            }
+    
+            if (selected_next_menu) continue; // top while(true){...}
+        }
+				
         while (!selected_next_menu) {
             std::cout << "\n\n1) Make a new order";
             std::cout << "\n2) Back to \"Orders\"";
@@ -3532,10 +3573,55 @@ MenuItem OrdersMakeOrderReturnMenu(ListSharedsManager_t& managers, ListSharedsCu
         std::advance(customer, customer_index);
 
         std::string trip_name = (*customer)->GetTrip()->GetFullName();
-        (*manager)->ReturnTheTrip(*customer);
+        auto result_of_return = (*manager)->ReturnTheTrip(*customer);
 
-        std::cout << "\n\nManager " << (*manager)->GetFullName() << " made a refound for client " << (*customer)->GetFullName() << ", tour \"" << trip_name << "\"\n";
-        SaveMessage("Manager " + (*manager)->GetFullName() + " made a refound for client " + (*customer)->GetFullName() + ", tour \"" + trip_name + "\"", history_data_path);
+        if (result_of_return){
+            std::cout << "\n\nManager " << (*manager)->GetFullName() << " made a refound for client " << (*customer)->GetFullName() << ", tour \"" << trip_name << "\"\n";
+            SaveMessage("Manager " + (*manager)->GetFullName() + " made a refound for client " + (*customer)->GetFullName() + ", tour \"" + trip_name + "\"", history_data_path);
+            //DeleteOrderFromDataBase(result_of_sale);
+        }
+        else{
+            std::cerr << result_of_return.error();
+
+            while (!selected_next_menu){
+                std::cout << "\n1) Try again to make a return";
+                std::cout << "\n2) Back to \"Orders\"";
+                std::cout << "\n3) Go to \"Main menu\"";
+                std::cout << "\n4) Close the program";
+
+                std::cout << "\n\nEnter item number: ";
+                ValidatedInput(menu_item);
+                switch (menu_item) {
+                    case 1:
+                        selected_next_menu = true;
+                        break;
+
+                    case 2:
+                        selected_next_menu = true;
+                        co_await SwitchTo{handles.orders_menu}; 
+                        break;
+
+                    case 3:
+                        selected_next_menu = true;
+                        co_await SwitchTo{handles.main_menu}; 
+                        break;
+
+                    case 4:
+                        if (ConfirmationOfProgramCompletionMenu()){
+                            StopInterface();
+                        }
+                        break;
+
+                    default:
+                        std::cout << "\n\n!!! Incorrect action number entered. Try again:";
+                        break;
+                }
+            }
+    
+            if (selected_next_menu) continue; // top while(true){...}
+        
+
+
 
         while (!selected_next_menu) {
             std::cout << "\n\n1) Make a new order return";

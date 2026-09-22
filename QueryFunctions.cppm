@@ -22,6 +22,7 @@ export import Order;
 export using ListSharedsManager_t = std::list<std::shared_ptr<Manager>>;
 export using ListSharedsCustomer_t = std::list<std::shared_ptr<Customer>>;
 export using ListSharedsTrip_t = std::list<std::shared_ptr<Trip>>;
+export using ListSharedsOrders_t = std::list<std::shared_ptr<Order>>;
 
 export using manager_list_iter_t = std::list<std::shared_ptr<Manager>>::iterator;
 export using customer_list_iter_t = std::list<std::shared_ptr<Customer>>::iterator;
@@ -81,7 +82,7 @@ export void ClearConsole();
 export int GetCountOfOrders(const int year = 0, const std::string path = "Orders.txt");
 
 // save orders to storage
-export void SaveOrderData(int year_of_booking, const std::string& country, const std::string& name_of_trip, const std::string& name_of_customer, unsigned int duration, double price, const std::string& path = "Orders.txt");
+export void SaveOrderData(const Order& order, const std::string& path);
 
 // read orders from storage
 export void ReadOrdersData(std::stack<Order>& Collection, const std::string path = "Orders.txt");
