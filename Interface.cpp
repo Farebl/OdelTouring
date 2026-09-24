@@ -811,10 +811,9 @@ MenuItem RemoveManagerMenu(ListSharedsManager_t& managers, const std::string& hi
 
         size_t manager_index = 0;
         bool try_again_select_manager = true;
-        bool remove_another_manager = true;
 
-        while(remove_another_manager){
-            remove_another_manager = false;
+        while(try_again_select_manager){
+            try_again_select_manager= false;
 
             std::cout << "\nManagers: \n";
             ShowListOfCollectionElementNames(managers);
@@ -911,6 +910,7 @@ MenuItem RemoveManagerMenu(ListSharedsManager_t& managers, const std::string& hi
                 }
                 if (try_again_select_manager) break;
             }
+            if (try_again_select_manager) break; // to pass the while-condition while (managers.empty()){...}
         }
     }
 }
@@ -1627,9 +1627,9 @@ MenuItem RemoveCustomerMenu(ListSharedsCustomer_t& customers, const std::string&
     while (true){
         ClearConsole();
         std::cout << "\n\n|--- Remove customer ---|\n";
-        
-        while (customers.empty()) {
-            std::cout << "\n\nUnfortunately, there are no customers (no one to delete)";
+
+        while(GetCountOfCustomersWithoutTrip(customers).first == 0){
+            std::cout << "\n\nUnfortunately, there are no customers without trip (no one to delete)";
             std::cout << "\n1) Back to \"Customers\"";
             std::cout << "\n2) Go to the \"Main menu\"";
             std::cout << "\n3) Close the program";
@@ -1655,22 +1655,21 @@ MenuItem RemoveCustomerMenu(ListSharedsCustomer_t& customers, const std::string&
                     std::cerr << "\n\n!!! Incorrect action number entered. Try again:";
                     break;
             }
-        } 
+        }
 
         size_t customer_index = 0;
         bool try_again_select_customer = true;
-        bool remove_another_customer = true;
 
-        while(remove_another_customer){
-            remove_another_customer = false;
+        while(try_again_select_customer){
+            try_again_select_customer = false;
 
             std::cout << "\nCustomers: \n";
-            ShowListOfCollectionElementNames(customers);
+			ShowListOfCustomersWithoutTripNames(customers);
 
-            std::cout << "\n\nSelect the number of the customer you want to remove: ";
-            ValidatedInput(customer_index);
+			std::cout << "\n\nSelect the number of the customer you want to remove: ";
+			ValidatedInput(customer_index);
 
-            while ((customer_index < 1 || customer_index > customers.size()) && !try_again_select_customer) {
+            while ((customer_index < 1 || customer_index > GetCountOfCustomersWithoutTrip(customers).first) && !try_again_select_customer) {
                 std::cout << "\n\nThere is no customer with such a serial number.";
                 std::cout << "\n1) Try again";
                 std::cout << "\n2) Back to \"Customers\"";
@@ -1707,14 +1706,14 @@ MenuItem RemoveCustomerMenu(ListSharedsCustomer_t& customers, const std::string&
             } 
             if (try_again_select_customer) continue;
         
+		    customer_index = GetCountOfCustomersWithoutTrip(customers).second[customer_index - 1];
+			auto customer = customers.begin();
+			std::advance(customer, customer_index);
 
-            auto customer = customers.begin();
-            std::advance(customer, customer_index - 1);
+			auto name = (*customer)->GetFullName();
+			auto id = (*customer)->GetPersonalId();
+			customers.remove(*customer);
 
-            auto name = (*customer)->GetFullName();
-            auto id = (*customer)->GetPersonalId();
-
-            customers.remove(*customer);
             std::cout << "\nCustomer \"" << name << "\" has been removed.";
 
             SaveMessage("Customer by name \"" + name + "\" has been removed." + " His/Her id : " + std::to_string(id), history_data_path);
@@ -1756,6 +1755,7 @@ MenuItem RemoveCustomerMenu(ListSharedsCustomer_t& customers, const std::string&
                 }
                 if (try_again_select_customer) break;
             }
+            if (try_again_select_customer) break; // to pass the top while-condition  while(GetCountOfCustomersWithoutTrip(customers).first == 0){...}
         }
     }
 }
@@ -2352,11 +2352,11 @@ MenuItem AddNewTripMenu(ListSharedsTrip_t& trips, const std::string& history_dat
 MenuItem RemoveTripMenu(ListSharedsTrip_t& trips, const std::string& history_data_path, const MenuItemsHandles& handles){
     size_t menu_item = 0;
     while (true){ 
-        while (trips.empty()) {
+        while (GetCountOfUnboughtTrips(trips).first == 0) {
             ClearConsole();
             std::cout << "\n\n|--- Remove trip ---|\n";
 
-            std::cout << "\n\nUnfortunately, there are no trips (no one to delete)";
+            std::cout << "\n\nUnfortunately, there are no unsold trips (no one to delete)";
             std::cout << "\n1) Back to \"Trips\"";
             std::cout << "\n2) Go to the \"Main menu\"";
             std::cout << "\n3) Close the program";
@@ -2382,26 +2382,23 @@ MenuItem RemoveTripMenu(ListSharedsTrip_t& trips, const std::string& history_dat
                     std::cerr << "\n\n!!! Incorrect action number entered. Try again:";
                     break;
             }
-        } 
+        }
 
         size_t trip_index = 0;
-        bool remove_another_trip = true;
         bool selected_next_menu = false;
-
-        while(remove_another_trip){
-            remove_another_trip = false;
-
+        bool try_again_select_trip = true;
+        while(try_again_select_trip){
+            try_again_select_trip = false;
             ClearConsole();
             std::cout << "\n\n|--- Remove trip ---|\n";
 
             std::cout << "\nTrips: \n";
-            ShowListOfCollectionElementNames(trips);
+			ShowListOfUnboughtTripNames(trips);
 
-            std::cout << "\n\nSelect the number of the trip you want to remove: ";
-            ValidatedInput(trip_index);
+			std::cout << "\n\nSelect the number of the trip you want to remove: ";
+			ValidatedInput(trip_index);
 
-            bool try_again_select_trip = true;
-            while ((trip_index < 1 || trip_index > trips.size()) && !try_again_select_trip) {
+            while ((trip_index < 1 || trip_index > GetCountOfUnboughtTrips(trips).first) && !try_again_select_trip) {
                 std::cout << "\n\nThere is no trip with such a serial number.";
                 std::cout << "\n1) Try again";
                 std::cout << "\n2) Back to \"Trips\"";
@@ -2439,8 +2436,10 @@ MenuItem RemoveTripMenu(ListSharedsTrip_t& trips, const std::string& history_dat
             } 
             if (try_again_select_trip) continue;
 
-            auto delete_trip = trips.begin();
-            std::advance(delete_trip, trip_index - 1);
+
+            trip_index = GetCountOfUnboughtTrips(trips).second[trip_index - 1];
+			auto delete_trip = trips.begin();
+			std::advance(delete_trip, trip_index);
 
             auto name = (*delete_trip)->GetFullName();
             auto id = (*delete_trip)->GetPersonalId();
@@ -2461,7 +2460,7 @@ MenuItem RemoveTripMenu(ListSharedsTrip_t& trips, const std::string& history_dat
                 ValidatedInput(menu_item);
                 switch (menu_item) {
                     case 1:
-                        remove_another_trip = true;
+                        try_again_select_trip = true;
                         break;
 
                     case 2:
@@ -2485,8 +2484,9 @@ MenuItem RemoveTripMenu(ListSharedsTrip_t& trips, const std::string& history_dat
                         selected_next_menu = false;
                         break;
                 }
-                if (remove_another_trip) break;
+                if (try_again_select_trip)  break;
             }
+            if (try_again_select_trip) break; // to pass the top while-condition  while (GetCountOfUnboughtTrips(trips).first == 0){...}
         }
     }
 }
