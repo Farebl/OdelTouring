@@ -2,7 +2,6 @@ import Functions;
 
 #include <iostream>
 
-
 int main() {
     std::string history_path = "History.txt";
     std::string orders_path = "Orders.txt";
@@ -10,7 +9,7 @@ int main() {
     ListSharedsManager_t managers;
     ListSharedsCustomer_t customers;
     ListSharedsTrip_t trips;
-    ListSharedsOrders_t orders;
+    ListSharedsOrder_t orders;
 
     MenuItemsHandles handles;
 
@@ -53,8 +52,6 @@ int main() {
     MenuItem trips_info_menu                   = TripsInfoMenu(trips, handles);
     MenuItem trips_show_full_info_menu         = ShowFullInformationAboutTripMenu(trips, handles);
     MenuItem trips_edit_info_menu              = EditInformationAboutTripMenu(trips, history_path, handles);
-    MenuItem trips_general_info_menu           = TripsGeneralInformationMenu(trips, orders_path, handles);
-    MenuItem trips_info_for_specific_year_menu = TripsInformationForSpecificYearMenu(trips, orders_path, handles);
     MenuItem trips_add_trip_menu               = AddNewTripMenu(trips, history_path, handles);
     MenuItem trips_remove_trip_menu            = RemoveTripMenu(trips, history_path, handles);
 
@@ -62,19 +59,21 @@ int main() {
     handles.trips_info_menu                   = trips_info_menu.get_handle();
     handles.trips_show_full_info_menu         = trips_show_full_info_menu.get_handle();
     handles.trips_edit_info_menu              = trips_edit_info_menu.get_handle();
-    handles.trips_general_info_menu           = trips_general_info_menu.get_handle();
-    handles.trips_info_for_specific_year_menu = trips_info_for_specific_year_menu.get_handle();
     handles.trips_add_trip_menu               = trips_add_trip_menu.get_handle();
     handles.trips_remove_trip_menu            = trips_remove_trip_menu.get_handle();
 
 // Orders menu items
-    MenuItem orders_menu                    =  OrdersMenu(handles);
-    MenuItem orders_make_order_menu         =  OrdersMakeOrderMenu(managers, customers, trips, history_path, handles);
-    MenuItem orders_make_order_return_menu  =  OrdersMakeOrderReturnMenu(managers, customers, history_path, handles);
-
-    handles.orders_menu                   = orders_menu.get_handle();
-    handles.orders_make_order_menu        = orders_make_order_menu.get_handle();
-    handles.orders_make_order_return_menu = orders_make_order_return_menu.get_handle();
+    MenuItem orders_menu                        = OrdersMenu(handles);
+    MenuItem orders_info_menu                   = OrdersGeneralInformationMenu(orders, handles);
+    MenuItem orders_info_for_specific_year_menu = OrdersInformationForSpecificYearMenu(orders, handles);
+    MenuItem orders_make_order_menu             = OrdersMakeOrderMenu(managers, customers, trips, orders, history_path, handles);
+    MenuItem orders_make_order_return_menu      = OrdersMakeOrderReturnMenu(managers, customers, orders, history_path, handles);
+    
+    handles.orders_menu                        = orders_menu.get_handle();
+    handles.orders_info_menu                   = orders_info_menu.get_handle();
+    handles.orders_info_for_specific_year_menu = orders_info_for_specific_year_menu.get_handle();
+    handles.orders_make_order_menu             = orders_make_order_menu.get_handle();
+    handles.orders_make_order_return_menu      = orders_make_order_return_menu.get_handle();
 
     try{
         ReadManagersData(managers, "Managers.txt");
@@ -97,7 +96,7 @@ int main() {
         SaveManagersData(managers, "Managers.txt");
         SaveTripsData(trips, "Trips.txt");
         SaveCustomersData(customers, "Customers.txt");
-        SaveOrderData(orders, orders_path);
+        SaveOrdersData(orders, orders_path);
     }
     catch(std::exception& ex){
         std::cout<< "Exception in main after writing data: " << ex.what();

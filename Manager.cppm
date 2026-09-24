@@ -19,7 +19,7 @@ public:
 
 	void ShowInfo() override; 
 
-    std::expected<Order, const char*> SaleTheTrip(std::shared_ptr<Customer>& customer, std::shared_ptr<Trip>& trip);
+    std::expected<std::shared_ptr<Order>, const char*> SaleTheTrip(std::shared_ptr<Customer>& customer, std::shared_ptr<Trip>& trip);
 	std::expected<bool, const char*> ReturnTheTrip(std::shared_ptr<Customer>& customer); 
 	
     std::string GetFullName() const; 

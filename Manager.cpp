@@ -23,7 +23,7 @@ void Manager::ShowInfo()
 
 
 
-std::expected<Order, const char*> Manager::SaleTheTrip(std::shared_ptr<Customer>& customer, std::shared_ptr<Trip>& trip) {
+std::expected<std::shared_ptr<Order>, const char*> Manager::SaleTheTrip(std::shared_ptr<Customer>& customer, std::shared_ptr<Trip>& trip) {
 
 	if (trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS) {
 		return std::unexpected{"The trip is already bought"};
@@ -37,8 +37,8 @@ std::expected<Order, const char*> Manager::SaleTheTrip(std::shared_ptr<Customer>
 
     auto year = static_cast<int>(trip->GetDateOfBooking().year());
 
-    Order order {trip->GetFullName(), year, trip->GetCountry(), trip->GetDuration(), trip->GetPrice(), customer->GetFullName()};
-    return order;
+    auto order_ptr = std::make_shared<Order>(trip->GetFullName(), year, trip->GetCountry(), trip->GetDuration(), trip->GetPrice(), customer->GetPersonalId());
+    return order_ptr;
 }
 																																					
 std::expected<bool, const char*> Manager::ReturnTheTrip(std::shared_ptr<Customer>& customer) {

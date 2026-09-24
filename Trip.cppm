@@ -39,15 +39,14 @@ private:
 	std::string name_of_manager; 
     std::chrono::year_month_day date_of_booking; 
 
-	static int total_duration; 
+	static long long total_duration; 
 	static double total_price; 
 	static std::vector<int> Identifiers; 
 
 	void SetDataOfPurchase(std::string name_of_manager, std::string name_of_customer);
 
-	void Return(); 
-
-	int GetDateDifference(const std::string firstDate, const std::string secondDate = "today");
+	void Return();
+    void setId(size_t id = 0);
 
 public:
     Trip();

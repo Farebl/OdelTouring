@@ -22,7 +22,7 @@ export import Order;
 export using ListSharedsManager_t = std::list<std::shared_ptr<Manager>>;
 export using ListSharedsCustomer_t = std::list<std::shared_ptr<Customer>>;
 export using ListSharedsTrip_t = std::list<std::shared_ptr<Trip>>;
-export using ListSharedsOrders_t = std::list<std::shared_ptr<Order>>;
+export using ListSharedsOrder_t = std::list<std::shared_ptr<Order>>;
 
 export using manager_list_iter_t = std::list<std::shared_ptr<Manager>>::iterator;
 export using customer_list_iter_t = std::list<std::shared_ptr<Customer>>::iterator;
@@ -79,13 +79,6 @@ export void SaveMessage(const std::string msg, const std::string path = "History
 // clear console gui
 export void ClearConsole(); 
 
-export int GetCountOfOrders(const int year = 0, const std::string path = "Orders.txt");
-
-// save orders to storage
-export void SaveOrderData(const Order& order, const std::string& path);
-
-// read orders from storage
-export void ReadOrdersData(std::stack<Order>& Collection, const std::string path = "Orders.txt");
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
@@ -149,19 +142,38 @@ export std::pair<size_t, std::vector<int>> GetCountOfUnboughtTrips(const ListSha
 
 export std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTrip_t& Trips, unsigned short year = 0);
 
-export std::vector<std::string> GetCountriesOfBoughtTrips(const ListSharedsTrip_t& Trips, const int year = 0, std::string path = "Orders.txt");
-
-export int GetAveragePriceOfTrips(const ListSharedsTrip_t& Trips, const int year = 0, std::string path = "Orders.txt");
-
-export double GetAverageDurationOfTrips(const ListSharedsTrip_t& Trips, const int year = 0, std::string path = "Orders.txt");
+export std::vector<std::string> GetCountriesOfBoughtTrips(const ListSharedsTrip_t& Trips);
 
 export std::shared_ptr<Trip> FindTripById(const ListSharedsTrip_t& Collection, const int personal_id);
-
-export Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip_t& Trips, const int year = 0, std::string path = "Orders.txt");
-
-export void ShowMostPupularCountries(const Countries_Count_Year_AllCountYear& pair);
 
 export void SaveTripsData(const ListSharedsTrip_t& Trips, const std::string path = "Trips.txt");
 
 export void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string path = "Trips.txt");
+
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+// 4 Orders functions:
+
+export int GetCountOfOrdersByYear(const ListSharedsOrder_t& orders, const int year = 0);
+
+export int GetAveragePriceOfSoldTripsByYear(const ListSharedsOrder_t& orders, const int year = 0);
+
+export double GetAverageDurationOfSoldTripsByYear(const ListSharedsOrder_t& orders, const int year = 0);
+
+export Countries_Count_Year_AllCountYear FindMostPupularCountriesOfSoldTrips(const ListSharedsOrder_t& orders, const int year = 0);
+
+export void ShowMostPupularCountriesOfSoldTrips(const Countries_Count_Year_AllCountYear& pair);
+
+export void RemoveOrderByCustomerId(ListSharedsOrder_t& orders, size_t customer_id);
+
+// save orders to storage
+export void SaveOrdersData(const ListSharedsOrder_t& orders, const std::string& path);
+
+// read orders from storage
+export void ReadOrdersData(ListSharedsOrder_t& orders, const std::string path = "Orders.txt");
+
 

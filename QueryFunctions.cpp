@@ -14,6 +14,7 @@ module;
 #include <stack>
 #include <vector>
 #include <list>
+#include <set>
 
 
 
@@ -80,67 +81,6 @@ void SaveMessage(const std::string msg, const std::string path) {
 
 
 void ClearConsole() {std::cout << "\033[2J\033[H" << std::flush;}
-
-
-int GetCountOfOrders(const int year, const std::string path){
-	std::stack<Order> Orders;
-	ReadOrdersData(Orders, path);
-	
-	int count = 0;
-	if (year != 0) {
-		while (!Orders.empty()) {
-			if (Orders.top().year_of_booking == year)
-				++count;
-			Orders.pop();
-		}
-		return count;
-	}
-	else 
-		return Orders.size();
-}
-
-
-void SaveOrderData(const Order& order, const std::string& path){
-	std::fstream orderWrite;
-	orderWrite.open(path, std::fstream::app);
-	if (!orderWrite.is_open()) 
-		std::cout << "Error: Could not open the file at the specified path to record orders data. \nSpecified path:" << path << "\n";
-	else {
-		orderWrite << "\n\n" << order.name_of_trip;
-		orderWrite << "\n" << order.year_of_booking;
-		orderWrite << "\n" << order.country;
-		orderWrite << "\n" << order.duration;
-		orderWrite << "\n" << order.price;
-		orderWrite << "\n" << order.name_of_customer;
-	}
-	orderWrite.close();
-}
-
-
-void ReadOrdersData(std::stack<Order>& Collection, const std::string path) {
-	std::ifstream ordersRead;
-	ordersRead.open(path, std::ios::in);
-
-	if (!ordersRead.is_open()) 
-		std::cout << "Error: Could not open the file at the specified path to read orders data.\nSpecified path:" << path << "\n";
-	else {
-		std::string year_of_booking, country, name_of_trip, name_of_customer, duration, price, emptiness;
-		std::getline(ordersRead, emptiness); // ç÷èòóâàííÿ ïîðîæíüîãî ðÿäêà
-
-		while (!ordersRead.eof()) {
-			std::getline(ordersRead, emptiness); // ç÷èòóâàííÿ ïîðîæíüîãî ðÿäêà
-			std::getline(ordersRead, name_of_trip);
-			std::getline(ordersRead, year_of_booking);
-			std::getline(ordersRead, country);
-			std::getline(ordersRead, duration);
-			std::getline(ordersRead, price);
-			std::getline(ordersRead, name_of_customer);
-
-			Collection.push(Order(name_of_trip, std::stoi(year_of_booking), country, std::stoi(duration), std::stod(price), name_of_customer));
-		}
-	}
-	ordersRead.close();
-}
 
 
 
@@ -570,231 +510,12 @@ std::pair<size_t, std::vector<int>> GetCountOfPurchasedTrips(const ListSharedsTr
 	return std::make_pair(count, Indices);
 }
 
-
-std::vector<std::string> GetCountriesOfBoughtTrips(const ListSharedsTrip_t& Trips, const int year, std::string path){
-	std::list<std::string> Countries; // Íàá³ð êðà¿í óc³õ ïðèäáàíèõ ä³écíèõ ïóò³âîê 
-	if (year != 0) {
-        int year_of_booking;
-		for (auto& trip : Trips) {
-			if ((trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)) {
-				year_of_booking = static_cast<int>(trip->GetDateOfBooking().year());
-				if (year_of_booking == year)
-					Countries.push_back(trip->GetCountry());
-			}
-		}
-	}
-	else { // if year == 0 
-		for (auto& trip : Trips) {
-			if (trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)
-				Countries.push_back(trip->GetCountry());
-		}
-	}
-
-	Countries.sort();
-
-	std::vector<std::string> uniqueCountries;
-	std::unique_copy(std::begin(Countries), std::end(Countries), std::back_inserter(uniqueCountries));
-	return uniqueCountries;
-}
-
-
-double GetAverageDurationOfTrips(const ListSharedsTrip_t& Trips, const int year, std::string path){
-	std::stack<Order> Orders; 
-	ReadOrdersData(Orders, path);
-
-	std::vector<int> Durations;
-	Durations.reserve(Orders.size());
-
-	if (year != 0) {
-		int date_of_booking;
-		for (auto& trip : Trips) {
-			if ((trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)) {
-				date_of_booking = static_cast<int>(trip->GetDateOfBooking().year());
-				if (date_of_booking == year)
-					Durations.push_back(trip->GetDuration());
-			}
-		}
-		while (!Orders.empty()) {
-			if (Orders.top().year_of_booking == year)
-				Durations.push_back(Orders.top().duration);
-			Orders.pop();
-		}
-	}
-
-	else { 
-		for (auto& trip : Trips) {
-			if (trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)
-				Durations.push_back(trip->GetDuration());
-		}
-		while (!Orders.empty()) {
-			Durations.push_back(Orders.top().duration);
-			Orders.pop();
-		}
-	}
-
-	Durations.shrink_to_fit();
-	if (Durations.size() == 0)
-		return 0;
-
-	return (std::accumulate(Durations.begin(), Durations.end(), 0) / Durations.size());
-}
-
-
-int GetAveragePriceOfTrips(const ListSharedsTrip_t& Trips, const int year, std::string path){
-	std::stack<Order> Orders; 
-	ReadOrdersData(Orders, path);
-
-	std::vector<double> Prices;
-	Prices.reserve(Orders.size());
-
-	if (year != 0) {
-        int date_of_booking;
-		for (auto& trip : Trips) {
-			if ((trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)) {
-				date_of_booking = static_cast<int>(trip->GetDateOfBooking().year());
-				if (date_of_booking == year)
-					Prices.push_back(trip->GetDuration());
-			}
-		}
-		while (!Orders.empty()) {
-			if (Orders.top().year_of_booking == year)
-				Prices.push_back(Orders.top().price);
-			Orders.pop();
-		}
-	}
-
-	else { 
-		for (auto& trip : Trips) {
-			if (trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)
-				Prices.push_back(trip->GetDuration());
-		}
-		while (!Orders.empty()) {
-			Prices.push_back(Orders.top().price);
-			Orders.pop();
-		}
-	}
-
-	Prices.shrink_to_fit();
-	if (Prices.size() == 0)
-		return 0;
-
-	return (std::accumulate(Prices.begin(), Prices.end(), 0) / Prices.size());
-}
-
 std::shared_ptr<Trip> FindTripById(const ListSharedsTrip_t& Trips, const int personal_id){
 	for (auto trip : Trips) {
 		if (trip->GetPersonalId() == personal_id)
 			return trip;
 	}
 	return nullptr;
-}
-
-
-Countries_Count_Year_AllCountYear FindMostPupularCountries(const ListSharedsTrip_t& Trips, const int year, std::string path) {
-	std::stack<Order> Orders;  
-	ReadOrdersData(Orders, path);
-
-	std::list<std::string> Countries; 
-
-	if (year != 0) {
-		int year_of_booking;
-		for (auto& trip : Trips) {
-			if ((trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)) {
-				year_of_booking = static_cast<int>(trip->GetDateOfBooking().year());
-				if (year_of_booking == year)
-					Countries.push_back(trip->GetCountry());
-			}
-		}
-		while (!Orders.empty()) {
-			if (Orders.top().year_of_booking == year)
-				Countries.push_back(Orders.top().country);
-			Orders.pop();
-		}
-	}
-
-	else { 
-		for (auto& trip : Trips) {
-			if (trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS)
-				Countries.push_back(trip->GetCountry());
-		}
-		while (!Orders.empty()) {
-			Countries.push_back(Orders.top().country);
-			Orders.pop();
-		}
-	}
-
-	Countries.sort();
-
-	std::vector<std::string> uniqueCountries;
-	std::unique_copy(std::begin(Countries), std::end(Countries), std::back_inserter(uniqueCountries));
-
-	int curentIndex = 0;
-	int maxRepits = 0;
-	int countOfRepits = 0;
-
-	while (curentIndex < static_cast<int>(uniqueCountries.size())) {
-		countOfRepits = std::count(std::begin(Countries), std::end(Countries), uniqueCountries[curentIndex]);
-		if (countOfRepits > maxRepits) {
-			maxRepits = countOfRepits;
-		}
-		curentIndex++;
-	}
-
-	std::vector<std::string> mostPopularCountries; 
-	curentIndex = 0;
-
-	while (curentIndex < static_cast<int>(uniqueCountries.size())) {
-
-		countOfRepits = std::count(std::begin(Countries), std::end(Countries), uniqueCountries[curentIndex]);
-
-		if (countOfRepits == maxRepits) 
-			mostPopularCountries.push_back(uniqueCountries[curentIndex]);
-		
-		curentIndex++;
-	}
-	return std::make_pair(std::make_pair(mostPopularCountries, maxRepits), std::make_pair(year, Countries.size()));
-}
-
-
-void ShowMostPupularCountries(const Countries_Count_Year_AllCountYear& pair) {
-	/*
-	* pair.first.first   - names of most popular countries 
-	* pair.first.second  - count of bought trips to those countries
-	* pair.second.first  - year
-	* pair.second.second - count of all countries
-	*/
-
-	int size = static_cast<int>(pair.first.first.size());
-	int popular_count = pair.first.second;
-	int year = pair.second.first;
-	int all_count = pair.second.second;
-
-	if (pair.first.first.empty() && year != 0) {
-		std::cout << "\n\nUnfortunately, in " << year << ", not a single ticket was purchased.\n";
-		return;
-	}
-
-	else if (pair.first.first.empty() && year == 0) {
-		std::cout << "\n\nUnfortunately, not a single ticket has been bought for all the time.\n";
-		return;
-	}
-
-	else if (!pair.first.first.empty()) {
-		if (year != 0)
-			std::cout << "\n\nMost popular countries in " << year << " year: ";
-		else
-			std::cout << "\n\nMost popular countries of all time: ";
-
-		for (int i = 0; i < size; i++) {
-			if (i < (size - 1))
-				std::cout << pair.first.first[i] << ", ";
-			else
-				std::cout << pair.first.first[i] << ";";
-		}
-
-		std::cout << "\nPurchased " << popular_count << "/" << all_count << " times;";
-		return;
-	}
 }
 
 
@@ -849,10 +570,6 @@ void SaveTripsData(const ListSharedsTrip_t& Trips, const std::string path){
 				if (count != Trips.size())
 					TripObjectsWrite << "----------------------------------------------\n";
 			}
-
-			else if (trip->GetStatus() == TripStatus::FINISHED)
-				SaveOrderData(static_cast<int>(trip->GetDateOfBooking().year()), trip->GetCountry(), trip->GetFullName(), trip->GetNameOfCustomer(), trip->GetDuration(), trip->GetPrice());
-
 		}
 	}
 	TripObjectsWrite.close();
@@ -906,8 +623,7 @@ void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string pa
 
             }
             catch(std::exception& ex){
-                std::cout << "Exception while reading:w
-                    date of start/end/booking of the trip \"" << name << "\" (id: " << personal_id <<"): "<< ex.what();
+                std::cout << "Exception while reading date of start/end/booking of the trip \"" << name << "\" (id: " << personal_id <<"): "<< ex.what();
                 continue;
             }
   
@@ -924,3 +640,245 @@ void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string pa
 	TripObjectsRead.close();
 }
 
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////
+
+
+// 4 Orders funcuions:
+
+int GetCountOfOrdersByYear(const ListSharedsOrder_t& orders, const int year){
+	int count = 0;
+	if (year != 0) {
+        for (const auto& order : orders){
+			if (order->year_of_booking == year)
+				++count;
+		}
+		return count;
+	}
+	else 
+		return orders.size();
+}
+
+
+
+std::vector<std::string> GetCountriesOfBoughtTrips(const ListSharedsTrip_t& trips){
+	std::set<std::string> countries; 
+
+    for (const auto& trip : trips) {
+        auto trip_status = trip->GetStatus();
+        if (trip_status == TripStatus::SOLD || trip_status == TripStatus::IN_PROGRESS)
+            countries.insert(trip->GetCountry());
+    }
+    
+	std::vector<std::string> unique_countries{countries.begin(), countries.end()};
+	return unique_countries;
+}
+
+
+double GetAverageDurationOfSoldTripsByYear(const ListSharedsOrder_t& orders, const int year){
+	std::vector<int> durations;
+	durations.reserve(orders.size());
+
+	if (year != 0) {
+		for (const auto& order : orders) {
+			if (order->year_of_booking == year){
+				durations.push_back(order->duration);
+			}
+		}
+	}
+
+	else { 
+		for (const auto& order : orders) {
+            durations.push_back(order->duration);
+		}
+	}
+
+	if (durations.size() == 0)
+		return 0;
+
+	return (std::accumulate(durations.begin(), durations.end(), 0) / durations.size());
+}
+
+
+int GetAveragePriceOfSoldTripsByYear(const ListSharedsOrder_t& orders, const int year){
+	std::vector<double> prices;
+	prices.reserve(orders.size());
+
+	if (year != 0) {
+		for (const auto& order : orders) {
+			if (order->year_of_booking == year){
+				prices.push_back(order->price);
+			}
+		}
+	}
+
+	else { 
+		for (const auto& order : orders) {
+            prices.push_back(order->price);
+		}
+	}
+
+	if (prices.size() == 0)
+		return 0;
+
+	return (std::accumulate(prices.begin(), prices.end(), 0) / prices.size());
+}
+
+
+
+
+
+
+Countries_Count_Year_AllCountYear FindMostPupularCountriesOfSoldTrips(const ListSharedsOrder_t& orders, const int year) {
+	std::list<std::string> countries; 
+
+	if (year != 0) {
+		for (const auto& order : orders) {
+            if (order->year_of_booking == year){
+                countries.push_back(order->country);
+			}
+		}
+	}
+	else { 
+		for (const auto& order : orders) {
+            countries.push_back(order->country);
+		}
+	}
+
+	countries.sort();
+
+	std::vector<std::string> unique_countries;
+	std::unique_copy(std::begin(countries), std::end(countries), std::back_inserter(unique_countries));
+
+	int curent_index = 0;
+	int max_repits = 0;
+	int current_count_of_repits = 0;
+
+	while (curent_index < static_cast<int>(unique_countries.size())) {
+		current_count_of_repits = std::count(std::begin(countries), std::end(countries), unique_countries[curent_index]);
+		if (current_count_of_repits > max_repits) {
+			max_repits = current_count_of_repits;
+		}
+		curent_index++;
+	}
+
+	std::vector<std::string> mostPopularcountries; 
+	curent_index = 0;
+
+	while (curent_index < static_cast<int>(unique_countries.size())) {
+
+		current_count_of_repits = std::count(std::begin(countries), std::end(countries), unique_countries[curent_index]);
+
+		if (current_count_of_repits == max_repits) 
+			mostPopularcountries.push_back(unique_countries[curent_index]);
+		
+		curent_index++;
+	}
+	return std::make_pair(std::make_pair(mostPopularcountries, max_repits), std::make_pair(year, countries.size()));
+}
+
+
+void ShowMostPupularCountriesOfSoldTrips(const Countries_Count_Year_AllCountYear& pair) {
+	/*
+	* pair.first.first   - names of most popular countries 
+	* pair.first.second  - count of bought trips to those countries
+	* pair.second.first  - year
+	* pair.second.second - count of all countries
+	*/
+
+	int size = static_cast<int>(pair.first.first.size());
+	int popular_count = pair.first.second;
+	int year = pair.second.first;
+	int all_count = pair.second.second;
+
+	if (pair.first.first.empty() && year != 0) {
+		std::cout << "\n\nUnfortunately, in " << year << ", not a single order made.\n";
+		return;
+	}
+
+	else if (pair.first.first.empty() && year == 0) {
+		std::cout << "\n\nUnfortunately, not a single order has been made for all the time.\n";
+		return;
+	}
+
+	else if (!pair.first.first.empty()) {
+		if (year != 0)
+			std::cout << "\n\nMost popular countries in " << year << " year: ";
+		else
+			std::cout << "\n\nMost popular countries of all time: ";
+
+		for (int i = 0; i < size; i++) {
+			if (i < (size - 1))
+				std::cout << pair.first.first[i] << ", ";
+			else
+				std::cout << pair.first.first[i] << ";";
+		}
+
+		std::cout << "\nPurchased " << popular_count << "/" << all_count << " times;";
+		return;
+	}
+}
+
+
+
+
+void RemoveOrderByCustomerId(ListSharedsOrder_t& orders, size_t customer_id){
+    auto border = std::remove_if(orders.begin(), orders.end(), [customer_id](const auto& order){return order->customer_id == customer_id;});
+    orders.erase(border, orders.end());
+}
+
+
+
+
+void SaveOrdersData(const ListSharedsOrder_t& orders, const std::string& path){
+	std::fstream orderWrite;
+	orderWrite.open(path, std::fstream::out);
+	if (!orderWrite.is_open()) 
+		std::cout << "Error: Could not open the file at the specified path to record orders data. \nSpecified path:" << path << "\n";
+	else {
+        for (const auto& order : orders){
+            orderWrite << "\n" << order->name_of_trip;
+            orderWrite << "\n" << order->year_of_booking;
+            orderWrite << "\n" << order->country;
+            orderWrite << "\n" << order->duration;
+            orderWrite << "\n" << order->price;
+            orderWrite << "\n" << order->customer_id;
+            orderWrite << "\n";
+        }
+	}
+	orderWrite.close();
+}
+
+
+void ReadOrdersData(ListSharedsOrder_t& orders, const std::string path) {
+	std::ifstream ordersRead;
+	ordersRead.open(path, std::ios::in);
+
+	if (!ordersRead.is_open()) 
+		std::cout << "Error: Could not open the file at the specified path to read orders data.\nSpecified path:" << path << "\n";
+	else {
+		std::string year_of_booking, country, name_of_trip, customer_id, duration, price, emptiness;
+		std::getline(ordersRead, emptiness); // ç÷èòóâàííÿ ïîðîæíüîãî ðÿäêà
+
+		while (!ordersRead.eof()) {
+			std::getline(ordersRead, name_of_trip);
+			std::getline(ordersRead, year_of_booking);
+			std::getline(ordersRead, country);
+			std::getline(ordersRead, duration);
+			std::getline(ordersRead, price);
+			std::getline(ordersRead, customer_id);
+			std::getline(ordersRead, emptiness); // separator (empty line)
+
+			orders.push_back(std::make_shared<Order>(name_of_trip, std::stoi(year_of_booking), country, std::stoi(duration), std::stod(price), std::stol(customer_id)));
+		}
+	}
+	ordersRead.close();
+}

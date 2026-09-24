@@ -1053,7 +1053,7 @@ MenuItem CustomersInfoMenu(ListSharedsCustomer_t& customers, const MenuItemsHand
             
             std::cout << "\n\n1) Show full information about the customer"; 
             std::cout << "\n2) Edit information about the customer";
-            std::cout << "\n3) List of customers by trip`s country";
+            std::cout << "\n3) List of customers who have a trip to a special country";
             std::cout << "\n4) Back to \"Customers\"";
             std::cout << "\n5) Go to \"Main menu\"";
             std::cout << "\n6) Close the program";
@@ -1423,7 +1423,7 @@ MenuItem ListOfCustomersByTripsCountryMenu(const ListSharedsCustomer_t& customer
     size_t menu_item = 0;
     while(true){
         ClearConsole();
-        std::cout << "\n\n|--- List of customers by trip`s country  ---|";
+        std::cout << "\n\n|--- List of customers who have a trip to a special country ---|";
 
         while (GetCountOfCustomersWithTrip(customers).first == 0) {
             std::cout << "\n\nUnfortunately, there are no customers with a trip.";
@@ -1908,38 +1908,39 @@ MenuItem TripsInfoMenu(ListSharedsTrip_t& trips, const MenuItemsHandles& handles
         }
 
         while (!trips.empty()){
-            std::cout << "\n\n1) General information";
-            std::cout << "\n2) Show full information about the customer"; 
-            std::cout << "\n3) Edit information about the customer";
-            std::cout << "\n4) Back to \"Trips\"";
-            std::cout << "\n5) Go to \"Main menu\"";
-            std::cout << "\n6) Close the program";
+            std::cout << "\n\nCount of valid trips in system: " << trips.size(); 
+            std::cout << "\n\tAverage duration of the trip: " << std::round(Trip::GetAverageDuration()) << " days";
+            std::cout << "\n\tAverage cost of the trip: " << std::round(Trip::GetAveragePrice()) << " UAH";
+            std::cout << "\n\ton sale: " << GetCountOfUnboughtTrips(trips).first;
+            std::cout << "\n\tsold: " << GetCountOfPurchasedTrips(trips).first;
+            
+            std::cout << "\n\n1) Show full information about the customer"; 
+            std::cout << "\n2) Edit information about the customer";
+            std::cout << "\n3) Back to \"Trips\"";
+            std::cout << "\n4) Go to \"Main menu\"";
+            std::cout << "\n5) Close the program";
             std::cout << "\n\n!!! If you choose (1) or (2) you will see full list of managers";
 
             std::cout << "\n\nEnter item number: ";
             ValidatedInput(menu_item);
             switch (menu_item) {
                 case 1:
-                    co_await SwitchTo{handles.trips_general_info_menu}; 
-                    break;
-                    
-                case 2:
                     co_await SwitchTo{handles.trips_show_full_info_menu};
                     break;
 
-                case 3:
+                case 2:
                     co_await SwitchTo{handles.trips_edit_info_menu}; 
                     break;
                 
-                case 4:
+                case 3:
                     co_await SwitchTo{handles.trips_menu}; 
                     break;
                     
-                case 5:
+                case 4:
                      co_await SwitchTo{handles.main_menu}; 
                     break;
                     
-                case 6:
+                case 5:
                     if (ConfirmationOfProgramCompletionMenu()){
                         StopInterface();
                     }
@@ -2290,180 +2291,6 @@ MenuItem EditInformationAboutTripMenu(const ListSharedsTrip_t& trips, const std:
 
 
 
-MenuItem TripsGeneralInformationMenu(const ListSharedsTrip_t& trips, std::string orders_path, const MenuItemsHandles& handles){
-    size_t menu_item = 0;
-    std::string country;
-    
-    while(true){
-        std::cout << "\n|--- General information for all time ---|";
-        std::cout << "\n\nCount of valid trips in system: " << trips.size();
-        std::cout << "\n\ton sale: " << GetCountOfUnboughtTrips(trips).first;
-        std::cout << "\n\tsold: " << GetCountOfPurchasedTrips(trips).first;
-        
-        std::cout << "\nCount of successful orders: " << GetCountOfOrders(0, orders_path);
-        std::cout << "\nAverage duration of the trip: " << std::round(GetAverageDurationOfTrips(trips)) << " days";
-        std::cout << "\nAverage cost of the trip: " << std::round(GetAveragePriceOfTrips(trips)) << " UAH";
-        
-        ShowMostPupularCountries(FindMostPupularCountries(trips));
-    
-        bool selected_next_menu = false;
-        while (!selected_next_menu) {
-            std::cout << "\n\n1) See the information about trips for a specific year";
-            std::cout << "\n2) Back to \"Information about trips\"";
-            std::cout << "\n3) Go to \"Main menu\"";
-            std::cout << "\n4) Close the program";
-
-            std::cout << "\n\nEnter item number: ";
-            ValidatedInput(menu_item);
-            switch (menu_item) {
-                case 1:
-                    co_await SwitchTo{handles.trips_info_for_specific_year_menu}; 
-                    break;
-
-                case 2:
-                    selected_next_menu = true;
-                    co_await SwitchTo{handles.trips_info_menu}; 
-                    break;
-
-                case 3:
-                    selected_next_menu = true;
-                    co_await SwitchTo{handles.main_menu}; 
-                    break;
-
-                case 4:
-                    if (ConfirmationOfProgramCompletionMenu()){
-                        StopInterface();
-                    }
-                    break;
-
-                default:
-                    std::cerr << "\n\n!!! Incorrect action number entered. Try again:";
-                    selected_next_menu = false;
-                    break;
-            }
-        }
-    } 
-}
-
-
-MenuItem TripsInformationForSpecificYearMenu(const ListSharedsTrip_t& trips, std::string orders_path, const MenuItemsHandles& handles){
-    size_t menu_item = 0;
-    while(true){
-        std::cout << "\n\n|--- Information about trips for a specific year ---|\n";
-
-        unsigned short current_year = static_cast<unsigned short>(
-                            static_cast<int>(
-                                std::chrono::year_month_day{
-                                    floor<std::chrono::days>(std::chrono::system_clock::now())
-                                }.year()
-                            )
-                        );
-
-        std::cout << "\nEnter the year you are interested in: ";
-        unsigned short input_year = 0;
-        ValidatedInput(input_year);
-        
-        bool try_select_year_again = false;
-        while ((input_year > current_year) && !try_select_year_again) {
-            std::cout << "\n\nInvalid year: you have entered a future year.";
-            std::cout << "\n1) See the information about trips for another year";
-            std::cout << "\n2) Back to \"General information about trips for all time\"";
-            std::cout << "\n3) Go to \"Information about trips\"";
-            std::cout << "\n4) Go to \"Main menu\"";
-            std::cout << "\n5) Close the program";
-
-            std::cout << "\n\nEnter item number: ";
-            ValidatedInput(menu_item);
-            switch (menu_item) {
-                case 1:
-                    try_select_year_again = true;
-                    break;
-
-                case 2:
-                    try_select_year_again = true;
-                    co_await SwitchTo{handles.trips_general_info_menu}; 
-                    break;
-
-                case 3:
-                    try_select_year_again = true;
-                    co_await SwitchTo{handles.trips_info_menu}; 
-                    break;
-
-                case 4:
-                    try_select_year_again = true;
-                    co_await SwitchTo{handles.main_menu}; 
-                    break;
-
-                case 5:
-                    if (ConfirmationOfProgramCompletionMenu()){
-                        StopInterface();
-                    }
-                    break;
-
-                default:
-                    std::cerr << "\n\n!!! Incorrect action number entered. Try again:";
-                    break;
-            }
-        }
-        if (try_select_year_again) continue;
-
-        ClearConsole();
-
-        std::cout << "\n\n|--- Information about trips for a specific year  ---|\n";
-        std::cout << "\nGeneral information for " << input_year << " year:";
-        std::cout << "\n\tCount of sold trips: " << GetCountOfOrders(input_year) + GetCountOfPurchasedTrips(trips, input_year).first;
-        
-        std::cout << "\n\tAverage duration of the trip: " << std::round(GetAverageDurationOfTrips(trips, input_year)) << " days ";
-        std::cout << "\n\tAverage cost of the trip: "     << std::round(GetAveragePriceOfTrips(trips, input_year))    << " UAH";
-        
-        ShowMostPupularCountries(FindMostPupularCountries(trips, input_year));
-
-        bool selected_next_menu = false;
-        while (!selected_next_menu) {
-            std::cout << "\n\n1) See a general information about trips for another year";
-            std::cout << "\n2) Back to \"General information about trips for all time\"";
-            std::cout << "\n3) Go to \"Information about trips\"";
-            std::cout << "\n4) Go to \"Main menu\"";
-            std::cout << "\n5) Close the program";
-
-            std::cout << "\n\nEnter item number: ";
-            ValidatedInput(menu_item);
-
-            selected_next_menu = true;
-            switch (menu_item) {
-                case 1:
-                    break;
-
-                case 2:
-                    co_await SwitchTo{handles.trips_general_info_menu}; 
-                    break;
-
-                case 3:
-                    co_await SwitchTo{handles.trips_info_menu}; 
-                    break;
-
-                case 4:
-                    co_await SwitchTo{handles.main_menu}; 
-                    break;
-
-                case 5:
-                    if (ConfirmationOfProgramCompletionMenu()){
-                        StopInterface();
-                    }
-                    break;
-
-                default:
-                    std::cerr << "\n\n!!! Incorrect action number entered. Try again:";
-                    selected_next_menu = false;
-                    break;
-            }
-            if (try_select_year_again) break;
-        }
-    }
-}
-
-
-
 MenuItem AddNewTripMenu(ListSharedsTrip_t& trips, const std::string& history_data_path, const MenuItemsHandles& handles){
     size_t menu_item = 0;
     
@@ -2728,10 +2555,11 @@ MenuItem OrdersMenu(const MenuItemsHandles& handles){
         std::cout << "\n\n|--- Orders ---|\n";
         bool selected_next_menu = false;
         while(!selected_next_menu){
-            std::cout << "\n1) Make a trip purchase";
-            std::cout << "\n2) Make a trip refund";
-            std::cout << "\n3) Go to \"Main menu\"";
-            std::cout << "\n4) Close the program";
+            std::cout << "\n\n1) Information";
+            std::cout << "\n2) Make an order";
+            std::cout << "\n3) Make an order return";
+            std::cout << "\n4) Go to \"Main menu\"";
+            std::cout << "\n5) Close the program";
 
 
             std::cout << "\n\nEnter item number: ";
@@ -2739,15 +2567,20 @@ MenuItem OrdersMenu(const MenuItemsHandles& handles){
             switch (menu_item) {
                 case 1:
                     selected_next_menu = true;
-                    co_await SwitchTo{handles.orders_make_order_menu}; 
+                    co_await SwitchTo{handles.orders_info_menu}; 
                     break;
 
                 case 2:
                     selected_next_menu = true;
-                    co_await SwitchTo{handles.orders_make_order_return_menu}; 
+                    co_await SwitchTo{handles.orders_make_order_menu}; 
                     break;
 
                 case 3:
+                    selected_next_menu = true;
+                    co_await SwitchTo{handles.orders_make_order_return_menu}; 
+                    break;
+
+                case 4:
                     selected_next_menu = true;
                     co_await SwitchTo{handles.main_menu}; 
                     break;
@@ -2767,7 +2600,222 @@ MenuItem OrdersMenu(const MenuItemsHandles& handles){
 }
 
 
-MenuItem OrdersMakeOrderMenu(ListSharedsManager_t& managers, ListSharedsCustomer_t& customers, ListSharedsTrip_t& trips, const std::string& orders_path, const std::string& history_data_path, const MenuItemsHandles& handles){
+MenuItem OrdersGeneralInformationMenu(const ListSharedsOrder_t& orders, const MenuItemsHandles& handles){
+    size_t menu_item = 0;
+    while(true){
+        ClearConsole();
+        std::cout << "\n|--- General information about orders for all time ---|";
+       
+        bool selected_next_menu = false;
+        while(orders.empty() && !selected_next_menu){
+		    std::cout << "\n\nUnfortunately, not a single order has been made for all the time.\n";
+            std::cout << "\n1) Back to \"Orders\"";
+            std::cout << "\n2) Make an order";
+            std::cout << "\n3) Go to \"Main menu\"";
+            std::cout << "\n4) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+                case 1:
+                    selected_next_menu = true;
+                    co_await SwitchTo{handles.orders_menu}; 
+                    break;
+
+                case 2:
+                    selected_next_menu = true;
+                    co_await SwitchTo{handles.orders_make_order_menu}; 
+                    break;
+
+                case 3:
+                    selected_next_menu = true;
+                    co_await SwitchTo{handles.main_menu}; 
+                    break;
+
+                case 4:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cerr << "\n\n!!! Incorrect action number entered. Try again:";
+                    selected_next_menu = false;
+                    break;
+            }
+        }
+
+
+        std::cout << "\n\nTotal count of orders: " << orders.size();  
+        std::cout << "\n\tAverage duration of the sold trip: " << std::ceil(GetAverageDurationOfSoldTripsByYear(orders, 0)) << " days";
+        std::cout << "\n\tAverage cost of the sold trip: " << std::ceil(GetAveragePriceOfSoldTripsByYear(orders, 0)) << " UAH";
+        
+        ShowMostPupularCountriesOfSoldTrips(FindMostPupularCountriesOfSoldTrips(orders));
+    
+        while (!selected_next_menu) {
+            std::cout << "\n\n1) Show information about orders for a specific year";
+            std::cout << "\n2) Back to \"Orders\"";
+            std::cout << "\n3) Go to \"Main menu\"";
+            std::cout << "\n4) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+                case 1:
+                    selected_next_menu = true;
+                    co_await SwitchTo{handles.orders_info_for_specific_year_menu}; 
+                    break;
+
+                case 2:
+                    selected_next_menu = true;
+                    co_await SwitchTo{handles.orders_menu}; 
+                    break;
+
+                case 3:
+                    selected_next_menu = true;
+                    co_await SwitchTo{handles.main_menu}; 
+                    break;
+
+                case 4:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cerr << "\n\n!!! Incorrect action number entered. Try again:";
+                    selected_next_menu = false;
+                    break;
+            }
+        }
+    } 
+}
+
+
+
+
+MenuItem OrdersInformationForSpecificYearMenu(ListSharedsOrder_t& orders, const MenuItemsHandles& handles){
+    size_t menu_item = 0;
+    while(true){
+        ClearConsole();
+        std::cout << "\n\n|--- Information about orders for a specific year ---|\n";
+
+        unsigned short current_year = static_cast<unsigned short>(
+                            static_cast<int>(
+                                std::chrono::year_month_day{
+                                    floor<std::chrono::days>(std::chrono::system_clock::now())
+                                }.year()
+                            )
+                        );
+
+        std::cout << "\nEnter the year you are interested in: ";
+        unsigned short input_year = 0;
+        ValidatedInput(input_year);
+        
+        bool try_select_year_again = false;
+        while ((input_year > current_year) && !try_select_year_again) {
+            std::cout << "\n\nInvalid year: you have entered a future year.";
+            std::cout << "\n1) See the information about orders for another year";
+            std::cout << "\n2) Back to \"General information about orders for all time\"";
+            std::cout << "\n3) Go to \"Orders\"";
+            std::cout << "\n4) Go to \"Main menu\"";
+            std::cout << "\n5) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+            switch (menu_item) {
+                case 1:
+                    try_select_year_again = true;
+                    break;
+
+                case 2:
+                    try_select_year_again = true;
+                    co_await SwitchTo{handles.orders_info_menu}; 
+                    break;
+
+                case 3:
+                    try_select_year_again = true;
+                    co_await SwitchTo{handles.orders_menu}; 
+                    break;
+
+                case 4:
+                    try_select_year_again = true;
+                    co_await SwitchTo{handles.main_menu}; 
+                    break;
+
+                case 5:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cerr << "\n\n!!! Incorrect action number entered. Try again:";
+                    break;
+            }
+        }
+        if (try_select_year_again) continue;
+
+        std::cout << "\nGeneral information for " << input_year << " year:";
+        std::cout << "\n\tCount of sold orders: " << GetCountOfOrdersByYear(orders, input_year);
+        
+        std::cout << "\n\tAverage duration of the order: " << std::ceil(GetAverageDurationOfSoldTripsByYear(orders, input_year)) << " days ";
+        std::cout << "\n\tAverage cost of the order: "     << std::ceil(GetAveragePriceOfSoldTripsByYear(orders, input_year))    << " UAH";
+
+        ShowMostPupularCountriesOfSoldTrips(FindMostPupularCountriesOfSoldTrips(orders, input_year));
+
+        bool selected_next_menu = false;
+        while (!selected_next_menu) {
+            std::cout << "\n\n1) See a general information about orders for another year";
+            std::cout << "\n2) Back to \"Information about orders\"";
+            std::cout << "\n3) Go to \"Orders\"";
+            std::cout << "\n4) Go to \"Main menu\"";
+            std::cout << "\n5) Close the program";
+
+            std::cout << "\n\nEnter item number: ";
+            ValidatedInput(menu_item);
+
+            selected_next_menu = true;
+            switch (menu_item) {
+                case 1:
+                    break;
+
+                case 2:
+                    co_await SwitchTo{handles.orders_info_menu}; 
+                    break;
+
+                case 3:
+                    co_await SwitchTo{handles.orders_menu}; 
+                    break;
+
+                case 4:
+                    co_await SwitchTo{handles.main_menu}; 
+                    break;
+
+                case 5:
+                    if (ConfirmationOfProgramCompletionMenu()){
+                        StopInterface();
+                    }
+                    break;
+
+                default:
+                    std::cerr << "\n\n!!! Incorrect action number entered. Try again:";
+                    selected_next_menu = false;
+                    break;
+            }
+            if (try_select_year_again) break;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+MenuItem OrdersMakeOrderMenu(ListSharedsManager_t& managers, ListSharedsCustomer_t& customers, ListSharedsTrip_t& trips, ListSharedsOrder_t& orders, const std::string& history_data_path, const MenuItemsHandles& handles){
     size_t menu_item = 0;
 
     while(true){
@@ -3240,7 +3288,12 @@ MenuItem OrdersMakeOrderMenu(ListSharedsManager_t& managers, ListSharedsCustomer
         if (result_of_sale){
             std::cout << "\n\nManager " << (*manager)->GetFullName() << " sold to client " << (*customer)->GetFullName() << " tour " << (*trip)->GetFullName() << ";\n";
             SaveMessage("Manager " + (*manager)->GetFullName() + " sold to client " + (*customer)->GetFullName() + " tour " + (*trip)->GetFullName(), history_data_path);
-            SaveOrderData(result_of_sale.value(), orders_path);
+            try{
+                orders.emplace_back(*result_of_sale);
+            }
+            catch(...){
+                std::cerr << "Error: catched excpetion while saving order --> order is lost";
+            }
         }
         else{
             std::cerr << result_of_sale.error();
@@ -3322,7 +3375,7 @@ MenuItem OrdersMakeOrderMenu(ListSharedsManager_t& managers, ListSharedsCustomer
 
 
 
-MenuItem OrdersMakeOrderReturnMenu(ListSharedsManager_t& managers, ListSharedsCustomer_t& customers, const std::string& history_data_path, const MenuItemsHandles& handles){
+MenuItem OrdersMakeOrderReturnMenu(ListSharedsManager_t& managers, ListSharedsCustomer_t& customers, ListSharedsOrder_t& orders, const std::string& history_data_path, const MenuItemsHandles& handles){
     size_t menu_item = 0;
     while(true){
         ClearConsole();
@@ -3419,7 +3472,7 @@ MenuItem OrdersMakeOrderReturnMenu(ListSharedsManager_t& managers, ListSharedsCu
                 default:
                     std::cout << "\n\n!!! Incorrect action number entered. Try again:";
                     break;
-            } // end while (add_new_manager_again)
+            } 
         } // end while (managers.empty() && !selected_next_menu)
         if (selected_next_menu) continue; // top while(true){...}
 
@@ -3578,11 +3631,10 @@ MenuItem OrdersMakeOrderReturnMenu(ListSharedsManager_t& managers, ListSharedsCu
         if (result_of_return){
             std::cout << "\n\nManager " << (*manager)->GetFullName() << " made a refound for client " << (*customer)->GetFullName() << ", tour \"" << trip_name << "\"\n";
             SaveMessage("Manager " + (*manager)->GetFullName() + " made a refound for client " + (*customer)->GetFullName() + ", tour \"" + trip_name + "\"", history_data_path);
-            //DeleteOrderFromDataBase(result_of_sale);
+            RemoveOrderByCustomerId(orders, (*customer)->GetPersonalId());
         }
         else{
             std::cerr << result_of_return.error();
-
             while (!selected_next_menu){
                 std::cout << "\n1) Try again to make a return";
                 std::cout << "\n2) Back to \"Orders\"";
@@ -3617,8 +3669,8 @@ MenuItem OrdersMakeOrderReturnMenu(ListSharedsManager_t& managers, ListSharedsCu
                         break;
                 }
             }
-    
-            if (selected_next_menu) continue; // top while(true){...}
+        }
+        if (selected_next_menu) continue; // top while(true){...}
         
 
 
