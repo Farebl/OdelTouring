@@ -4,7 +4,7 @@ import Functions;
 
 int main() {
     std::string history_path = "History.txt";
-    std::string orders_path = "Orders.txt";
+    std::string orders_path = "Orders.json";
 
     ListSharedsManager_t managers;
     ListSharedsCustomer_t customers;
@@ -101,6 +101,7 @@ int main() {
     catch(std::exception& ex){
         std::cout<< "Exception in main after writing data: " << ex.what();
     }
+    std::cout << std::endl;
 	return 0;
 }
 

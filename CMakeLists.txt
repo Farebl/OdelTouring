@@ -54,12 +54,14 @@ target_sources(Functions
 
 target_link_libraries(Functions PRIVATE CustomerManagerTrip Order)
 
+
 include(FetchContent)
 FetchContent_Declare(
   json
   URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
 )
 FetchContent_MakeAvailable(json)
+target_link_libraries(Functions PRIVATE nlohmann_json::nlohmann_json)
 
 
 option(TEST_INTERFACE "Enable new interface testing" OFF)
@@ -74,12 +76,10 @@ if(TEST_INTERFACE)
     if(USE_SANITIZERS)
         target_compile_options(test PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
         target_link_options(test PRIVATE -fsanitize=address,undefined)
-        target_link_libraries(test PRIVATE nlohmann_json::nlohmann_json)
     endif()
 else()
     add_executable(odelTouring main.cpp)
     target_link_libraries(odelTouring PRIVATE Functions)
-    target_link_libraries(odelTouring PRIVATE nlohmann_json::nlohmann_json)
 endif()
 
 

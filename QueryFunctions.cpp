@@ -15,7 +15,7 @@ module;
 #include <vector>
 #include <list>
 #include <set>
-
+#include <nlohmann/json.hpp>
 
 
 module Functions; 
@@ -37,9 +37,27 @@ std::ostream& operator<<(std::ostream& os, const std::chrono::year_month_day& ym
 }
 
 
+void to_json(nlohmann::json& json, const Order& order) {
+    json = nlohmann::json{
+        {"name_of_trip",    order.name_of_trip},
+        {"year_of_booking", order.year_of_booking},
+        {"country",         order.country},
+        {"duration",        order.duration},
+        {"price",           order.price},
+        {"customer_id",     order.customer_id}
+    };
+}
 
-
-
+Order getOrderFromJson(const nlohmann::json& json) {
+    return Order(
+        json.at("name_of_trip").get<std::string>(),
+        json.at("year_of_booking").get<int>(),
+        json.at("country").get<std::string>(),
+        json.at("duration").get<int>(),
+        json.at("price").get<double>(),
+        json.at("customer_id").get<long>()
+    );
+}
 
 /////////////////////////MAIN FUNCTIONS///////////////////////////
 
@@ -838,47 +856,43 @@ void RemoveOrderByCustomerId(ListSharedsOrder_t& orders, size_t customer_id){
 
 
 
-void SaveOrdersData(const ListSharedsOrder_t& orders, const std::string& path){
-	std::fstream orderWrite;
-	orderWrite.open(path, std::fstream::out);
-	if (!orderWrite.is_open()) 
-		std::cout << "Error: Could not open the file at the specified path to record orders data. \nSpecified path:" << path << "\n";
-	else {
-        for (const auto& order : orders){
-            orderWrite << "\n" << order->name_of_trip;
-            orderWrite << "\n" << order->year_of_booking;
-            orderWrite << "\n" << order->country;
-            orderWrite << "\n" << order->duration;
-            orderWrite << "\n" << order->price;
-            orderWrite << "\n" << order->customer_id;
-            orderWrite << "\n";
-        }
-	}
-	orderWrite.close();
+void SaveOrdersData(const ListSharedsOrder_t& orders, const std::string& path) {
+    nlohmann::json j = nlohmann::json::array();
+
+    for (const auto& order : orders) {
+        j.push_back(*order); // розіменовуємо shared_ptr, викликається to_json(Order)
+    }
+
+    std::ofstream orderWrite(path);
+    if (!orderWrite.is_open()) {
+        std::cout << "Error: Could not open the file at the specified path to record orders data. \nSpecified path:" << path << "\n";
+        return;
+    }
+
+    orderWrite << j.dump(4);
+    orderWrite.close();
 }
 
-
 void ReadOrdersData(ListSharedsOrder_t& orders, const std::string path) {
-	std::ifstream ordersRead;
-	ordersRead.open(path, std::ios::in);
+    std::ifstream ordersRead(path);
 
-	if (!ordersRead.is_open()) 
-		std::cout << "Error: Could not open the file at the specified path to read orders data.\nSpecified path:" << path << "\n";
-	else {
-		std::string year_of_booking, country, name_of_trip, customer_id, duration, price, emptiness;
-		std::getline(ordersRead, emptiness); // ç÷èòóâàííÿ ïîðîæíüîãî ðÿäêà
+    if (!ordersRead.is_open()) {
+        std::cout << "Error: Could not open the file at the specified path to read orders data.\nSpecified path:" << path << "\n";
+        return;
+    }
 
-		while (!ordersRead.eof()) {
-			std::getline(ordersRead, name_of_trip);
-			std::getline(ordersRead, year_of_booking);
-			std::getline(ordersRead, country);
-			std::getline(ordersRead, duration);
-			std::getline(ordersRead, price);
-			std::getline(ordersRead, customer_id);
-			std::getline(ordersRead, emptiness); // separator (empty line)
+    nlohmann::json j;
+    try {
+        ordersRead >> j;
+    } catch (const nlohmann::json::parse_error& e) {
+        std::cout << "Error: Failed to parse orders JSON file.\n" << e.what() << "\n";
+        ordersRead.close();
+        return;
+    }
 
-			orders.push_back(std::make_shared<Order>(name_of_trip, std::stoi(year_of_booking), country, std::stoi(duration), std::stod(price), std::stol(customer_id)));
-		}
-	}
-	ordersRead.close();
+    for (const auto& item : j) {
+        orders.push_back(std::make_shared<Order>(std::move(getOrderFromJson(item))));
+    }
+
+    ordersRead.close();
 }
