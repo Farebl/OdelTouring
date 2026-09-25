@@ -3,6 +3,7 @@ import Functions;
 #include <iostream>
 
 int main() {
+    std::string managers_path = "Managers.json";
     std::string history_path = "History.txt";
     std::string orders_path = "Orders.json";
 
@@ -76,7 +77,7 @@ int main() {
     handles.orders_make_order_return_menu      = orders_make_order_return_menu.get_handle();
 
     try{
-        ReadManagersData(managers, "Managers.txt");
+        ReadManagersData(managers, managers_path);
         ReadTripsData(trips, "Trips.txt");
         ReadCustomersData(customers, trips, "Customers.txt");
         ReadOrdersData(orders, orders_path);
@@ -93,7 +94,7 @@ int main() {
     }
 
     try{     
-        SaveManagersData(managers, "Managers.txt");
+        SaveManagersData(managers, managers_path);
         SaveTripsData(trips, "Trips.txt");
         SaveCustomersData(customers, "Customers.txt");
         SaveOrdersData(orders, orders_path);

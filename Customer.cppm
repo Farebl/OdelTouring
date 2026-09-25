@@ -34,20 +34,20 @@ public:
 	Customer(const Customer& customer); 
     ~Customer() override; 
 
-	void ShowInfo() override; 
+	void ShowInfo() const override; 
 
-	std::string GetAddress(); 
+	std::string GetAddress() const; 
 	void SetAddress(std::string address); 
 
-	int GetCountOfBoughtTrips(); 
+	int GetCountOfBoughtTrips() const; 
 
-	int GetPersonalId();  
+	int GetPersonalId() const; 
 
-	std::shared_ptr<Trip>& GetTrip(); // returns current trip
+	std::shared_ptr<Trip> GetTrip() const; // returns current trip
 
-	std::string GetNameOfManager(); //return the name of the manager who serviced currrent trip
+	std::string GetNameOfManager() const; //return the name of the manager who serviced currrent trip
 
-	CustomerStatus GetStatus(); // return the current status of the customer
+	CustomerStatus GetStatus() const;// return the current status of the customer
 };
 
 

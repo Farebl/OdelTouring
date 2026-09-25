@@ -92,9 +92,9 @@ export void ShowFullInfoForEditManager(const manager_list_iter_t& manager);
 
 export void EditManager(manager_list_iter_t& manager, const int fieldIndex, const std::string value);
 
-export void SaveManagersData(const ListSharedsManager_t& ManagersCollection, const std::string path = "Managers.txt");
+export void SaveManagersData(const ListSharedsManager_t& ManagersCollection, const std::string path);
 
-export void ReadManagersData(ListSharedsManager_t& ManagersCollection, const std::string path = "Managers.txt");
+export void ReadManagersData(ListSharedsManager_t& ManagersCollection, const std::string path);
 
 
 
@@ -174,6 +174,6 @@ export void RemoveOrderByCustomerId(ListSharedsOrder_t& orders, size_t customer_
 export void SaveOrdersData(const ListSharedsOrder_t& orders, const std::string& path);
 
 // read orders from storage
-export void ReadOrdersData(ListSharedsOrder_t& orders, const std::string path = "Orders.txt");
+export void ReadOrdersData(ListSharedsOrder_t& orders, const std::string path);
 
 

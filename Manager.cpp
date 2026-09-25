@@ -14,7 +14,7 @@ Manager::Manager(const Manager& manager) : Person("MANAGER", manager.GetFullName
 Manager::~Manager() {}
 
 
-void Manager::ShowInfo()
+void Manager::ShowInfo() const
 {
 	std::cout << "\n\n" << "1) Name: " << (second_name + ' ' + first_name + ' ' + patronymic_name);
 	std::cout << "\n" << "2) Phone number: " << phone_number;
@@ -96,7 +96,7 @@ void Manager::SetFullName(std::string name)
 }
 
 
-std::string Manager::GetFirstName()
+std::string Manager::GetFirstName() const
 {
 	return first_name;
 }
@@ -106,7 +106,7 @@ void Manager::SetFirstName(std::string first_name)
 	this->first_name = first_name;
 }
 
-std::string Manager::GetSecondName()
+std::string Manager::GetSecondName() const
 {
 	return second_name;
 }
@@ -116,7 +116,7 @@ void Manager::SetSecondName(std::string second_name)
 	this->second_name = second_name;
 }
 
-std::string Manager::GetPatronymicName()
+std::string Manager::GetPatronymicName() const
 {
 	return patronymic_name;
 }
@@ -127,7 +127,7 @@ void Manager::SetPatronymicName(std::string patronymic_name)
 }
 
 
-std::string Manager::GetPhoneNumber()
+std::string Manager::GetPhoneNumber() const
 {
 	return this->phone_number;
 }
@@ -218,7 +218,7 @@ void Manager::SetPhoneNumber(std::string phone_number)
 	}
 }
 
-int Manager::GetPersonalId()
+int Manager::GetPersonalId() const
 {
 	return personal_id;
 }

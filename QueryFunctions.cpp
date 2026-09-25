@@ -48,8 +48,8 @@ void to_json(nlohmann::json& json, const Order& order) {
     };
 }
 
-Order getOrderFromJson(const nlohmann::json& json) {
-    return Order(
+std::shared_ptr<Order> getOrderFromJson(const nlohmann::json& json) {
+    std::shared_ptr<Order> order = std::make_shared<Order>(
         json.at("name_of_trip").get<std::string>(),
         json.at("year_of_booking").get<int>(),
         json.at("country").get<std::string>(),
@@ -57,6 +57,25 @@ Order getOrderFromJson(const nlohmann::json& json) {
         json.at("price").get<double>(),
         json.at("customer_id").get<long>()
     );
+    return order;
+}
+
+
+void to_json(nlohmann::json& json, const Manager& manager) {
+    json = nlohmann::json{
+        {"name",         manager.GetFullName()},
+        {"phone_number", manager.GetPhoneNumber()},
+        {"personal_id",  manager.GetPersonalId()}
+    };
+}
+
+std::shared_ptr<Manager> getManagerFromJson(const nlohmann::json& json) {
+    std::shared_ptr<Manager> manager = std::make_shared<Manager>(
+        json.at("name").get<std::string>(),
+        json.at("phone_number").get<std::string>(),
+        json.at("personal_id").get<int>()
+    );
+    return manager;
 }
 
 /////////////////////////MAIN FUNCTIONS///////////////////////////
@@ -138,61 +157,51 @@ void EditManager(manager_list_iter_t& manager, const int fieldIndex, const std::
 }
 
 
-void SaveManagersData(const ListSharedsManager_t& ManagersCollection, const std::string path) {
-	std::fstream ManagerObjectsWrite;
-	ManagerObjectsWrite.open(path, std::fstream::out);
 
-	if (!ManagerObjectsWrite.is_open()) 
-		std::cout << "Error: Could not open the file at the specified path to record managers data. \nSpecified path: " << path << "\n";
-	else {
-		if (ManagersCollection.empty()) {
-			ManagerObjectsWrite << "Empty";
-			ManagerObjectsWrite.close();
-			return;
-		}
-		int count = 0;
 
-		for (const auto& element : ManagersCollection) {
-			ManagerObjectsWrite << "Object " << count + 1 << ":\n";
-			ManagerObjectsWrite << element->GetFullName() << "\n";
-			ManagerObjectsWrite << element->GetPhoneNumber() << "\n";
-			ManagerObjectsWrite << element->GetPersonalId() << "\n";
-			count++;
-		}
-	}
-	ManagerObjectsWrite.close();
+void SaveManagersData(const ListSharedsManager_t& managers, const std::string path) {
+    nlohmann::json j = nlohmann::json::array();
+
+    for (const auto& manager : managers) {
+        j.push_back(*manager);    
+    }
+
+    std::ofstream managers_write(path);
+    if (!managers_write.is_open()) {
+        std::cout << "Error: Could not open the file at the specified path to record managers data. \nSpecified path:" << path << "\n";
+        return;
+    }
+
+    managers_write << j.dump(4);
+    managers_write.close();
 }
 
 
-void ReadManagersData(ListSharedsManager_t& ManagersCollection, const std::string path) {
-	std::ifstream ManagerObjectsRead;
-	ManagerObjectsRead.open(path, std::ios::in);
 
-	if (!ManagerObjectsRead.is_open())
-		std::cout << "Error: Could not open the file at the specified path to read managers data. \nSpecified path: " << path << "\n";
-	else {
-		std::string field, name, phone_number, personal_id, unnecessary_data;
-		std::getline(ManagerObjectsRead, unnecessary_data); // there may be "Empty" word or "Object n:":
-		if (unnecessary_data == "Empty") {
-			ManagerObjectsRead.close();
-			return;
-		}
 
-		while (!ManagerObjectsRead.eof()) {
-			std::getline(ManagerObjectsRead, name);
-			std::getline(ManagerObjectsRead, phone_number);
-			std::getline(ManagerObjectsRead, personal_id);
+void ReadManagersData(ListSharedsManager_t& managers, const std::string path) {
+    std::ifstream managers_reader(path);
 
-			ManagersCollection.emplace_back(std::shared_ptr<Manager>(std::make_shared<Manager>(name, phone_number, std::stoi(personal_id))));
-			
-            std::getline(ManagerObjectsRead, unnecessary_data); // empty line 
-			std::getline(ManagerObjectsRead, unnecessary_data); // "Object n:"
-		}
-	}
-	ManagerObjectsRead.close();
+    if (!managers_reader.is_open()) {
+        std::cout << "Error: Could not open the file at the specified path to read managers data.\nSpecified path:" << path << "\n";
+        return;
+    }
+
+    nlohmann::json j;
+    try {
+        managers_reader >> j;
+    } catch (const nlohmann::json::parse_error& e) {
+        std::cout << "Error: Failed to parse managers JSON file.\n" << e.what() << "\n";
+        managers_reader.close();
+        return;
+    }
+
+    for (const auto& item : j) {
+        managers.push_back(getManagerFromJson(item));
+    }
+
+    managers_reader.close();
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -863,36 +872,36 @@ void SaveOrdersData(const ListSharedsOrder_t& orders, const std::string& path) {
         j.push_back(*order); // розіменовуємо shared_ptr, викликається to_json(Order)
     }
 
-    std::ofstream orderWrite(path);
-    if (!orderWrite.is_open()) {
+    std::ofstream orders_writer(path);
+    if (!orders_writer.is_open()) {
         std::cout << "Error: Could not open the file at the specified path to record orders data. \nSpecified path:" << path << "\n";
         return;
     }
 
-    orderWrite << j.dump(4);
-    orderWrite.close();
+    orders_writer << j.dump(4);
+    orders_writer.close();
 }
 
 void ReadOrdersData(ListSharedsOrder_t& orders, const std::string path) {
-    std::ifstream ordersRead(path);
+    std::ifstream orders_reader(path);
 
-    if (!ordersRead.is_open()) {
+    if (!orders_reader.is_open()) {
         std::cout << "Error: Could not open the file at the specified path to read orders data.\nSpecified path:" << path << "\n";
         return;
     }
 
     nlohmann::json j;
     try {
-        ordersRead >> j;
+        orders_reader >> j;
     } catch (const nlohmann::json::parse_error& e) {
         std::cout << "Error: Failed to parse orders JSON file.\n" << e.what() << "\n";
-        ordersRead.close();
+        orders_reader.close();
         return;
     }
 
     for (const auto& item : j) {
-        orders.push_back(std::make_shared<Order>(std::move(getOrderFromJson(item))));
+        orders.push_back(getOrderFromJson(item));
     }
 
-    ordersRead.close();
+    orders_reader.close();
 }

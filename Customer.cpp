@@ -32,7 +32,7 @@ Customer::~Customer()
 {
 }
 
-void Customer::ShowInfo()
+void Customer::ShowInfo() const
 {
 	std::cout << "\n\n" << "1) Name: " << (second_name + ' ' + first_name + ' ' + patronymic_name);
 	std::cout << "\n" << "2) Phone number: " << phone_number;
@@ -56,7 +56,7 @@ void Customer::ShowInfo()
 }
 
 
-std::shared_ptr<Trip>& Customer::GetTrip() {
+std::shared_ptr<Trip> Customer::GetTrip() const {
 	return this->trip;
 }
 
@@ -74,7 +74,7 @@ void Customer::ReturnTrip()
 }
 
 
-std::string Customer::GetAddress()
+std::string Customer::GetAddress() const
 {
 	return this->address;
 }
@@ -85,26 +85,26 @@ void Customer::SetAddress(std::string address)
 }
 
 
-int Customer::GetCountOfBoughtTrips()
+int Customer::GetCountOfBoughtTrips() const
 {
 	return this->count_of_bought_trips;
 }
 
 
 
-int Customer::GetPersonalId()
+int Customer::GetPersonalId() const
 {
 	return this->personal_id;
 }
 
 
-std::string Customer::GetNameOfManager()
+std::string Customer::GetNameOfManager() const
 {
 	return this->name_of_manager;
 }
 
 
-CustomerStatus Customer::GetStatus()
+CustomerStatus Customer::GetStatus() const
 {
 	if (this->trip == nullptr)
 		return CustomerStatus::WITHOUT_TRIP;

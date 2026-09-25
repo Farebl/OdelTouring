@@ -9,15 +9,14 @@ import Person;
 import Order;
 import :Customer;
 
-
-
 export class Manager : public Person {
 public:
 	Manager(const std::string name = "-", const std::string phone_number = "-", const int personal_id = 0);
 	Manager(const Manager& manager); 
+	Manager(Manager&& manager); 
 	~Manager() override; 
 
-	void ShowInfo() override; 
+	void ShowInfo() const override;
 
     std::expected<std::shared_ptr<Order>, const char*> SaleTheTrip(std::shared_ptr<Customer>& customer, std::shared_ptr<Trip>& trip);
 	std::expected<bool, const char*> ReturnTheTrip(std::shared_ptr<Customer>& customer); 
@@ -25,17 +24,17 @@ public:
     std::string GetFullName() const; 
 	void SetFullName(std::string name); 
 
-	std::string GetFirstName();
+	std::string GetFirstName() const; 
 	void SetFirstName(std::string first_name);
 
-	std::string GetSecondName(); 
+	std::string GetSecondName() const; 
     void SetSecondName(std::string second_name);
 
-	std::string GetPatronymicName(); 
-	void SetPatronymicName(std::string patronymic_name); 
+	std::string GetPatronymicName() const; 
+    void SetPatronymicName(std::string patronymic_name); 
 
-	std::string GetPhoneNumber(); 
+	std::string GetPhoneNumber() const; 
     void SetPhoneNumber(std::string phone_number); 
 
-	int GetPersonalId(); 
+	int GetPersonalId() const; 
 };

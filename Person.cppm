@@ -9,10 +9,9 @@ module;
 
 export module Person;
 
-export std::optional<const char*> phomeNumberIsWrong(const std::string& phone_number);
-
 export class Person {
-    friend std::optional<const char*> phomeNumberIsWrong(const std::string& phone_number);
+private:
+    std::optional<const char*> phomeNumberIsWrong(const std::string& phone_number);
 
 protected:
 	std::string first_name, second_name, patronymic_name; 
@@ -26,7 +25,7 @@ protected:
 	virtual~Person();
 
 public:
-	virtual void ShowInfo() = 0;
+	virtual void ShowInfo() const = 0;
 
 	std::string GetFullName() const;
 	void SetFullName(std::string name); 
@@ -230,7 +229,7 @@ void Person::SetPhoneNumber(std::string phone_number)
 
 
 
-std::optional<const char*> phomeNumberIsWrong(const std::string& phone_number){     
+std::optional<const char*> Person::phomeNumberIsWrong(const std::string& phone_number){     
     if (phone_number.length() < 13) {
         return "This number is shorter than required";
     }

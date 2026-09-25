@@ -169,7 +169,7 @@ Trip::~Trip()
 }
 
 
-void Trip::ShowInfo()
+void Trip::ShowInfo() const
 {
 	std::cout << "\n\n1) Name: " << name;
 	std::cout << "\n2) Country: " << country;
@@ -188,7 +188,7 @@ void Trip::ShowInfo()
 }
 
 
-std::string Trip::GetFullName()
+std::string Trip::GetFullName() const
 {
 	return this->name;
 }
@@ -199,7 +199,7 @@ void Trip::SetFullName(std::string name)
 }
 
 
-std::string Trip::GetCountry()
+std::string Trip::GetCountry() const
 {
 	return this->country;
 }
@@ -210,7 +210,7 @@ void Trip::SetCountry(std::string country)
 }
 
 
-std::string Trip::GetCity()
+std::string Trip::GetCity() const
 {
 	return this->city;
 }
@@ -223,7 +223,7 @@ void Trip::SetCity(std::string city)
 
 
 
-std::chrono::year_month_day Trip::GetDateOfStart() {
+std::chrono::year_month_day Trip::GetDateOfStart() const {
 	return this->date_of_start;
 }
 
@@ -248,7 +248,7 @@ std::optional<const char*> Trip::SetDateOfStart(std::chrono::year_month_day date
 }
 
 
-std::chrono::year_month_day Trip::GetDateOfEnd() {
+std::chrono::year_month_day Trip::GetDateOfEnd() const {
 	return this->date_of_end;
 }
 
@@ -271,13 +271,13 @@ std::optional<const char*> Trip::SetDateOfEnd(std::chrono::year_month_day date_o
 }
 
 
-size_t Trip::GetDuration() {
+size_t Trip::GetDuration() const {
     if (!date_of_start.ok() || !date_of_end.ok()) return 0;
 	return getDateDifference(this->date_of_start, this->date_of_end);
 }
 
 
-double Trip::GetPrice() {return this->price;}
+double Trip::GetPrice() const {return this->price;}
 
 void Trip::SetPrice(double price) {
 	while (true) {
@@ -298,12 +298,12 @@ void Trip::SetPrice(double price) {
 }
 
 
-int Trip::GetPersonalId(){
+int Trip::GetPersonalId() const {
 	return this->personal_id;
 }
 
 
-TripStatus Trip::GetStatus()
+TripStatus Trip::GetStatus() const
 {    
     std::chrono::time_point now{std::chrono::system_clock::now()};
     std::chrono::year_month_day today{std::chrono::floor<std::chrono::days>(now)};
@@ -336,18 +336,18 @@ TripStatus Trip::GetStatus()
 }
 
 
-std::string Trip::GetNameOfCustomer(){
+std::string Trip::GetNameOfCustomer() const {
 	return this->name_of_customer;
 }
 
-std::string Trip::GetNameOfManager(){
+std::string Trip::GetNameOfManager() const {
 	return this->name_of_manager;
 }
 
-std::chrono::year_month_day Trip::GetDateOfBooking()
-{
+std::chrono::year_month_day Trip::GetDateOfBooking() const{
 	return this->date_of_booking;
 }
+
 void Trip::SetDataOfPurchase(std::string name_of_manager, std::string name_of_customer)
 {
 	this->name_of_manager = name_of_manager;
@@ -378,5 +378,4 @@ void Trip::Return(){
 
 
 
-// Ðàõóº ð³çíèöþ ì³æ äâîìà äàòàìè ôîðìàòó "dd/mm/yyyy"
 

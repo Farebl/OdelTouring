@@ -58,35 +58,36 @@ public:
 
     ~Trip(); 
 
-	void ShowInfo(); 
+	void ShowInfo() const; 
 
-	std::string GetFullName(); 
+
+	std::string GetFullName() const; 
 	void SetFullName(std::string name); 
 
-	std::string GetCountry(); 
+	std::string GetCountry() const; 
 	void SetCountry(std::string country); 
 	 
-	std::string GetCity(); 
+	std::string GetCity() const; 
     void SetCity(std::string city); 
 
-    std::chrono::year_month_day GetDateOfStart(); 
+    std::chrono::year_month_day GetDateOfStart() const; 
     std::optional<const char*> SetDateOfStart(std::chrono::year_month_day date_of_start); 
 
-    std::chrono::year_month_day GetDateOfEnd(); 
+    std::chrono::year_month_day GetDateOfEnd() const; 
     std::optional<const char*> SetDateOfEnd(std::chrono::year_month_day date_of_end); 
 
-    size_t GetDuration(); 
+    size_t GetDuration() const; 
 
-	double GetPrice(); 
+	double GetPrice() const; 
     void SetPrice(double price); 
 
-	int GetPersonalId(); 
+	int GetPersonalId() const; 
 
-	TripStatus GetStatus();
+	TripStatus GetStatus() const;
 
-    std::chrono::year_month_day GetDateOfBooking(); // date when this trip was bought
-	std::string GetNameOfCustomer(); // customer, who bought this trip
-	std::string GetNameOfManager(); // manager who sold this trip
+    std::chrono::year_month_day GetDateOfBooking() const; // date when this trip was bought
+	std::string GetNameOfCustomer() const; // customer, who bought this trip
+	std::string GetNameOfManager() const; // manager who sold this trip
 	
 	static double GetAveragePrice(); 
 	static double GetAverageDuration();
