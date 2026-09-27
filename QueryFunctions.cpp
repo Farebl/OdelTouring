@@ -37,8 +37,8 @@ std::ostream& operator<<(std::ostream& os, const std::chrono::year_month_day& ym
 }
 
 
-void to_json(nlohmann::json& json, const Order& order) {
-    json = nlohmann::json{
+void to_json(nlohmann::ordered_json& json, const Order& order) {
+    json = nlohmann::ordered_json{
         {"name_of_trip",    order.name_of_trip},
         {"year_of_booking", order.year_of_booking},
         {"country",         order.country},
@@ -48,7 +48,7 @@ void to_json(nlohmann::json& json, const Order& order) {
     };
 }
 
-std::shared_ptr<Order> getOrderFromJson(const nlohmann::json& json) {
+std::shared_ptr<Order> getOrderFromJson(const nlohmann::ordered_json& json) {
     std::shared_ptr<Order> order = std::make_shared<Order>(
         json.at("name_of_trip").get<std::string>(),
         json.at("year_of_booking").get<int>(),
@@ -61,15 +61,15 @@ std::shared_ptr<Order> getOrderFromJson(const nlohmann::json& json) {
 }
 
 
-void to_json(nlohmann::json& json, const Manager& manager) {
-    json = nlohmann::json{
+void to_json(nlohmann::ordered_json& json, const Manager& manager) {
+    json = nlohmann::ordered_json{
         {"name",         manager.GetFullName()},
         {"phone_number", manager.GetPhoneNumber()},
         {"personal_id",  manager.GetPersonalId()}
     };
 }
 
-std::shared_ptr<Manager> getManagerFromJson(const nlohmann::json& json) {
+std::shared_ptr<Manager> getManagerFromJson(const nlohmann::ordered_json& json) {
     std::shared_ptr<Manager> manager = std::make_shared<Manager>(
         json.at("name").get<std::string>(),
         json.at("phone_number").get<std::string>(),
@@ -77,6 +77,59 @@ std::shared_ptr<Manager> getManagerFromJson(const nlohmann::json& json) {
     );
     return manager;
 }
+
+
+NLOHMANN_JSON_SERIALIZE_ENUM( CustomerStatus, {
+    {CustomerStatus::WITHOUT_TRIP, "WITHOUT_TRIP"},
+    {CustomerStatus::WITH_TRIP, "WITH_TRIP"},
+    {CustomerStatus::DURING_A_TRIP, "DURING_A_TRIP"},
+})
+
+void to_json(nlohmann::ordered_json& json, const Customer& customer) {
+    auto customer_status = customer.GetStatus();
+    json = nlohmann::ordered_json{
+        {"name",                  customer.GetFullName()},
+        {"phone_number",          customer.GetPhoneNumber()},
+        {"address",               customer.GetAddress()},
+        {"count_of_bought_trips", customer.GetCountOfBoughtTrips()},
+        {"personal_id",           customer.GetPersonalId()},
+        {"status",                customer_status},
+    };
+    if (customer_status != CustomerStatus::WITHOUT_TRIP){
+        json["trip_name"]    = customer.GetTrip()->GetFullName();
+        json["trip_id"]      = customer.GetTrip()->GetPersonalId();
+        json["manager_name"] = customer.GetTrip()->GetFullName();
+    }
+}
+
+
+std::shared_ptr<Customer> getCustomerFromJson(const nlohmann::ordered_json& json, const ListSharedsTrip_t& trips) {
+    std::shared_ptr<Customer> customer = nullptr;
+    
+    auto customer_status = json.at("status").get<CustomerStatus>();
+    if (customer_status == CustomerStatus::WITHOUT_TRIP){
+        customer = std::make_shared<Customer>(
+            json.at("name").get<std::string>(),
+            json.at("phone_number").get<std::string>(),
+            json.at("address").get<std::string>(),
+            json.at("count_of_bought_trips").get<int>(),
+            json.at("personal_id").get<int>()
+        );
+    }
+    else{
+        auto bought_trip = FindTripById(trips, json.at("trip_id").get<int>());
+        customer = std::make_shared<Customer>(
+            json.at("name").get<std::string>(),
+            json.at("phone_number").get<std::string>(),
+            json.at("address").get<std::string>(),
+            json.at("count_of_bought_trips").get<int>(),
+            json.at("personal_id").get<int>(),
+            bought_trip
+        );
+    }
+    return customer;
+}
+
 
 /////////////////////////MAIN FUNCTIONS///////////////////////////
 
@@ -115,7 +168,6 @@ void SaveMessage(const std::string msg, const std::string path) {
 	}
 	MessageWrite.close();
 }
-
 
 void ClearConsole() {std::cout << "\033[2J\033[H" << std::flush;}
 
@@ -160,7 +212,7 @@ void EditManager(manager_list_iter_t& manager, const int fieldIndex, const std::
 
 
 void SaveManagersData(const ListSharedsManager_t& managers, const std::string path) {
-    nlohmann::json j = nlohmann::json::array();
+    nlohmann::ordered_json j = nlohmann::ordered_json::array();
 
     for (const auto& manager : managers) {
         j.push_back(*manager);    
@@ -187,10 +239,10 @@ void ReadManagersData(ListSharedsManager_t& managers, const std::string path) {
         return;
     }
 
-    nlohmann::json j;
+    nlohmann::ordered_json j;
     try {
         managers_reader >> j;
-    } catch (const nlohmann::json::parse_error& e) {
+    } catch (const nlohmann::ordered_json::parse_error& e) {
         std::cout << "Error: Failed to parse managers JSON file.\n" << e.what() << "\n";
         managers_reader.close();
         return;
@@ -319,99 +371,47 @@ std::pair<size_t, std::vector<int>> GetCountOfCustomersWithoutTrip(const ListSha
 }
 
 
-void SaveCustomersData(const ListSharedsCustomer_t& CustomersCollection, const std::string path) {
-	std::fstream CustomerObjectsWrite;
-	CustomerObjectsWrite.open(path, std::fstream::out);
-	if (!CustomerObjectsWrite.is_open()) 
-		std::cout << "Error: Could not open the file at the specified path to record customers data. \nSpecified path: " << path << "\n";
-	else {
-		if (CustomersCollection.empty()) {
-			CustomerObjectsWrite << "Empty";
-			CustomerObjectsWrite.close();
-			return;
-		}
+void SaveCustomersData(const ListSharedsCustomer_t& customers, const std::string path) {
+    nlohmann::ordered_json j = nlohmann::ordered_json::array();
 
-		int count = 0;
-		CustomerObjectsWrite << "\n"; // Ïåðøèé ïócòèé ðÿäîê
+    for (const auto& customer : customers) {
+        j.push_back(*customer);    
+    }
 
-		for (const auto& element : CustomersCollection) {
-			CustomerObjectsWrite << "Object " << count + 1 << ":\n";
-			CustomerObjectsWrite << element->GetFullName() << "\n";
-			CustomerObjectsWrite << element->GetPhoneNumber() << "\n";
-			CustomerObjectsWrite << element->GetAddress() << "\n";
-			CustomerObjectsWrite << element->GetCountOfBoughtTrips() << "\n";
-			CustomerObjectsWrite << element->GetPersonalId() << "\n"; // Id - êë³ºíòà
-			
-			if (element->GetStatus() != CustomerStatus::WITHOUT_TRIP) {
-				if (element->GetStatus() == CustomerStatus::WITH_TRIP) 
-					CustomerObjectsWrite << "Have a trip:\n"; //status
-				
-				else if (element->GetStatus() == CustomerStatus::DURING_A_TRIP) 
-					CustomerObjectsWrite << "During a trip:\n"; //status
-			
-				CustomerObjectsWrite << element->GetTrip()->GetFullName() << "\n";
-				CustomerObjectsWrite << element->GetTrip()->GetPersonalId() << "\n";
-				CustomerObjectsWrite << element->GetNameOfManager() << "\n";
-			}
-			else 
-				CustomerObjectsWrite << "Doesn`t have a trip" << "\n"; //status
-			
-			count++;
-			if (count != CustomersCollection.size()) 
-				CustomerObjectsWrite << "----------------------------------------------\n";
-		}
-	}
-	CustomerObjectsWrite.close();
-}
+    std::ofstream customers_write(path);
+    if (!customers_write.is_open()) {
+        std::cout << "Error: Could not open the file at the specified path to record customers data. \nSpecified path:" << path << "\n";
+        return;
+    }
 
-//2.9 Ç÷èòóâàííÿ äàíèõ ïðî êë³ºíò³â ç ôàéë.txt
-void ReadCustomersData(ListSharedsCustomer_t& CustomersCollection, const ListSharedsTrip_t& Trips, const std::string path) {
-	std::ifstream CustomerObjectsRead;
-	CustomerObjectsRead.open(path, std::ios::in);
-
-	if (!CustomerObjectsRead.is_open()) 
-		std::cout << "Error: Could not open the file at the specified path to read customers data. \nSpecified path: " << path << "\n";
-	else {
-		std::string name, phone_number, address, count_of_bought_trips, personal_id, name_of_tour, trip_id, name_of_manager, status ,emptiness;
-
-		std::getline(CustomerObjectsRead, emptiness); // ç÷èòóºòücÿ ïåðøèé íåïîòð³áíèé ðÿäîê
-
-		if (emptiness == "Empty") {
-			CustomerObjectsRead.close();
-			return;
-		}
-		std::getline(CustomerObjectsRead, emptiness); // ç÷èòóºòücÿ íåïîòð³áíèé ðÿäîê "Object"
-		while (!CustomerObjectsRead.eof()) {
-
-			std::getline(CustomerObjectsRead, name);
-			std::getline(CustomerObjectsRead, phone_number);
-			std::getline(CustomerObjectsRead, address);
-			std::getline(CustomerObjectsRead, count_of_bought_trips);
-			std::getline(CustomerObjectsRead, personal_id);
-
-			std::getline(CustomerObjectsRead, status);
-			if (status == "Doesn`t have a trip") 
-				CustomersCollection.emplace_back(std::shared_ptr<Customer>(std::make_shared<Customer>(name, phone_number, address, std::stoi(count_of_bought_trips), std::stoi(personal_id))));
-			
-			else if (status == "Have a trip:" || status == "During a trip:") {
-				std::getline(CustomerObjectsRead, name_of_tour);
-				std::getline(CustomerObjectsRead, trip_id);
-				std::getline(CustomerObjectsRead, name_of_manager);
-
-				auto trip = FindTripById(Trips, std::stoi(trip_id));
-				CustomersCollection.emplace_back(std::shared_ptr<Customer>(std::make_shared<Customer>(name, phone_number, address, std::stoi(count_of_bought_trips), std::stoi(personal_id), trip)));
-			}
-
-			if (!CustomerObjectsRead.eof()) {
-				std::getline(CustomerObjectsRead, emptiness); // ç÷èòóºòücÿ ïîðîæí³é ðÿäîê 
-				std::getline(CustomerObjectsRead, emptiness); // ç÷èòóºòücÿ íåïîòð³áíèé ðÿäîê "Object"
-			}
-		}
-	}
-	CustomerObjectsRead.close();
+    customers_write << j.dump(4);
+    customers_write.close();
 }
 
 
+void ReadCustomersData(ListSharedsCustomer_t& customers, const ListSharedsTrip_t& trips, const std::string path) {
+    std::ifstream customers_reader(path);
+
+    if (!customers_reader.is_open()) {
+        std::cout << "Error: Could not open the file at the specified path to read customers data.\nSpecified path:" << path << "\n";
+        return;
+    }
+
+    nlohmann::ordered_json j;
+    try {
+        customers_reader >> j;
+    } catch (const nlohmann::ordered_json::parse_error& e) {
+        std::cout << "Error: Failed to parse customers JSON file.\n" << e.what() << "\n";
+        customers_reader.close();
+        return;
+    }
+
+    for (const auto& item : j) {
+        customers.push_back(getCustomerFromJson(item, trips));
+    }
+
+    customers_reader.close();
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -866,7 +866,7 @@ void RemoveOrderByCustomerId(ListSharedsOrder_t& orders, size_t customer_id){
 
 
 void SaveOrdersData(const ListSharedsOrder_t& orders, const std::string& path) {
-    nlohmann::json j = nlohmann::json::array();
+    nlohmann::ordered_json j = nlohmann::ordered_json::array();
 
     for (const auto& order : orders) {
         j.push_back(*order); // розіменовуємо shared_ptr, викликається to_json(Order)
@@ -890,10 +890,10 @@ void ReadOrdersData(ListSharedsOrder_t& orders, const std::string path) {
         return;
     }
 
-    nlohmann::json j;
+    nlohmann::ordered_json j;
     try {
         orders_reader >> j;
-    } catch (const nlohmann::json::parse_error& e) {
+    } catch (const nlohmann::ordered_json::parse_error& e) {
         std::cout << "Error: Failed to parse orders JSON file.\n" << e.what() << "\n";
         orders_reader.close();
         return;

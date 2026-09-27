@@ -4,6 +4,7 @@ import Functions;
 
 int main() {
     std::string managers_path = "Managers.json";
+    std::string customers_path = "Customers.json";
     std::string history_path = "History.txt";
     std::string orders_path = "Orders.json";
 
@@ -79,7 +80,7 @@ int main() {
     try{
         ReadManagersData(managers, managers_path);
         ReadTripsData(trips, "Trips.txt");
-        ReadCustomersData(customers, trips, "Customers.txt");
+        ReadCustomersData(customers, trips, customers_path);
         ReadOrdersData(orders, orders_path);
     }
     catch(std::exception& ex){
@@ -96,7 +97,7 @@ int main() {
     try{     
         SaveManagersData(managers, managers_path);
         SaveTripsData(trips, "Trips.txt");
-        SaveCustomersData(customers, "Customers.txt");
+        SaveCustomersData(customers, customers_path);
         SaveOrdersData(orders, orders_path);
     }
     catch(std::exception& ex){
