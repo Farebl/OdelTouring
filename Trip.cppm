@@ -20,7 +20,7 @@ export enum class TripStatus {
 };
 
 export size_t getDateDifference(std::chrono::year_month_day startDate, std::chrono::year_month_day endDate);
-
+export std::ostream& operator<<(std::ostream& os, const std::chrono::year_month_day& ymd);
 export class Trip {
 	friend class Manager;
 

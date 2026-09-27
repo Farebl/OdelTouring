@@ -3,10 +3,11 @@ import Functions;
 #include <iostream>
 
 int main() {
-    std::string managers_path = "Managers.json";
+    std::string managers_path  = "Managers.json";
     std::string customers_path = "Customers.json";
-    std::string history_path = "History.txt";
-    std::string orders_path = "Orders.json";
+    std::string trips_path     = "Trips.json";
+    std::string history_path   = "History.txt";
+    std::string orders_path    = "Orders.json";
 
     ListSharedsManager_t managers;
     ListSharedsCustomer_t customers;
@@ -79,7 +80,7 @@ int main() {
 
     try{
         ReadManagersData(managers, managers_path);
-        ReadTripsData(trips, "Trips.txt");
+        ReadTripsData(trips, trips_path);
         ReadCustomersData(customers, trips, customers_path);
         ReadOrdersData(orders, orders_path);
     }
@@ -96,7 +97,7 @@ int main() {
 
     try{     
         SaveManagersData(managers, managers_path);
-        SaveTripsData(trips, "Trips.txt");
+        SaveTripsData(trips, trips_path);
         SaveCustomersData(customers, customers_path);
         SaveOrdersData(orders, orders_path);
     }

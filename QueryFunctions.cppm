@@ -69,7 +69,6 @@ void ValidatedInput(T& val) {
     }
     std::cin.ignore(INT_MAX, '\n');
 }
-export std::ostream& operator<<(std::ostream& os, const std::chrono::year_month_day& ymd);
 
 export std::chrono::year_month_day stringToYearMonthDay(const std::string& date);
 

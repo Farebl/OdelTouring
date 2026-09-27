@@ -25,40 +25,38 @@ module Functions;
 
 
 
-std::ostream& operator<<(std::ostream& os, const std::chrono::year_month_day& ymd) {
-    if (ymd.ok()) {
-        os << static_cast<int>(ymd.year()) << "/"
-           << static_cast<unsigned>(ymd.month()) << "/"
-           << static_cast<unsigned>(ymd.day());
-    } else {
-        os << "Invalid Date";
+std::chrono::year_month_day stringToYearMonthDay(const std::string& date){
+    short y, m, d; // fot parsing inoput date: dauy, month, year;
+    if (std::sscanf(date.c_str(), "%hd/%hd/%hd", &y, &m, &d) == 3){
+        std::chrono::year_month_day date_of_start = std::chrono::year_month_day{
+            std::chrono::year(y), 
+            std::chrono::month(static_cast<unsigned>(m)), 
+            std::chrono::day(static_cast<unsigned>(d))
+        };
+        return date_of_start;
     }
-    return os;
+    else{
+        throw std::runtime_error("Error: wrong format of data");
+    }
 }
 
+void ClearConsole() {std::cout << "\033[2J\033[H" << std::flush;}
 
-void to_json(nlohmann::ordered_json& json, const Order& order) {
-    json = nlohmann::ordered_json{
-        {"name_of_trip",    order.name_of_trip},
-        {"year_of_booking", order.year_of_booking},
-        {"country",         order.country},
-        {"duration",        order.duration},
-        {"price",           order.price},
-        {"customer_id",     order.customer_id}
-    };
+
+void SaveMessage(const std::string msg, const std::string path) {
+	std::fstream MessageWrite;
+	MessageWrite.open(path, std::fstream::out | std::fstream::app);
+	if (!MessageWrite.is_open())
+		std::cout << "Error\n";
+	else {
+        std::chrono::zoned_time now{std::chrono::current_zone(), std::chrono::system_clock::now()};
+
+    	MessageWrite << now;
+		MessageWrite << "\t-->\t" << msg << "\n\n";
+	}
+	MessageWrite.close();
 }
 
-std::shared_ptr<Order> getOrderFromJson(const nlohmann::ordered_json& json) {
-    std::shared_ptr<Order> order = std::make_shared<Order>(
-        json.at("name_of_trip").get<std::string>(),
-        json.at("year_of_booking").get<int>(),
-        json.at("country").get<std::string>(),
-        json.at("duration").get<int>(),
-        json.at("price").get<double>(),
-        json.at("customer_id").get<long>()
-    );
-    return order;
-}
 
 
 void to_json(nlohmann::ordered_json& json, const Manager& manager) {
@@ -82,7 +80,7 @@ std::shared_ptr<Manager> getManagerFromJson(const nlohmann::ordered_json& json) 
 NLOHMANN_JSON_SERIALIZE_ENUM( CustomerStatus, {
     {CustomerStatus::WITHOUT_TRIP, "WITHOUT_TRIP"},
     {CustomerStatus::WITH_TRIP, "WITH_TRIP"},
-    {CustomerStatus::DURING_A_TRIP, "DURING_A_TRIP"},
+    {CustomerStatus::DURING_A_TRIP, "DURING_A_TRIP"}
 })
 
 void to_json(nlohmann::ordered_json& json, const Customer& customer) {
@@ -131,6 +129,124 @@ std::shared_ptr<Customer> getCustomerFromJson(const nlohmann::ordered_json& json
 }
 
 
+
+
+
+NLOHMANN_JSON_SERIALIZE_ENUM( TripStatus, {
+    {TripStatus::ON_SALE, "ON_SALE"},
+    {TripStatus::SOLD, "SOLD"},
+    {TripStatus::IN_PROGRESS, "IN_PROGRESS"},
+    {TripStatus::FINISHED, "FINISHED"},
+    {TripStatus::EXPIRED, "EXPIRED"},
+})
+
+
+void to_json(nlohmann::ordered_json& json, const Trip& trip) {
+    auto trip_status = trip.GetStatus();
+
+    std::stringstream date_of_start_stream;
+    date_of_start_stream << trip.GetDateOfStart();
+
+    std::stringstream date_of_end_stream;
+    date_of_end_stream << trip.GetDateOfEnd();
+
+    std::stringstream date_of_booking_stream;
+    date_of_booking_stream << trip.GetDateOfBooking();
+
+
+    json = nlohmann::ordered_json{
+        {"name",          trip.GetFullName()},
+        {"country",       trip.GetCountry()},
+        {"city",          trip.GetCity()},
+        {"date_of_start", date_of_start_stream.str()},
+        {"date_of_end",   date_of_end_stream.str()},
+        {"price",         trip.GetPrice()},
+        {"personal_id",   trip.GetPersonalId()},
+        {"status",        trip_status},
+    };
+    if (trip_status == TripStatus::SOLD || trip_status == TripStatus::IN_PROGRESS){
+        json["date_of_booking"]       = date_of_booking_stream.str();
+        json["name_of_customer"]      = trip.GetNameOfCustomer();
+        json["name_of_manager"]       = trip.GetNameOfManager();
+    }
+}
+
+
+std::shared_ptr<Trip> getTripFromJson(const nlohmann::ordered_json& json) {
+    std::shared_ptr<Trip> trip = nullptr;
+
+    auto date_of_start_str = json.at("date_of_start").get<std::string>();
+    auto date_of_end_str = json.at("date_of_end").get<std::string>();
+
+    auto date_of_start = stringToYearMonthDay(date_of_start_str);
+    auto date_of_end   = stringToYearMonthDay(date_of_end_str);
+
+    auto trip_status = json.at("status").get<TripStatus>();
+    if (trip_status == TripStatus::ON_SALE){
+        trip = std::make_shared<Trip>(
+            json.at("name").get<std::string>(),
+            json.at("country").get<std::string>(),
+            json.at("city").get<std::string>(),
+            date_of_start,
+            date_of_end,
+            json.at("price").get<double>(),
+            json.at("personal_id").get<int>()
+        );
+    }
+    else if (trip_status == TripStatus::SOLD){
+        auto date_of_booking_str = json.at("date_of_booking").get<std::string>();
+        auto date_of_booking = stringToYearMonthDay(date_of_booking_str);
+    
+        trip = std::make_shared<Trip>(
+            json.at("name").get<std::string>(),
+            json.at("country").get<std::string>(),
+            json.at("city").get<std::string>(),
+            date_of_start,
+            date_of_end,
+            json.at("price").get<double>(),
+            json.at("personal_id").get<int>(),
+            json.at("name_of_customer").get<std::string>(),
+            json.at("name_of_manager").get<std::string>(),
+            date_of_booking
+        );
+    }
+    // TripStatus::IN_PROGRESS,FINISHED, EXPIRED, not needed for system
+
+    return trip;
+}
+
+
+
+
+
+void to_json(nlohmann::ordered_json& json, const Order& order) {
+    json = nlohmann::ordered_json{
+        {"name_of_trip",    order.name_of_trip},
+        {"year_of_booking", order.year_of_booking},
+        {"country",         order.country},
+        {"duration",        order.duration},
+        {"price",           order.price},
+        {"customer_id",     order.customer_id}
+    };
+}
+
+std::shared_ptr<Order> getOrderFromJson(const nlohmann::ordered_json& json) {
+    std::shared_ptr<Order> order = std::make_shared<Order>(
+        json.at("name_of_trip").get<std::string>(),
+        json.at("year_of_booking").get<int>(),
+        json.at("country").get<std::string>(),
+        json.at("duration").get<int>(),
+        json.at("price").get<double>(),
+        json.at("customer_id").get<long>()
+    );
+    return order;
+}
+
+
+
+
+
+
 /////////////////////////MAIN FUNCTIONS///////////////////////////
 
 
@@ -139,37 +255,7 @@ std::shared_ptr<Customer> getCustomerFromJson(const nlohmann::ordered_json& json
 
 // yyyy/mm/dd --> std::chrono::year_month_day
 
-std::chrono::year_month_day stringToYearMonthDay(const std::string& date){
-    short y, m, d; // fot parsing inoput date: dauy, month, year;
-    if (std::sscanf(date.c_str(), "%hd/%hd/%hd", &y, &m, &d) == 3){
-        std::chrono::year_month_day date_of_start = std::chrono::year_month_day{
-            std::chrono::year(y), 
-            std::chrono::month(static_cast<unsigned>(m)), 
-            std::chrono::day(static_cast<unsigned>(d))
-        };
-        return date_of_start;
-    }
-    else{
-        throw std::runtime_error("Error: wrong format of data");
-    }
-}
 
-// logging to a file
-void SaveMessage(const std::string msg, const std::string path) {
-	std::fstream MessageWrite;
-	MessageWrite.open(path, std::fstream::out | std::fstream::app);
-	if (!MessageWrite.is_open())
-		std::cout << "Error\n";
-	else {
-        std::chrono::zoned_time now{std::chrono::current_zone(), std::chrono::system_clock::now()};
-
-    	MessageWrite << now;
-		MessageWrite << "\t-->\t" << msg << "\n\n";
-	}
-	MessageWrite.close();
-}
-
-void ClearConsole() {std::cout << "\033[2J\033[H" << std::flush;}
 
 
 
@@ -546,129 +632,62 @@ std::shared_ptr<Trip> FindTripById(const ListSharedsTrip_t& Trips, const int per
 }
 
 
-void SaveTripsData(const ListSharedsTrip_t& Trips, const std::string path){
-	std::fstream TripObjectsWrite;
-	TripObjectsWrite.open(path, std::fstream::out);
-	if (!TripObjectsWrite.is_open()) {
-		std::cout << "Error: Could not open the file at the specified path to record trips data. \nSpecified path: " << path << "\n";
-		return;
-	}
-
-	else {
-		if (Trips.empty()) {
-			TripObjectsWrite << "Empty";
-			TripObjectsWrite.close();
-			return;
-		}
-		TripObjectsWrite << "\n"; 
-
-		int count = 0;
-
-		for (const auto& trip : Trips) {
-			// ßêùî äàòà ïî÷àòêó ïóò³âêè á³ëüøå í³æ cüîãîäí³
-			if (trip->GetStatus() == TripStatus::ON_SALE || trip->GetStatus() == TripStatus::SOLD || trip->GetStatus() == TripStatus::IN_PROGRESS) {
-				TripObjectsWrite << "Object " << count + 1 << ":\n";
-				TripObjectsWrite << trip->GetFullName() << "\n";
-				TripObjectsWrite << trip->GetCountry() << "\n";
-				TripObjectsWrite << trip->GetCity() << "\n";
-				TripObjectsWrite << trip->GetDateOfStart() << "\n";
-				TripObjectsWrite << trip->GetDateOfEnd() << "\n";
-				TripObjectsWrite << trip->GetPrice() << "\n";
-				TripObjectsWrite << trip->GetPersonalId() << "\n";
-
-				if (trip->GetStatus() == TripStatus::ON_SALE)
-					TripObjectsWrite << "On sale" << "\n";
-
-				else if (trip->GetStatus() == TripStatus::SOLD) {
-					TripObjectsWrite << "Sold" << "\n";
-					TripObjectsWrite << trip->GetDateOfBooking() << "\n";
-					TripObjectsWrite << trip->GetNameOfCustomer() << "\n";
-					TripObjectsWrite << trip->GetNameOfManager() << "\n";
-				}
-
-				else if (trip->GetStatus() == TripStatus::IN_PROGRESS) {
-					TripObjectsWrite << "In progress" << "\n";
-					TripObjectsWrite << trip->GetDateOfBooking() << "\n";
-					TripObjectsWrite << trip->GetNameOfCustomer() << "\n";
-					TripObjectsWrite << trip->GetNameOfManager() << "\n";
-				}
-
-				count++;
-				if (count != Trips.size())
-					TripObjectsWrite << "----------------------------------------------\n";
-			}
-		}
-	}
-	TripObjectsWrite.close();
-}
 
 
-void ReadTripsData(std::list<std::shared_ptr<Trip>>& Trips, const std::string path) {
-	std::ifstream TripObjectsRead;
-	TripObjectsRead.open(path, std::ios::in);
+void SaveTripsData(const ListSharedsTrip_t& trips, const std::string path) {
+    nlohmann::ordered_json j = nlohmann::ordered_json::array();
 
-	if (!TripObjectsRead.is_open())
-		std::cout << "Error: Could not open the file at the specified path to read customers data. \nSpecified path: " << path << "\n";
-	else {
-		std::string name, country, city, date_of_start_str, date_of_end_str, price, personal_id, status, name_of_customer, name_of_manager, date_of_booking_str, emptiness;
-        std::chrono::year_month_day date_of_start, date_of_end, date_of_booking;
+    for (const auto& trip : trips) {
+        j.push_back(*trip);    
+    }
 
-		std::getline(TripObjectsRead, emptiness); 
-		if (emptiness == "Empty") {
-			TripObjectsRead.close();
-			return;
-		}
-		std::getline(TripObjectsRead, emptiness); 
-        //
-        std::chrono::time_point now{std::chrono::system_clock::now()};
-        std::chrono::year_month_day today{std::chrono::floor<std::chrono::days>(now)};
+    std::ofstream trips_write(path);
+    if (!trips_write.is_open()) {
+        std::cout << "Error: Could not open the file at the specified path to record trips data. \nSpecified path:" << path << "\n";
+        return;
+    }
 
-		while (!TripObjectsRead.eof()) {
-			std::getline(TripObjectsRead, name);
-			std::getline(TripObjectsRead, country);
-			std::getline(TripObjectsRead, city);
-			std::getline(TripObjectsRead, date_of_start_str);
-			std::getline(TripObjectsRead, date_of_end_str);
-            std::getline(TripObjectsRead, price); 
-            std::getline(TripObjectsRead, personal_id); 
-            std::getline(TripObjectsRead, status);
-            if (status == "Sold" || status == "In progress") {
-                std::getline(TripObjectsRead, date_of_booking_str);
-                std::getline(TripObjectsRead, name_of_customer);
-                std::getline(TripObjectsRead, name_of_manager);
-            }	
-            if (!TripObjectsRead.eof()) {
-                std::getline(TripObjectsRead, emptiness);
-                std::getline(TripObjectsRead, emptiness);
-            }
-
-            try{
-                date_of_start = stringToYearMonthDay(date_of_start_str);
-                date_of_end = stringToYearMonthDay(date_of_end_str);
-                if (status == "Sold" || status == "In progress") 
-                    date_of_booking = stringToYearMonthDay(date_of_booking_str);
-
-            }
-            catch(std::exception& ex){
-                std::cout << "Exception while reading date of start/end/booking of the trip \"" << name << "\" (id: " << personal_id <<"): "<< ex.what();
-                continue;
-            }
-  
-
-			if (getDateDifference(today, date_of_start) > 0){
-                if (status == "On sale")
-                    Trips.emplace_back(std::make_shared<Trip>(name, country, city, date_of_start, date_of_end, std::stod(price), std::stoi(personal_id)));
-                else if (status == "Sold")
-					Trips.emplace_back(std::make_shared<Trip>(name, country, city, date_of_start, date_of_end, std::stod(price), std::stoi(personal_id), name_of_customer, name_of_manager, date_of_booking));
-
-			}
-		}
-	}
-	TripObjectsRead.close();
+    trips_write << j.dump(4);
+    trips_write.close();
 }
 
 
 
+
+void ReadTripsData(ListSharedsTrip_t& trips, const std::string path) {
+    std::ifstream trips_reader(path);
+
+    if (!trips_reader.is_open()) {
+        std::cout << "Error: Could not open the file at the specified path to read trips data.\nSpecified path:" << path << "\n";
+        return;
+    }
+
+    nlohmann::ordered_json j;
+    try {
+        trips_reader >> j;
+    } catch (const nlohmann::ordered_json::parse_error& e) {
+        std::cout << "Error: Failed to parse trips JSON file.\n" << e.what() << "\n";
+        trips_reader.close();
+        return;
+    }
+
+    std::chrono::time_point now{std::chrono::system_clock::now()};
+    std::chrono::year_month_day today{std::chrono::floor<std::chrono::days>(now)};
+
+    for (const auto& item : j) {
+        auto trip = getTripFromJson(item);
+        if (
+            (trip->GetStatus() == TripStatus::ON_SALE || trip->GetStatus() == TripStatus::SOLD )
+            && 
+            (getDateDifference(today, trip->GetDateOfStart()) > 0)
+        ){
+            trips.push_back(trip);
+        }
+        // else --> in progress || finished || expired --> don`t needed 
+    }
+
+    trips_reader.close();
+}
 
 
 
